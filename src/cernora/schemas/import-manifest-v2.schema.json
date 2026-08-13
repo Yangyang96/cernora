@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cernora-import-manifest-v2.schema.json",
+  "title": "EvidenceBundleV2ImportManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "files"],
+  "properties": {
+    "schema_version": {"const": "agent.evaluator.import-manifest/v2"},
+    "files": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/file"}
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "containedPath": {
+      "type": "string",
+      "minLength": 1,
+      "not": {"const": "digests.json"},
+      "pattern": "^(?!/)(?!.*[\\u0000-\\u001f\\u007f])(?!.*\\\\)(?!.*//)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*\\/$).+$"
+    },
+    "file": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "size_bytes", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/containedPath"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

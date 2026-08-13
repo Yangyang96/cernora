@@ -1,0 +1,1 @@
+"""Cernora command-line interface."""

@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "ImportedEvaluationFileDigest": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "size_bytes",
+        "sha256"
+      ],
+      "title": "ImportedEvaluationFileDigest",
+      "type": "object"
+    }
+  },
+  "$id": "cernora-imported-evaluation-manifest-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "files": {
+      "items": {
+        "$ref": "#/$defs/ImportedEvaluationFileDigest"
+      },
+      "minItems": 6,
+      "title": "Files",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "agent.evaluator.imported-evaluation-manifest/v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "files"
+  ],
+  "title": "ImportedEvaluationManifest",
+  "type": "object"
+}

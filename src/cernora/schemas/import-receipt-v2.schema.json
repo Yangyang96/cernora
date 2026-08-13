@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cernora-import-receipt-v2.schema.json",
+  "title": "EvidenceBundleV2ImportReceipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "status",
+    "evaluation_status",
+    "bundle",
+    "producer",
+    "run",
+    "profile",
+    "case",
+    "raw_input_sha256",
+    "canonical_bundle_sha256",
+    "artifacts",
+    "evaluation_boundary"
+  ],
+  "properties": {
+    "schema_version": {"const": "agent.evaluator.import-receipt/v2"},
+    "status": {"const": "validated"},
+    "evaluation_status": {"const": "not_evaluated"},
+    "bundle": {"$ref": "#/$defs/bundle"},
+    "producer": {"$ref": "#/$defs/producer"},
+    "run": {"$ref": "#/$defs/run"},
+    "profile": {"$ref": "#/$defs/profile"},
+    "case": {"$ref": "#/$defs/case"},
+    "raw_input_sha256": {"$ref": "#/$defs/sha256"},
+    "canonical_bundle_sha256": {"$ref": "#/$defs/sha256"},
+    "artifacts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "evaluation_boundary": {
+      "oneOf": [
+        {
+          "type": "array",
+          "prefixItems": [{"const": "pass"}, {"const": "fail"}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        {
+          "type": "array",
+          "prefixItems": [{"const": "fail"}],
+          "minItems": 1,
+          "maxItems": 1
+        },
+        {
+          "type": "array",
+          "prefixItems": [{"const": "inconclusive"}],
+          "minItems": 1,
+          "maxItems": 1
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "containedPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*[\\u0000-\\u001f\\u007f])(?!.*\\\\)(?!.*//)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*\\/$).+$"
+    },
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bundle_id", "schema_version", "declared_sha256"],
+      "properties": {
+        "bundle_id": {"$ref": "#/$defs/identifier"},
+        "schema_version": {"const": "agent.evaluator.evidence-bundle/v2"},
+        "declared_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "producer_version"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/identifier"},
+        "producer_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "attempt_id"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/identifier"},
+        "attempt_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id", "profile_version", "sha256"],
+      "properties": {
+        "profile_id": {"$ref": "#/$defs/identifier"},
+        "profile_version": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "case_version", "case_set", "sha256"],
+      "properties": {
+        "case_id": {"$ref": "#/$defs/identifier"},
+        "case_version": {"type": "string", "minLength": 1},
+        "case_set": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "toolOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["invocation_id", "kind"],
+      "properties": {
+        "invocation_id": {"$ref": "#/$defs/identifier"},
+        "kind": {"enum": ["tool_stdout", "tool_stderr"]}
+      }
+    },
+    "terminalOwner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {"const": "terminal_answer"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact_id",
+        "declared_path",
+        "package_path",
+        "size_bytes",
+        "sha256",
+        "owner"
+      ],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/identifier"},
+        "declared_path": {"$ref": "#/$defs/containedPath"},
+        "package_path": {
+          "type": "string",
+          "pattern": "^artifacts/(?!.*[\\u0000-\\u001f\\u007f])(?!.*\\\\)(?!.*//)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*\\/$).+$"
+        },
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "owner": {
+          "oneOf": [
+            {"$ref": "#/$defs/toolOwner"},
+            {"$ref": "#/$defs/terminalOwner"}
+          ]
+        }
+      }
+    }
+  }
+}

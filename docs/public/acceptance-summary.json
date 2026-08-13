@@ -1,0 +1,62 @@
+{
+  "adversarial": {
+    "authority_mismatch": "rejected",
+    "behavioral_mismatch": "fail",
+    "candidate_traversal": "rejected",
+    "corrupt_artifact": "rejected",
+    "missing_artifact": "rejected"
+  },
+  "cernora_version": "0.1.0",
+  "execution": {
+    "credentials_required": false,
+    "network_blocked": true,
+    "repository_source_import": false,
+    "wheel_only": true
+  },
+  "input_protocol": "agent.evaluator.evidence-bundle/v2",
+  "output_protocols": [
+    "agent.evaluator.evidence/v1",
+    "agent.evaluator.score/v1",
+    "agent.evaluator.gate-decision/v1"
+  ],
+  "schema_version": "cernora.public-acceptance-summary/v1",
+  "scope": {
+    "agent_execution": false,
+    "completed_export": "packaged_synthetic",
+    "evaluation_core_path": true,
+    "experiment_harness": false,
+    "runtime_receipt_capture": false,
+    "sandbox_execution": false
+  },
+  "tasks": {
+    "sanitized-v1-workflow": {
+      "case_id": "tool-result-grounding-v1",
+      "outcome": "pass",
+      "repetitions": 3,
+      "strict_reload": true,
+      "tree_sha256": "170b0609322aecdb67b0b2ac9c643f0b4290dc491fcc853131b87cf1b08b240d"
+    },
+    "sanitized-v2-coding": {
+      "cases": {
+        "backend-v1": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "3f942162f11c7dbee4d7cb33dc47b05ed02d0774b29e8788c34fd9cf7b015b09"
+        },
+        "fail-closed-v1": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "ea86c9908c5e849036b42c1c2561a1f2b679e6b450aea3ce1ac7b8cb1da36796"
+        },
+        "frontend-v1": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "7cb6773c2a46e513ce718afdf1d42c10065915f2c5d065b8734998b5bfe6e332"
+        }
+      }
+    }
+  }
+}

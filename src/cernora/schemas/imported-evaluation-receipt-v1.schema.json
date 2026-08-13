@@ -1,0 +1,469 @@
+{
+  "$defs": {
+    "BundleCaseIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "case_set": {
+          "minLength": 1,
+          "title": "Case Set",
+          "type": "string"
+        },
+        "case_version": {
+          "minLength": 1,
+          "title": "Case Version",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_id",
+        "case_version",
+        "case_set",
+        "sha256"
+      ],
+      "title": "BundleCaseIdentity",
+      "type": "object"
+    },
+    "BundleProfileIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "profile_id": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "profile_version": {
+          "minLength": 1,
+          "title": "Profile Version",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile_id",
+        "profile_version",
+        "sha256"
+      ],
+      "title": "BundleProfileIdentity",
+      "type": "object"
+    },
+    "BundleRunIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt_id": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Attempt Id",
+          "type": "string"
+        },
+        "run_id": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Run Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "attempt_id"
+      ],
+      "title": "BundleRunIdentity",
+      "type": "object"
+    },
+    "ComponentIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "digest_kind": {
+          "const": "identity",
+          "default": "identity",
+          "title": "Digest Kind",
+          "type": "string"
+        },
+        "name": {
+          "enum": [
+            "scorer",
+            "gate_policy"
+          ],
+          "title": "Name",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "sha256"
+      ],
+      "title": "ComponentIdentity",
+      "type": "object"
+    },
+    "ExternalProducerIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "external",
+          "title": "Kind",
+          "type": "string"
+        },
+        "producer_id": {
+          "minLength": 1,
+          "title": "Producer Id",
+          "type": "string"
+        },
+        "producer_version": {
+          "minLength": 1,
+          "title": "Producer Version",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.producer-identity/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "producer_id",
+        "producer_version",
+        "sha256"
+      ],
+      "title": "ExternalProducerIdentity",
+      "type": "object"
+    },
+    "FixtureReference": {
+      "additionalProperties": false,
+      "properties": {
+        "fixture_id": {
+          "minLength": 1,
+          "title": "Fixture Id",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fixture_id",
+        "path",
+        "sha256"
+      ],
+      "title": "FixtureReference",
+      "type": "object"
+    },
+    "ImportedBundleIdentityV2": {
+      "additionalProperties": false,
+      "properties": {
+        "bundle_id": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Bundle Id",
+          "type": "string"
+        },
+        "declared_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Declared Sha256",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.evidence-bundle/v2",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "bundle_id",
+        "schema_version",
+        "declared_sha256"
+      ],
+      "title": "ImportedBundleIdentityV2",
+      "type": "object"
+    },
+    "ImportedEvaluationAuthority": {
+      "additionalProperties": false,
+      "properties": {
+        "authority_id": {
+          "minLength": 1,
+          "title": "Authority Id",
+          "type": "string"
+        },
+        "authority_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Authority Sha256",
+          "type": "string"
+        },
+        "case": {
+          "$ref": "#/$defs/BundleCaseIdentity"
+        },
+        "case_gate": {
+          "$ref": "#/$defs/ComponentIdentity"
+        },
+        "fixtures": {
+          "items": {
+            "$ref": "#/$defs/FixtureReference"
+          },
+          "minItems": 1,
+          "title": "Fixtures",
+          "type": "array"
+        },
+        "profile": {
+          "$ref": "#/$defs/BundleProfileIdentity"
+        },
+        "projection": {
+          "$ref": "#/$defs/ImportedProjectionIdentity"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.imported-evaluation-authority/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scorer": {
+          "$ref": "#/$defs/ComponentIdentity"
+        }
+      },
+      "required": [
+        "schema_version",
+        "profile",
+        "case",
+        "fixtures",
+        "projection",
+        "scorer",
+        "case_gate",
+        "authority_id",
+        "authority_sha256"
+      ],
+      "title": "ImportedEvaluationAuthority",
+      "type": "object"
+    },
+    "ImportedProjectionIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "digest_kind": {
+          "const": "identity",
+          "default": "identity",
+          "title": "Digest Kind",
+          "type": "string"
+        },
+        "name": {
+          "const": "imported_projection",
+          "title": "Name",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "sha256"
+      ],
+      "title": "ImportedProjectionIdentity",
+      "type": "object"
+    }
+  },
+  "$id": "cernora-imported-evaluation-receipt-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "authority": {
+      "$ref": "#/$defs/ImportedEvaluationAuthority"
+    },
+    "authority_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Authority Sha256",
+      "type": "string"
+    },
+    "bundle": {
+      "$ref": "#/$defs/ImportedBundleIdentityV2"
+    },
+    "canonical_bundle_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Canonical Bundle Sha256",
+      "type": "string"
+    },
+    "case": {
+      "$ref": "#/$defs/BundleCaseIdentity"
+    },
+    "case_gate": {
+      "$ref": "#/$defs/ComponentIdentity"
+    },
+    "case_outcome": {
+      "enum": [
+        "pass",
+        "fail",
+        "inconclusive"
+      ],
+      "title": "Case Outcome",
+      "type": "string"
+    },
+    "decision_id": {
+      "minLength": 1,
+      "title": "Decision Id",
+      "type": "string"
+    },
+    "declared_bundle_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Declared Bundle Sha256",
+      "type": "string"
+    },
+    "eligible": {
+      "title": "Eligible",
+      "type": "boolean"
+    },
+    "evaluation_id": {
+      "minLength": 1,
+      "title": "Evaluation Id",
+      "type": "string"
+    },
+    "evaluation_input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Evaluation Input Sha256",
+      "type": "string"
+    },
+    "evidence_id": {
+      "minLength": 1,
+      "title": "Evidence Id",
+      "type": "string"
+    },
+    "fixtures": {
+      "items": {
+        "$ref": "#/$defs/FixtureReference"
+      },
+      "minItems": 1,
+      "title": "Fixtures",
+      "type": "array"
+    },
+    "harness_status": {
+      "const": "not_evaluated",
+      "title": "Harness Status",
+      "type": "string"
+    },
+    "producer": {
+      "$ref": "#/$defs/ExternalProducerIdentity"
+    },
+    "profile": {
+      "$ref": "#/$defs/BundleProfileIdentity"
+    },
+    "profile_gate_status": {
+      "const": "not_evaluated",
+      "title": "Profile Gate Status",
+      "type": "string"
+    },
+    "raw_input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Raw Input Sha256",
+      "type": "string"
+    },
+    "run": {
+      "$ref": "#/$defs/BundleRunIdentity"
+    },
+    "schema_version": {
+      "const": "agent.evaluator.imported-evaluation-receipt/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "const": "single_case_attempt",
+      "title": "Scope",
+      "type": "string"
+    },
+    "score_id": {
+      "minLength": 1,
+      "title": "Score Id",
+      "type": "string"
+    },
+    "scorer": {
+      "$ref": "#/$defs/ComponentIdentity"
+    },
+    "source_manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Manifest Sha256",
+      "type": "string"
+    },
+    "source_receipt_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Source Receipt Sha256",
+      "type": "string"
+    },
+    "status": {
+      "const": "evaluated",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "scope",
+    "case_outcome",
+    "eligible",
+    "profile_gate_status",
+    "harness_status",
+    "evaluation_id",
+    "evidence_id",
+    "score_id",
+    "decision_id",
+    "evaluation_input_sha256",
+    "authority",
+    "authority_sha256",
+    "bundle",
+    "producer",
+    "run",
+    "profile",
+    "case",
+    "fixtures",
+    "source_receipt_sha256",
+    "source_manifest_sha256",
+    "declared_bundle_sha256",
+    "canonical_bundle_sha256",
+    "raw_input_sha256",
+    "scorer",
+    "case_gate"
+  ],
+  "title": "ImportedEvaluationReceipt",
+  "type": "object"
+}

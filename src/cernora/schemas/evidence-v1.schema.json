@@ -1,0 +1,109 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cernora-evidence-v1.schema.json",
+  "title": "Evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evidence_id", "evaluation_id", "profile_id", "case_id", "run_id", "producer", "process", "tool_actions", "artifacts", "answer", "failures"],
+  "properties": {
+    "schema_version": {"const": "agent.evaluator.evidence/v1"},
+    "evidence_id": {"type": "string", "minLength": 1},
+    "evaluation_id": {"type": "string", "minLength": 1},
+    "profile_id": {"type": "string", "minLength": 1},
+    "case_id": {"type": "string", "minLength": 1, "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"},
+    "run_id": {"type": "string", "minLength": 1},
+    "producer": {"$ref": "#/$defs/producerIdentity"},
+    "process": {"anyOf": [{"$ref": "#/$defs/processResult"}, {"type": "null"}]},
+    "tool_actions": {"type": "array", "items": {"$ref": "#/$defs/toolAction"}},
+    "artifacts": {"type": "array", "items": {"$ref": "#/$defs/artifact"}},
+    "answer": {"anyOf": [{"$ref": "#/$defs/structuredAnswer"}, {"type": "null"}]},
+    "failures": {"type": "array", "items": {"$ref": "#/$defs/failure"}},
+    "metadata": {"type": "object"}
+  },
+  "$defs": {
+    "digest": {"anyOf": [{"type": "string", "pattern": "^[0-9a-f]{64}$"}, {"type": "null"}]},
+    "producerIdentity": {"$ref": "#/$defs/externalProducerIdentity"},
+    "externalProducerIdentity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema_version", "kind", "producer_id", "producer_version", "sha256"],
+      "properties": {
+        "schema_version": {"const": "agent.evaluator.producer-identity/v1"},
+        "kind": {"const": "external"},
+        "producer_id": {"type": "string", "minLength": 1},
+        "producer_version": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "evidenceReference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidence_id", "locator"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "processResult": {
+      "type": "object", "additionalProperties": false,
+      "required": ["argv", "exit_code", "timed_out"],
+      "properties": {
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "exit_code": {"type": ["integer", "null"]},
+        "timed_out": {"type": "boolean"},
+        "stdout_sha256": {"$ref": "#/$defs/digest"},
+        "stderr_sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "toolAction": {
+      "type": "object", "additionalProperties": false,
+      "required": ["invocation_id", "tool", "argv", "exit_code", "timed_out", "committed", "delivered"],
+      "properties": {
+        "invocation_id": {"type": "string", "minLength": 1},
+        "tool": {"type": "string", "minLength": 1},
+        "argv": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "exit_code": {"type": ["integer", "null"]},
+        "timed_out": {"type": "boolean"},
+        "response_sha256": {"$ref": "#/$defs/digest"},
+        "committed": {"type": "boolean"},
+        "delivered": {"type": "boolean"}
+      }
+    },
+    "artifact": {
+      "type": "object", "additionalProperties": false,
+      "required": ["artifact_id", "path", "sha256", "media_type"],
+      "properties": {
+        "artifact_id": {"type": "string", "minLength": 1, "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"},
+        "path": {"type": "string", "minLength": 1, "pattern": "^(?!/)(?!.*(^|/)\\.\\.(/|$)).+$"},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "media_type": {"type": "string", "minLength": 1}
+      }
+    },
+    "answerClaim": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "value", "evidence_references"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "value": true,
+        "evidence_references": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidenceReference"}}
+      }
+    },
+    "structuredAnswer": {
+      "type": "object", "additionalProperties": false,
+      "required": ["status", "claims"],
+      "properties": {
+        "status": {"enum": ["found", "not_found", "needs_clarification", "completed"]},
+        "claims": {"type": "array", "items": {"$ref": "#/$defs/answerClaim"}}
+      }
+    },
+    "failure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["domain", "code", "message"],
+      "properties": {
+        "domain": {"enum": ["agent", "candidate", "product_run", "tool", "runtime", "relay", "fixture", "infrastructure", "scorer", "evidence", "policy"]},
+        "code": {"type": "string", "minLength": 1},
+        "message": {"type": "string", "minLength": 1},
+        "evidence_references": {"type": "array", "items": {"$ref": "#/$defs/evidenceReference"}}
+      }
+    }
+  }
+}

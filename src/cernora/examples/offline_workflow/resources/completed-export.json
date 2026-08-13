@@ -1,0 +1,1 @@
+{"argv":["lookup","--key","alpha"],"attempt_id":"attempt-1","committed":true,"delivered":true,"exit_code":0,"invocation_id":"lookup-1","producer_id":"cernora.example.offline-workflow","producer_version":"1.0.0","run_id":"offline-workflow-run","schema_version":"cernora.offline-completed-export/v1","status":"completed","tool":"lookup"}

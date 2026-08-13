@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cernora-gate-decision-v1.schema.json",
+  "title": "GateDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decision_id", "decision", "policy_version", "policy_identity", "blocking_reasons", "score_ids", "evidence_references", "eligible", "failure", "scorer_identities", "input_digests", "harness_contribution"],
+  "properties": {
+    "schema_version": {"const": "agent.evaluator.gate-decision/v1"},
+    "decision_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["pass", "fail", "inconclusive"]},
+    "policy_version": {"type": "string", "minLength": 1},
+    "policy_identity": {"$ref": "#/$defs/componentIdentity"},
+    "blocking_reasons": {"type": "array", "items": {"type": "string"}},
+    "score_ids": {"type": "array", "items": {"type": "string"}},
+    "evidence_references": {"type": "array", "items": {"$ref": "#/$defs/reference"}},
+    "infrastructure_failure": {"type": ["string", "null"]},
+    "eligible": {"type": "boolean"},
+    "failure": {"anyOf": [{"$ref": "#/$defs/failure"}, {"type": "null"}]},
+    "scorer_identities": {"type": "array", "items": {"$ref": "#/$defs/componentIdentity"}},
+    "input_digests": {"type": "array", "items": {"type": "string", "pattern": "^[0-9a-f]{64}$"}},
+    "harness_contribution": {"enum": ["eligible_evaluation", "blocks_harness"]}
+  },
+  "$defs": {
+    "reference": {
+      "type": "object", "additionalProperties": false,
+      "required": ["evidence_id", "locator"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "componentIdentity": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "sha256", "digest_kind"],
+      "properties": {
+        "name": {"enum": ["scorer", "gate_policy"]},
+        "version": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "digest_kind": {"const": "identity"}
+      }
+    },
+    "failure": {
+      "type": "object", "additionalProperties": false,
+      "required": ["domain", "code", "message", "evidence_references"],
+      "properties": {
+        "domain": {"enum": ["agent", "candidate", "product_run", "tool", "runtime", "relay", "fixture", "infrastructure", "scorer", "evidence", "policy"]},
+        "code": {"type": "string", "minLength": 1},
+        "message": {"type": "string", "minLength": 1},
+        "evidence_references": {"type": "array", "items": {"$ref": "#/$defs/reference"}}
+      }
+    }
+  }
+}

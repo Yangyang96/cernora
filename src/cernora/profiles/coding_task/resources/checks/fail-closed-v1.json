@@ -1,0 +1,1 @@
+{"files":{"policy.py":"def accept(valid: bool) -> bool:\n    return valid\n"},"required_fragments":{"policy.py":["def accept(valid: bool)","return valid"]}}

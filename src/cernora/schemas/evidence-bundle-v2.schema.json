@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cernora-evidence-bundle-v2.schema.json",
+  "title": "EvidenceBundleV2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "bundle_id",
+    "producer",
+    "run",
+    "profile",
+    "case",
+    "fixtures",
+    "tool_actions",
+    "artifacts",
+    "terminal",
+    "infrastructure",
+    "bundle_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": "agent.evaluator.evidence-bundle/v2"},
+    "bundle_id": {"$ref": "#/$defs/identifier"},
+    "producer": {"$ref": "#/$defs/producer"},
+    "run": {"$ref": "#/$defs/run"},
+    "profile": {"$ref": "#/$defs/profile"},
+    "case": {"$ref": "#/$defs/case"},
+    "fixtures": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/fixture"}
+    },
+    "tool_actions": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/toolAction"}
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "terminal": {"$ref": "#/$defs/terminal"},
+    "infrastructure": {"$ref": "#/$defs/infrastructure"},
+    "bundle_sha256": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "infrastructure": {
+            "properties": {"status": {"const": "inconclusive"}},
+            "required": ["status"]
+          }
+        },
+        "required": ["infrastructure"]
+      },
+      "then": {
+        "properties": {
+          "terminal": {
+            "properties": {"status": {"const": "inconclusive"}},
+            "required": ["status"]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "containedPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*[\\u0000-\\u001f\\u007f])(?!.*\\\\)(?!.*//)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*(?:^|/)\\.(?:/|$))(?!.*\\/$).+$"
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["producer_id", "producer_version"],
+      "properties": {
+        "producer_id": {"$ref": "#/$defs/identifier"},
+        "producer_version": {"type": "string", "minLength": 1}
+      }
+    },
+    "run": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run_id", "attempt_id"],
+      "properties": {
+        "run_id": {"$ref": "#/$defs/identifier"},
+        "attempt_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["profile_id", "profile_version", "sha256"],
+      "properties": {
+        "profile_id": {"$ref": "#/$defs/identifier"},
+        "profile_version": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "case": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["case_id", "case_version", "case_set", "sha256"],
+      "properties": {
+        "case_id": {"$ref": "#/$defs/identifier"},
+        "case_version": {"type": "string", "minLength": 1},
+        "case_set": {"type": "string", "minLength": 1},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixture_id", "path", "sha256"],
+      "properties": {
+        "fixture_id": {"$ref": "#/$defs/identifier"},
+        "path": {"$ref": "#/$defs/containedPath"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifactPointer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "sha256"],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/identifier"},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "path", "sha256", "size_bytes", "media_type"],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/identifier"},
+        "path": {"$ref": "#/$defs/containedPath"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "media_type": {"type": "string", "minLength": 1}
+      }
+    },
+    "toolResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "exit_code",
+        "committed",
+        "delivered",
+        "stdout_artifact",
+        "stderr_artifact"
+      ],
+      "properties": {
+        "status": {"enum": ["completed", "failed", "timed_out"]},
+        "exit_code": {"type": ["integer", "null"]},
+        "committed": {"type": "boolean"},
+        "delivered": {"type": "boolean"},
+        "stdout_artifact": {"$ref": "#/$defs/artifactPointer"},
+        "stderr_artifact": {"$ref": "#/$defs/artifactPointer"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "completed"}}, "required": ["status"]},
+          "then": {"properties": {"exit_code": {"const": 0}}}
+        },
+        {
+          "if": {"properties": {"status": {"const": "failed"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "exit_code": {"type": "integer", "not": {"const": 0}}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "timed_out"}}, "required": ["status"]},
+          "then": {"properties": {"exit_code": {"type": "null"}}}
+        }
+      ]
+    },
+    "toolAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "invocation_id",
+        "tool",
+        "argv",
+        "result",
+        "previous_receipt_sha256",
+        "receipt_sha256"
+      ],
+      "properties": {
+        "sequence": {"type": "integer", "minimum": 0},
+        "invocation_id": {"$ref": "#/$defs/identifier"},
+        "tool": {"type": "string", "minLength": 1},
+        "argv": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string"}
+        },
+        "result": {"$ref": "#/$defs/toolResult"},
+        "previous_receipt_sha256": {
+          "anyOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+        },
+        "receipt_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "answer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["content", "sha256", "artifact"],
+      "properties": {
+        "content": {"type": "string"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "artifact": {"$ref": "#/$defs/artifactPointer"}
+      }
+    },
+    "failure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["domain", "code", "message"],
+      "properties": {
+        "domain": {"enum": ["agent", "tool", "runtime", "infrastructure", "evidence"]},
+        "code": {"$ref": "#/$defs/identifier"},
+        "message": {"type": "string", "minLength": 1}
+      }
+    },
+    "agentFailure": {
+      "allOf": [
+        {"$ref": "#/$defs/failure"},
+        {"properties": {"domain": {"const": "agent"}}}
+      ]
+    },
+    "nonAgentFailure": {
+      "allOf": [
+        {"$ref": "#/$defs/failure"},
+        {
+          "properties": {
+            "domain": {"enum": ["tool", "runtime", "infrastructure", "evidence"]}
+          }
+        }
+      ]
+    },
+    "infrastructureFailure": {
+      "allOf": [
+        {"$ref": "#/$defs/failure"},
+        {"properties": {"domain": {"const": "infrastructure"}}}
+      ]
+    },
+    "terminal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "answer", "failure"],
+      "properties": {
+        "status": {"enum": ["completed", "agent_failed", "inconclusive"]},
+        "answer": {"anyOf": [{"$ref": "#/$defs/answer"}, {"type": "null"}]},
+        "failure": {"anyOf": [{"$ref": "#/$defs/failure"}, {"type": "null"}]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "completed"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "answer": {"$ref": "#/$defs/answer"},
+              "failure": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "agent_failed"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "answer": {"type": "null"},
+              "failure": {"$ref": "#/$defs/agentFailure"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"status": {"const": "inconclusive"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "answer": {"type": "null"},
+              "failure": {"$ref": "#/$defs/nonAgentFailure"}
+            }
+          }
+        }
+      ]
+    },
+    "infrastructure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "failure"],
+      "properties": {
+        "status": {"enum": ["valid", "inconclusive"]},
+        "failure": {"anyOf": [{"$ref": "#/$defs/failure"}, {"type": "null"}]}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "valid"}}, "required": ["status"]},
+          "then": {"properties": {"failure": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"status": {"const": "inconclusive"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "failure": {"$ref": "#/$defs/infrastructureFailure"}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

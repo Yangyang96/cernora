@@ -1,0 +1,38 @@
+{
+  "schema_version": "agent.evaluator.case-profile/v1",
+  "profile_id": "cernora-offline-workflow-v1",
+  "profile_version": "1.0.0",
+  "description": "Deterministic offline lookup result and terminal grounding assessment.",
+  "cases": [
+    {
+      "case_id": "tool-result-grounding-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-offline-workflow",
+      "input": {
+        "prompt": "Run exactly `lookup --key alpha`, preserve its response, and return the key/value claim with the response SHA-256.",
+        "parameters": {
+          "command": ["lookup", "--key", "alpha"],
+          "terminal_format": "{\"claim\":{\"key\":string,\"value\":string},\"evidence_sha256\":sha256}"
+        }
+      },
+      "declared_capabilities": ["offline-tool-result-grounding"],
+      "fixture_references": [
+        {
+          "fixture_id": "lookup-result-v1",
+          "path": "resources/lookup-result.json",
+          "sha256": "4a746a84c5f48260158c70286148405654c96ae90f0198aef7d11055cf68bd5d"
+        }
+      ],
+      "tags": ["offline", "public"]
+    }
+  ],
+  "scorer_policy": {
+    "policy_version": "1.0.0",
+    "required_observations": ["command_exact", "response_integrity", "claim_grounded"]
+  },
+  "gate_policy": {
+    "policy_version": "1.0.0",
+    "required_score_ids": ["offline-workflow-score"],
+    "invalid_result": "inconclusive"
+  }
+}

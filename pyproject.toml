@@ -1,0 +1,102 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cernora"
+version = "0.1.0"
+description = "Evidence-bound evaluation for tool-using agents"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+maintainers = [{ name = "Yangyang96" }]
+keywords = ["agent-evaluation", "evidence", "offline", "testing"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+]
+dependencies = [
+  "pydantic==2.11.7",
+]
+
+[project.urls]
+Repository = "https://github.com/Yangyang96/cernora"
+Issues = "https://github.com/Yangyang96/cernora/issues"
+Documentation = "https://github.com/Yangyang96/cernora#readme"
+
+[project.scripts]
+cernora = "cernora.cli.main:main"
+
+[dependency-groups]
+dev = [
+  "build==1.3.0",
+  "jsonschema==4.25.0",
+  "mypy==1.17.1",
+  "pytest==8.4.1",
+  "ruff==0.12.7",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/cernora"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "/.github/workflows/ci.yml",
+  "/.github/workflows/release.yml",
+  "/.gitignore",
+  "/CHANGELOG.md",
+  "/CONTRIBUTING.md",
+  "/LICENSE",
+  "/NOTICE",
+  "/README.md",
+  "/README.zh-CN.md",
+  "/ROADMAP.md",
+  "/ROADMAP.zh-CN.md",
+  "/SECURITY.md",
+  "/docs/public",
+  "/examples/coding_task",
+  "/examples/offline_workflow",
+  "/pyproject.toml",
+  "/scripts/check_release.py",
+  "/scripts/rebuild_acceptance.py",
+  "/src/cernora",
+  "/tests/__init__.py",
+  "/tests/public",
+  "/tests/public_profiles",
+  "/tests/public_sdk",
+  "/uv.lock",
+]
+
+[tool.hatch.build]
+exclude = [
+  "**/__pycache__/**",
+  "**/*.pyc",
+  "**/*.pyo",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "unit: isolated deterministic unit test",
+  "integration: controlled multi-component test",
+  "adversarial: boundary and fail-closed test",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = [".agent"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+packages = ["cernora"]
+mypy_path = "src"

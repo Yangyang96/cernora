@@ -1,0 +1,44 @@
+{
+  "schema_version": "agent.evaluator.case-profile/v1",
+  "profile_id": "cernora-coding-task-v1",
+  "profile_version": "1.0.0",
+  "description": "Deterministic offline coding candidate export assessment.",
+  "cases": [
+    {
+      "case_id": "backend-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-coding-task",
+      "input": {"prompt": "Export the requested backend candidate as a strict UTF-8 JSON file map.", "parameters": {"export_command": ["export_candidate"]}},
+      "declared_capabilities": ["offline-code-export"],
+      "fixture_references": [{"fixture_id": "backend-check-v1", "path": "resources/checks/backend-v1.json", "sha256": "0b17f58be6b002241d9e27ebaa21fa5287bff9e7961c8dc6643a4319ea36953b"}],
+      "tags": ["backend", "public"]
+    },
+    {
+      "case_id": "frontend-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-coding-task",
+      "input": {"prompt": "Export the requested frontend candidate as a strict UTF-8 JSON file map.", "parameters": {"export_command": ["export_candidate"]}},
+      "declared_capabilities": ["offline-code-export"],
+      "fixture_references": [{"fixture_id": "frontend-check-v1", "path": "resources/checks/frontend-v1.json", "sha256": "9137216c746b1bc0b3174b8327f54dd7c61580fc08a42454bad204271e513b8d"}],
+      "tags": ["frontend", "public"]
+    },
+    {
+      "case_id": "fail-closed-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-coding-task",
+      "input": {"prompt": "Export a validation policy candidate; malformed or failed evidence must never pass.", "parameters": {"export_command": ["export_candidate"]}},
+      "declared_capabilities": ["offline-code-export"],
+      "fixture_references": [{"fixture_id": "fail-closed-check-v1", "path": "resources/checks/fail-closed-v1.json", "sha256": "08a372d948e0dd869b3c2e85b91c5d420b2045fbeca4193ffd5808cfb7df76fb"}],
+      "tags": ["fail-closed", "public"]
+    }
+  ],
+  "scorer_policy": {
+    "policy_version": "1.0.0",
+    "required_observations": ["candidate_format", "candidate_digest", "terminal_binding", "hidden_checks"]
+  },
+  "gate_policy": {
+    "policy_version": "1.0.0",
+    "required_score_ids": ["coding-task-score"],
+    "invalid_result": "inconclusive"
+  }
+}
