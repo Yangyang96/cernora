@@ -19,7 +19,7 @@ importable module as stable.
 ## Platform support matrix
 
 The `py3-none-any` wheel tag describes packaging, not operating-system evidence. The rows
-below are the `0.1.0` release declarations as of 2026-08-13.
+below are the `0.1.0` release declarations as of 2026-08-14.
 
 | Platform | Python / architecture / installer | Status | Native evidence | Exclusions and release condition |
 | --- | --- | --- | --- | --- |
