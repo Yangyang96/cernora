@@ -112,7 +112,7 @@ def test_release_docs_describe_production_installation() -> None:
         assert "python -m pip install cernora" in readme
     assert "must not already exist" in english
     assert "必须尚不存在" in chinese
-    assert "## 0.1.0 - 2026-08-13" in changelog
+    assert "## 0.1.0 - 2026-08-14" in changelog
     assert "Cernora `0.1.0` is the current release" in security
     assert "security/advisories/new" in security
 
