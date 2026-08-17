@@ -24,16 +24,13 @@ environment available.
 
 ```sh
 uv sync --all-groups
-uv run pytest -q
-uv run ruff check .
-uv run ruff format --check .
-uv run mypy
-uv run python -m build
-git diff --check
+uv run python scripts/release.py preflight
 ```
 
-Run the tests under both supported Python minors in CI. A release candidate is not accepted
-from partial or unread test output.
+The unified command runs the source gates, builds into a fresh temporary directory, inspects
+the closed tree and artifacts, and prints their SHA-256 values. Run the tests under both
+supported Python minors in CI. A release candidate is not accepted from partial or unread
+test output.
 
 ## 3. Inspect the public tree
 
@@ -49,14 +46,11 @@ from partial or unread test output.
 
 ## 4. Inspect artifacts
 
-Confirm the build produced exactly one wheel and one source archive for the candidate. Then
-run the repository checker with their exact paths:
+The preflight command confirms that a fresh build produced exactly one wheel and one source
+archive matching `project.version`. To recheck an existing `dist/` directory directly, run:
 
 ```sh
-uv run python scripts/check_release.py \
-  --tree . \
-  --wheel dist/cernora-0.1.0-py3-none-any.whl \
-  --sdist dist/cernora-0.1.0.tar.gz
+uv run python scripts/check_release.py --tree . --dist-dir dist
 ```
 
 Additionally verify:
@@ -80,7 +74,7 @@ then install only from that wheelhouse:
 cernora_check_dir="$(mktemp -d)"
 python -m venv "$cernora_check_dir/venv"
 "$cernora_check_dir/venv/bin/python" -m pip install \
-  --no-index --find-links ./wheelhouse cernora==0.1.0
+  --no-index --find-links ./wheelhouse cernora==<version>
 cd "$cernora_check_dir"
 "$cernora_check_dir/venv/bin/python" -m cernora.examples.offline_workflow ./run
 ```

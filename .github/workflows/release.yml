@@ -50,6 +50,10 @@ jobs:
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}")"
           test "$(jq -r .name <<<"$run_json")" = CI
+          test "$(jq -r .path <<<"$run_json")" = .github/workflows/ci.yml
+          test "$(jq -r .event <<<"$run_json")" = push
+          test "$(jq -r .head_branch <<<"$run_json")" = main
+          test "$(jq -r .head_repository.full_name <<<"$run_json")" = "$GITHUB_REPOSITORY"
           test "$(jq -r .conclusion <<<"$run_json")" = success
           test "$(jq -r .head_sha <<<"$run_json")" = "$EXPECTED_SHA"
       - name: Download the inspected CI distributions without rebuilding
@@ -59,13 +63,22 @@ jobs:
           path: dist
           github-token: ${{ github.token }}
           run-id: ${{ inputs.ci_run_id }}
-      - name: Require the closed 0.1.0 artifact set
+      - name: Require one matching Cernora wheel and source archive
+        id: artifacts
         shell: bash
         run: |
           set -euo pipefail
+          mapfile -t wheels < <(find dist -maxdepth 1 -type f -name 'cernora-*-py3-none-any.whl' -print)
+          mapfile -t sdists < <(find dist -maxdepth 1 -type f -name 'cernora-*.tar.gz' -print)
+          test "${#wheels[@]}" = 1
+          test "${#sdists[@]}" = 1
+          wheel_name="$(basename "${wheels[0]}")"
+          version="${wheel_name#cernora-}"
+          version="${version%-py3-none-any.whl}"
+          [[ "$version" =~ ^[0-9A-Za-z][0-9A-Za-z._+]*$ ]]
+          test "$(basename "${sdists[0]}")" = "cernora-${version}.tar.gz"
           test "$(find dist -maxdepth 1 -type f | wc -l | tr -d ' ')" = 2
-          test -f dist/cernora-0.1.0-py3-none-any.whl
-          test -f dist/cernora-0.1.0.tar.gz
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           sha256sum dist/*
       - name: Publish to TestPyPI through OIDC
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
@@ -98,6 +111,10 @@ jobs:
           [[ "$EXPECTED_SHA" =~ ^[0-9a-f]{40}$ ]]
           run_json="$(gh api "repos/${GITHUB_REPOSITORY}/actions/runs/${CI_RUN_ID}")"
           test "$(jq -r .name <<<"$run_json")" = CI
+          test "$(jq -r .path <<<"$run_json")" = .github/workflows/ci.yml
+          test "$(jq -r .event <<<"$run_json")" = push
+          test "$(jq -r .head_branch <<<"$run_json")" = main
+          test "$(jq -r .head_repository.full_name <<<"$run_json")" = "$GITHUB_REPOSITORY"
           test "$(jq -r .conclusion <<<"$run_json")" = success
           test "$(jq -r .head_sha <<<"$run_json")" = "$EXPECTED_SHA"
       - name: Download the inspected CI distributions without rebuilding
@@ -107,14 +124,28 @@ jobs:
           path: dist
           github-token: ${{ github.token }}
           run-id: ${{ inputs.ci_run_id }}
-      - name: Require the closed 0.1.0 artifact set
+      - name: Require one matching Cernora wheel and source archive
+        id: artifacts
         shell: bash
         run: |
           set -euo pipefail
+          mapfile -t wheels < <(find dist -maxdepth 1 -type f -name 'cernora-*-py3-none-any.whl' -print)
+          mapfile -t sdists < <(find dist -maxdepth 1 -type f -name 'cernora-*.tar.gz' -print)
+          test "${#wheels[@]}" = 1
+          test "${#sdists[@]}" = 1
+          wheel_name="$(basename "${wheels[0]}")"
+          version="${wheel_name#cernora-}"
+          version="${version%-py3-none-any.whl}"
+          [[ "$version" =~ ^[0-9A-Za-z][0-9A-Za-z._+]*$ ]]
+          test "$(basename "${sdists[0]}")" = "cernora-${version}.tar.gz"
           test "$(find dist -maxdepth 1 -type f | wc -l | tr -d ' ')" = 2
-          test -f dist/cernora-0.1.0-py3-none-any.whl
-          test -f dist/cernora-0.1.0.tar.gz
+          echo "version=$version" >> "$GITHUB_OUTPUT"
           sha256sum dist/*
+      - name: Require the production tag to match the artifact version
+        shell: bash
+        env:
+          ARTIFACT_VERSION: ${{ steps.artifacts.outputs.version }}
+        run: test "$GITHUB_REF" = "refs/tags/v${ARTIFACT_VERSION}"
       - name: Publish to production PyPI through OIDC
         uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1
         with:

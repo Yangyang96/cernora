@@ -6,8 +6,11 @@ from __future__ import annotations
 import argparse
 import re
 import tarfile
+import tomllib
 import zipfile
 from pathlib import Path
+
+from packaging.version import InvalidVersion, Version
 
 _ALLOWED_ROOT_FILES = frozenset(
     {
@@ -62,6 +65,32 @@ class ReleaseCheckError(ValueError):
     """The public release tree or an archive is outside the closed policy."""
 
 
+def project_version(tree: Path) -> str:
+    """Return and validate the release version declared by the source tree."""
+
+    document = tomllib.loads((tree / "pyproject.toml").read_text(encoding="utf-8"))
+    project = document.get("project")
+    version = project.get("version") if isinstance(project, dict) else None
+    if not isinstance(version, str):
+        raise ReleaseCheckError("project.version is missing or unsafe for an artifact name")
+    try:
+        canonical = str(Version(version))
+    except InvalidVersion as exc:
+        raise ReleaseCheckError("project.version is not valid PEP 440") from exc
+    if version != canonical or not re.fullmatch(r"[0-9A-Za-z][0-9A-Za-z._+]*", version):
+        raise ReleaseCheckError("project.version must use its canonical PEP 440 spelling")
+    return version
+
+
+def artifact_paths(dist: Path, version: str) -> tuple[Path, Path]:
+    """Return the wheel and sdist paths expected for a Cernora version."""
+
+    return (
+        dist / f"cernora-{version}-py3-none-any.whl",
+        dist / f"cernora-{version}.tar.gz",
+    )
+
+
 def _contained(path: str) -> None:
     if (
         not path
@@ -85,6 +114,16 @@ def _scan_payload(label: str, payload: bytes) -> None:
         raise ReleaseCheckError(f"credential-like assignment in {label}")
 
 
+def _validate_public_names(names: set[str]) -> None:
+    for name in names:
+        top = Path(name).parts[0]
+        if top not in _ALLOWED_ROOT_FILES and top not in _ALLOWED_ROOT_DIRECTORIES:
+            raise ReleaseCheckError(f"public tree member is outside the allowlist: {name}")
+    missing = _ALLOWED_ROOT_FILES - names
+    if missing:
+        raise ReleaseCheckError(f"public tree is missing root files: {sorted(missing)}")
+
+
 def _tree_files(root: Path) -> dict[str, bytes]:
     files: dict[str, bytes] = {}
     for path in sorted(root.rglob("*")):
@@ -98,19 +137,15 @@ def _tree_files(root: Path) -> dict[str, bytes]:
         if not path.is_file():
             raise ReleaseCheckError(f"public tree contains a non-file: {relative.as_posix()}")
         name = relative.as_posix()
-        top = relative.parts[0]
-        if top not in _ALLOWED_ROOT_FILES and top not in _ALLOWED_ROOT_DIRECTORIES:
-            raise ReleaseCheckError(f"public tree member is outside the allowlist: {name}")
         payload = path.read_bytes()
         _scan_payload(name, payload)
         files[name] = payload
-    missing = _ALLOWED_ROOT_FILES - files.keys()
-    if missing:
-        raise ReleaseCheckError(f"public tree is missing root files: {sorted(missing)}")
+    _validate_public_names(set(files))
     return files
 
 
-def _wheel_files(path: Path) -> dict[str, bytes]:
+def _wheel_files(path: Path, version: str) -> dict[str, bytes]:
+    dist_info = f"cernora-{version}.dist-info"
     with zipfile.ZipFile(path) as archive:
         names = archive.namelist()
         if len(names) != len(set(names)):
@@ -120,9 +155,12 @@ def _wheel_files(path: Path) -> dict[str, bytes]:
             if name.endswith("/"):
                 raise ReleaseCheckError(f"wheel contains a directory entry: {name}")
             _contained(name)
-            if not (name.startswith("cernora/") or name.startswith("cernora-0.1.0.dist-info/")):
+            if not (name.startswith("cernora/") or name.startswith(f"{dist_info}/")):
                 raise ReleaseCheckError(f"wheel member is outside Cernora: {name}")
-            payload = archive.read(name)
+            member = archive.getinfo(name)
+            if member.file_size > _MAX_PUBLIC_FILE_BYTES:
+                raise ReleaseCheckError(f"public file exceeds 100 KB: wheel:{name}")
+            payload = archive.read(member)
             _scan_payload(f"wheel:{name}", payload)
             files[name] = payload
     required = {
@@ -133,8 +171,8 @@ def _wheel_files(path: Path) -> dict[str, bytes]:
         "cernora/examples/coding_task/resources/candidates/fail-closed-v1.json",
         "cernora/examples/coding_task/resources/candidates/frontend-v1.json",
         "cernora/examples/offline_workflow/__main__.py",
-        "cernora-0.1.0.dist-info/METADATA",
-        "cernora-0.1.0.dist-info/licenses/LICENSE",
+        f"{dist_info}/METADATA",
+        f"{dist_info}/licenses/LICENSE",
     }
     if not required <= files.keys():
         raise ReleaseCheckError(
@@ -143,8 +181,8 @@ def _wheel_files(path: Path) -> dict[str, bytes]:
     return files
 
 
-def _sdist_files(path: Path) -> dict[str, bytes]:
-    prefix = "cernora-0.1.0/"
+def _sdist_files(path: Path, version: str) -> dict[str, bytes]:
+    prefix = f"cernora-{version}/"
     files: dict[str, bytes] = {}
     with tarfile.open(path, "r:gz") as archive:
         for member in archive.getmembers():
@@ -154,6 +192,8 @@ def _sdist_files(path: Path) -> dict[str, bytes]:
                 raise ReleaseCheckError(f"sdist has unsafe member: {member.name}")
             relative = member.name.removeprefix(prefix)
             _contained(relative)
+            if member.size > _MAX_PUBLIC_FILE_BYTES:
+                raise ReleaseCheckError(f"public file exceeds 100 KB: sdist:{relative}")
             stream = archive.extractfile(member)
             if stream is None:
                 raise ReleaseCheckError(f"sdist member cannot be read: {member.name}")
@@ -165,12 +205,30 @@ def _sdist_files(path: Path) -> dict[str, bytes]:
     return files
 
 
+def check_artifacts(wheel: Path, sdist: Path, version: str) -> tuple[int, int]:
+    """Verify a published artifact pair without requiring a source checkout match."""
+
+    expected_wheel, expected_sdist = artifact_paths(wheel.parent, version)
+    if wheel.name != expected_wheel.name or sdist.name != expected_sdist.name:
+        raise ReleaseCheckError(
+            "artifact names do not match the requested version: "
+            f"expected={[expected_wheel.name, expected_sdist.name]}"
+        )
+    wheel_files = _wheel_files(wheel, version)
+    sdist_files = _sdist_files(sdist, version)
+    if "PKG-INFO" not in sdist_files:
+        raise ReleaseCheckError("sdist is missing PKG-INFO")
+    _validate_public_names(set(sdist_files) - {"PKG-INFO"})
+    return len(wheel_files), len(sdist_files)
+
+
 def check_release(tree: Path, wheel: Path, sdist: Path) -> None:
     """Verify tree closure and exact sdist correspondence plus wheel namespace closure."""
 
+    version = project_version(tree)
     tree_files = _tree_files(tree)
-    wheel_files = _wheel_files(wheel)
-    sdist_files = _sdist_files(sdist)
+    wheel_count, sdist_count = check_artifacts(wheel, sdist, version)
+    sdist_files = _sdist_files(sdist, version)
     expected_sdist = set(tree_files) | {"PKG-INFO"}
     if set(sdist_files) != expected_sdist:
         raise ReleaseCheckError(
@@ -182,18 +240,21 @@ def check_release(tree: Path, wheel: Path, sdist: Path) -> None:
         if sdist_files[name] != payload:
             raise ReleaseCheckError(f"sdist member differs from public tree: {name}")
     print(
-        f"release check passed: tree={len(tree_files)} "
-        f"wheel={len(wheel_files)} sdist={len(sdist_files)}"
+        f"release check passed: version={version} tree={len(tree_files)} "
+        f"wheel={wheel_count} sdist={sdist_count}"
     )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--tree", type=Path, required=True)
-    parser.add_argument("--wheel", type=Path, required=True)
-    parser.add_argument("--sdist", type=Path, required=True)
+    parser.add_argument("--tree", type=Path, default=Path("."))
+    parser.add_argument("--dist-dir", type=Path, default=Path("dist"))
+    parser.add_argument("--wheel", type=Path)
+    parser.add_argument("--sdist", type=Path)
     args = parser.parse_args()
-    check_release(args.tree, args.wheel, args.sdist)
+    version = project_version(args.tree)
+    inferred_wheel, inferred_sdist = artifact_paths(args.dist_dir, version)
+    check_release(args.tree, args.wheel or inferred_wheel, args.sdist or inferred_sdist)
     return 0
 
 

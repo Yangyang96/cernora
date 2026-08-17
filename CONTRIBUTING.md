@@ -42,8 +42,16 @@ uv run python -m build
 git diff --check
 ```
 
-The [local release checklist](docs/public/local-release-checklist.md) adds artifact and
-wheel-only checks for release-candidate changes.
+For a release candidate, one command runs those gates, builds into a fresh temporary directory
+and verifies the exact wheel and source archive:
+
+```sh
+uv run python scripts/release.py preflight
+```
+
+After publishing, `uv run python scripts/release.py verify --version <version>` verifies the
+production-PyPI files and clean Python 3.12/3.13 installed flows. See the
+[local release checklist](docs/public/local-release-checklist.md) for the review boundary.
 
 ## Change requirements
 

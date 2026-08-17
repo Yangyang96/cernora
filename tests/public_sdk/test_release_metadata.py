@@ -3,7 +3,18 @@ from __future__ import annotations
 import json
 import re
 import tomllib
+import zipfile
 from pathlib import Path
+
+import pytest
+
+from scripts.check_release import (
+    ReleaseCheckError,
+    artifact_paths,
+    check_artifacts,
+    project_version,
+)
+from scripts.release import ReleaseCommandError, _validate_release_metadata
 
 
 def test_release_metadata_and_governance_are_explicit() -> None:
@@ -79,6 +90,7 @@ def test_public_acceptance_summary_is_compact_and_explicit() -> None:
         "missing_artifact": "rejected",
     }
     assert (root / "scripts/rebuild_acceptance.py").is_file()
+    assert (root / "scripts/release.py").is_file()
 
 
 def test_public_docs_preserve_composed_system_boundary() -> None:
@@ -133,6 +145,12 @@ def test_platform_and_release_workflow_boundaries_are_explicit() -> None:
     assert "pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33" in workflow
     assert "python -m build" not in workflow
     assert "uv build" not in workflow
+    assert "cernora-0.1.0" not in workflow
+    assert "refs/tags/v${ARTIFACT_VERSION}" in workflow
+    assert workflow.count("id: artifacts") == 2
+    assert workflow.count('test "$(jq -r .path <<<"$run_json")" = .github/workflows/ci.yml') == 2
+    assert workflow.count('test "$(jq -r .event <<<"$run_json")" = push') == 2
+    assert workflow.count('test "$(jq -r .head_branch <<<"$run_json")" = main') == 2
 
     ci = (root / ".github/workflows/ci.yml").read_text(encoding="utf-8")
     assert "build-distributions:" in ci
@@ -140,6 +158,67 @@ def test_platform_and_release_workflow_boundaries_are_explicit() -> None:
     assert 'python-version: ["3.12", "3.13"]' in ci
     assert "name: cernora-dist-${{ github.sha }}" in ci
     assert "actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c" in ci
+    assert "cernora-0.1.0" not in ci
+    assert "scripts/check_release.py --tree . --dist-dir dist" in ci
+
+
+def test_release_commands_and_runbook_are_version_generic() -> None:
+    root = Path(__file__).resolve().parents[2]
+    runbook = (root / "docs/public/release-day-runbook.md").read_text(encoding="utf-8")
+    automation = (root / "scripts/release.py").read_text(encoding="utf-8")
+    checker = (root / "scripts/check_release.py").read_text(encoding="utf-8")
+
+    assert "# Release runbook for `0.1.x`" in runbook
+    assert "scripts/release.py preflight" in runbook
+    assert "scripts/release.py verify --version <version>" in runbook
+    assert "cernora-0.1.0" not in automation
+    assert "cernora-0.1.0" not in checker
+    assert '"--isolated"' in automation
+    assert "sys.version_info[:2]" in automation
+
+
+def test_release_artifact_names_follow_the_declared_version(tmp_path: Path) -> None:
+    wheel, sdist = artifact_paths(tmp_path, "0.1.7rc1")
+
+    assert wheel.name == "cernora-0.1.7rc1-py3-none-any.whl"
+    assert sdist.name == "cernora-0.1.7rc1.tar.gz"
+
+
+def test_release_version_must_be_canonical_pep440(tmp_path: Path) -> None:
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "cernora"\nversion = "0.1-1"\n', encoding="utf-8"
+    )
+
+    with pytest.raises(ReleaseCheckError, match="canonical PEP 440"):
+        project_version(tmp_path)
+
+
+def test_release_metadata_rejects_nonempty_unreleased_section(tmp_path: Path) -> None:
+    package = tmp_path / "src/cernora"
+    package.mkdir(parents=True)
+    (package / "__init__.py").write_text('__version__ = "0.1.0"\n', encoding="utf-8")
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(
+        "# Changelog\n\n## Unreleased\n\n- later work\n\n## 0.1.0 - 2026-08-14\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ReleaseCommandError, match="Unreleased"):
+        _validate_release_metadata("0.1.0", tmp_path)
+
+    changelog.write_text(
+        "# Changelog\n\n## Unreleased\n\n## 0.1.0 - 2026-08-14\n", encoding="utf-8"
+    )
+    _validate_release_metadata("0.1.0", tmp_path)
+
+
+def test_release_checker_rejects_oversized_compressed_members(tmp_path: Path) -> None:
+    wheel, sdist = artifact_paths(tmp_path, "0.1.0")
+    with zipfile.ZipFile(wheel, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        archive.writestr("cernora/oversized.bin", b"x" * 100_001)
+
+    with pytest.raises(ReleaseCheckError, match="exceeds 100 KB"):
+        check_artifacts(wheel, sdist, "0.1.0")
 
 
 def test_public_markdown_relative_links_resolve() -> None:

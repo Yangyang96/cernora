@@ -1,90 +1,88 @@
-# Release-day runbook
+# Release runbook for `0.1.x`
 
-This is the immutable release procedure for Cernora `0.1.0`. A listed step is not proof that
-the remote action completed; the release evidence records the actual state. The release owner
-is `Yangyang96`; the PyPI and TestPyPI username is `oohchild`.
+This is the repeatable release procedure for Cernora `0.1.x`. Run it from a clean clone of
+`https://github.com/Yangyang96/cernora`. The release owner is `Yangyang96`; the PyPI and
+TestPyPI username is `oohchild`.
 
-## Hard entry conditions
+Use the version declared in `pyproject.toml` everywhere below. A production tag is exactly
+`v<version>`. Published tags, GitHub Release assets and package-index files are immutable;
+every correction uses a new version.
 
-- The final pre-release Goal is `READY_FOR_REMOTE_RELEASE_HANDOFF`, with fresh artifact
-  digests and all local gates passing.
-- `https://github.com/Yangyang96/cernora` is still the approved repository target and the
-  release owner has admin access.
-- The `cernora` project name is still available on the target package index, or the owner has
-  already created the project through the approved pending-publisher flow.
-- The release owner rechecks the recorded name/trademark risk, Apache-2.0, `NOTICE`, shipped
-  provenance, copyright subject and public-distribution approval.
+## 1. Prepare one release commit
 
-Stop if any identity, approval, artifact digest or support claim has changed.
+1. Update `pyproject.toml` and `src/cernora/__init__.py` to the same version.
+2. Move the intended changes from `Unreleased` to `## <version> - YYYY-MM-DD` in
+   `CHANGELOG.md`, using the actual UTC release date.
+3. Update both READMEs, security guidance, compatibility claims and migration notes when the
+   release changes them. Do not broaden a platform claim without its required native evidence.
+4. Recheck the recorded name/trademark risk, Apache-2.0, `NOTICE`, shipped provenance,
+   copyright subject and public-distribution approval.
+5. Run the unified local gate from the repository root:
 
-## 1. Freeze publication facts in one bounded release window
+   ```sh
+   uv sync --all-groups
+   uv run python scripts/release.py preflight
+   ```
 
-Use the actual UTC publication date as `YYYY-MM-DD`; do not substitute the date on which the
-candidate was prepared.
+The command checks version/changelog agreement, tests, Ruff, formatting, strict mypy,
+`git diff --check`, a fresh isolated build, the closed source tree and both archives. It prints
+the exact wheel and sdist SHA-256 values. It refuses a nonempty `Unreleased` section so an
+already-published version cannot be certified with later work. Any source-byte change
+invalidates those results.
 
-1. `CHANGELOG.md` must contain `## 0.1.0 - YYYY-MM-DD` and `Initial public release.`
-2. Both READMEs must use the current-release notice and install through a supported Python
-   virtual environment with `python -m pip install cernora`.
-3. `SECURITY.md` must describe the published `0.1.x` support rule and keep the no-LTS promise.
-4. Recheck every link and platform row. Do not promote Linux, Windows, macOS, architecture or
-   installer support without the native evidence required by the matrix.
+## 2. Merge and bind the CI artifacts
 
-These facts change the wheel and sdist bytes compared with the TestPyPI rehearsal. Rebuild,
-rerun every full gate, reinspect both archives and record new SHA-256 digests before any tag
-or upload.
+1. Push a release branch and merge it through the protected `main` workflow.
+2. Require the Ubuntu Python 3.12/3.13 CI jobs and wheel-acceptance jobs to pass for the exact
+   release commit.
+3. Record that commit SHA and its successful CI run ID. The retained
+   `cernora-dist-<commit-sha>` artifact must contain exactly one matching wheel and sdist.
+4. Compare the CI artifact hashes with the accepted preflight hashes before publishing.
 
-## 2. Establish the public repository controls
+The `testpypi` and `pypi` GitHub environments remain protected by deployment-ref rules and an
+explicit owner approval. The workflow uses OIDC Trusted Publishing; no package-index password
+or long-lived upload token belongs in GitHub secrets.
 
-1. In a fresh clone of the approved private repository, preserve its benign placeholder commit,
-   add only the rebuilt allowlisted source as one clean `main` commit, and push without force.
-2. Let `.github/workflows/ci.yml` run on Ubuntu with Python 3.12 and 3.13. Its retained
-   `cernora-dist-<commit-sha>` artifact must match the locally accepted files byte-for-byte.
-3. Protect `main`: require the CI checks, block force pushes and deletion, require review for
-   changes when another trusted reviewer is available, and restrict direct release changes.
-4. Create `testpypi` and `pypi` GitHub environments. Restrict deployment refs; require a
-   reviewer and prevent self-review when the repository plan and contributor set make that
-   possible. Do not allow an unprotected auto-created environment to publish.
-5. Enable GitHub private vulnerability reporting and verify that the path described in
-   `SECURITY.md` is visible before calling it supported.
-6. Make the repository public only after the exact private `main` CI and available controls pass.
+## 3. Optional TestPyPI rehearsal
 
-Windows remains not yet supported until native Windows CI exercises the README flow and both
-empty/nonempty atomic directory-publication races. Add macOS or other Linux jobs before
-broadening those rows beyond their recorded architectures and evidence.
+Rehearse with a unique prerelease version such as `0.1.1rc1`; TestPyPI filenames cannot be
+overwritten. Dispatch `.github/workflows/release.yml` with `target=testpypi`, the exact CI run
+ID and commit SHA. The workflow downloads the inspected CI artifact and derives its version
+from the matching wheel/sdist pair without rebuilding.
 
-## 3. Configure Trusted Publishing
+After a successful rehearsal, prepare the final production version in a new commit and rerun
+the complete preflight and CI sequence. Never relabel prerelease bytes as a production version.
 
-Configure the two services independently; the user accounts being named the same does not
-share settings.
+## 4. Publish production
 
-| Index | Owner/repository | Workflow | Environment |
-| --- | --- | --- | --- |
-| TestPyPI | `Yangyang96/cernora` | `.github/workflows/release.yml` | `testpypi` |
-| PyPI | `Yangyang96/cernora` | `.github/workflows/release.yml` | `pypi` |
+1. Create the annotated tag `v<version>` on the exact accepted `main` commit. Never move or
+   replace it.
+2. Create the GitHub Release from that tag and attach the exact accepted wheel and sdist.
+3. Dispatch `.github/workflows/release.yml` from `v<version>` with `target=pypi`, the same CI
+   run ID and commit SHA.
+4. Approve the protected `pypi` environment. The workflow verifies the CI identity, derives
+   the artifact version, requires the tag to equal `v<artifact-version>`, and uploads without
+   rebuilding.
 
-Use OIDC only: no long-lived package-index token or password belongs in repository secrets.
-The workflow grants `id-token: write` only to the selected publish job, downloads the exact
-artifact from an identified successful CI run, and does not rebuild. Protect changes to the
-workflow as release-authority changes.
+## 5. Verify production
 
-## 4. Rehearse, tag and publish
+From the exact release tag checkout, run:
 
-1. The `0.1.0` TestPyPI rehearsal is already immutable and must not be overwritten after the
-   publication-fact edit. For future versions, rehearse before freezing the production version
-   or use an explicit prerelease version; never reuse a filename.
-2. Bind the final artifact pair to the exact successful CI run and compare its SHA-256 values
-   with the locally accepted pair before continuing.
-3. Create `v0.1.0` on the exact accepted `main` commit. Never move or replace this tag.
-4. Create the GitHub Release from that tag and attach the same accepted wheel and sdist.
-5. Dispatch `release.yml` from the `v0.1.0` tag with `target=pypi`, the same CI run ID and
-   commit SHA. The protected `pypi` environment is the final upload checkpoint.
-6. Fetch the production index record, compare filenames and SHA-256 values, then install
-   `cernora==0.1.0` from real PyPI in clean Python 3.12 and 3.13 environments and rerun the
-   documented examples.
+```sh
+uv run python scripts/release.py verify --version <version>
+```
 
-## 5. Start the next version
+The command downloads the exact production-PyPI wheel and sdist, verifies their published
+SHA-256 values and closed contents, installs `cernora==<version>` from production PyPI in clean
+CPython 3.12 and 3.13 environments, runs `pip check`, proves the import origin is inside each
+environment, reruns the offline/backend/frontend/fail-closed acceptance flows and requires
+identical result manifests across both Python versions.
 
-After `0.1.0` is published, open a new `Unreleased` section and bump the project to `0.1.1`
-for any patch. Build new artifacts and create `v0.1.1`; never edit `v0.1.0`, move its tag,
-replace its GitHub Release assets or attempt to overwrite its PyPI files. A breaking Supported
-Preview change follows the compatibility matrix and requires `0.2.0` plus migration notes.
+## 6. Start the next version
+
+After publication, add a new `Unreleased` section. A compatible patch increments the patch
+version; a breaking Supported Preview change follows the compatibility matrix and requires a
+minor version plus migration notes.
+
+`v0.1.0`, its GitHub Release assets and PyPI files are permanently closed. Apply the same rule
+to every later release: never edit published release bytes or move a published tag.
