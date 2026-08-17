@@ -5,13 +5,24 @@ build-backend = "hatchling.build"
 [project]
 name = "cernora"
 version = "0.1.0"
-description = "Evidence-bound evaluation for tool-using agents"
+description = "Deterministic, offline evaluation and CI gating for completed AI agent runs"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 maintainers = [{ name = "Yangyang96" }]
-keywords = ["agent-evaluation", "evidence", "offline", "testing"]
+keywords = [
+  "agent-evaluation",
+  "ai-agents",
+  "ci-cd",
+  "deterministic",
+  "evidence",
+  "evaluation-framework",
+  "llm-evaluation",
+  "offline",
+  "reproducibility",
+  "tool-use",
+]
 classifiers = [
   "Development Status :: 3 - Alpha",
   "Intended Audience :: Developers",
