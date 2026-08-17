@@ -7,32 +7,23 @@
 [![Python](https://img.shields.io/pypi/pyversions/cernora)](https://pypi.org/project/cernora/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-> **Evidence-bound evaluation for tool-using agents.**
+> **Deterministic, offline evaluation and CI gating for completed AI Agent runs.**
 
-Cernora is an independent evaluation core for completed Agent runs. The deterministic,
-runtime-neutral Python package turns a completed export into evaluator-owned `Evidence`,
-`Score`, and `GateDecision` artifacts—without starting the Agent, trusting its success claim,
-or requiring network access.
+Cernora is an independent evaluation core that verifies a completed Agent run from its
+recorded tool calls, returned data, artifacts, and terminal answer. It turns the completed
+export into evaluator-owned `Evidence`, `Score`, and `GateDecision` artifacts without starting
+the Agent, trusting the Runtime's success claim, or requiring network access.
+
+Use Cernora when you need to:
+
+- prove that an Agent used the expected tools and arguments and grounded its answer in the
+  returned evidence;
+- turn a frozen Agent export into a reproducible regression or CI/release decision; or
+- keep evaluation authority separate from Runtime credentials, sandboxes, retries, and
+  self-reported success.
 
 > **Current release:** `0.1.0`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
-
-![Cernora separates producer-owned Agent execution from evaluator-owned evidence validation, scoring, and gate decisions.](docs/assets/cernora-architecture.jpg)
-
-## The problem it solves
-
-A plausible final answer is not proof that an Agent completed a task correctly. The Agent
-may have selected the wrong tool, passed the wrong arguments, ignored the returned data,
-modified an unexpected artifact, or reported success after its environment failed.
-
-Cernora treats evaluation as a separate authority:
-
-- the **Runtime** owns execution, credentials, sandboxes, retries, and evidence capture;
-- an **Adapter** converts one completed native export into a closed `EvidenceBundle v2`;
-- a versioned **Profile** validates the evidence and defines required observations;
-- Cernora produces a reproducible decision that the Runtime cannot award itself.
-
-This makes the result suitable for offline review, regression testing, and CI/release gates.
 
 ## Try it in five minutes
 
@@ -56,8 +47,37 @@ Each command prints:
 pass
 ```
 
-The output directory must not already exist. Both examples work from the installed wheel,
+The generated decision and score artifacts record why the run passed. The workflow example
+contains the equivalent of:
+
+```text
+decision: pass
+eligible: true
+observations:
+  command_exact: true
+  response_integrity: true
+  claim_grounded: true
+```
+
+The output directory must not already exist. Both examples run from the installed wheel,
 use synthetic completed exports, and require neither credentials nor a source checkout.
+
+## Why Cernora?
+
+A plausible final answer is not proof that an Agent completed a task correctly. The Agent
+may have selected the wrong tool, passed the wrong arguments, ignored the returned data,
+modified an unexpected artifact, or reported success after its environment failed.
+
+Cernora treats evaluation as a separate authority:
+
+- the **Runtime** owns execution, credentials, sandboxes, retries, and evidence capture;
+- an **Adapter** converts one completed native export into a closed `EvidenceBundle v2`;
+- a versioned **Profile** validates the evidence and defines required observations;
+- Cernora produces a reproducible decision that the Runtime cannot award itself.
+
+![Cernora separates producer-owned Agent execution from evaluator-owned evidence validation, scoring, and gate decisions.](docs/assets/cernora-architecture.jpg)
+
+See [Architecture](docs/public/architecture.md) for component ownership and trust boundaries.
 
 ## Decisions with explicit failure semantics
 
@@ -70,11 +90,6 @@ use synthetic completed exports, and require neither credentials nor a source ch
 An infrastructure failure never becomes an Agent failure, and unverifiable evidence never
 becomes a pass. CLI exit codes preserve the distinction: `0` pass, `1` behavioral failure,
 `2` usage/authority incompatibility, and `3` invalid or inconclusive evaluation.
-
-## Architecture and trust boundary
-
-The design deliberately keeps execution and adjudication independent. See
-[Architecture](docs/public/architecture.md) for component ownership and trust boundaries.
 
 ## Engineering highlights
 
@@ -173,9 +188,10 @@ cmp ./cernora-public-acceptance/summary.json \
   "$repo_root/docs/public/acceptance-summary.json"
 ```
 
-## Position and scope
+## When to use Cernora
 
-Cernora is the adjudication layer in a larger Agent evaluation system:
+Cernora fits after an Agent Runtime finishes a run. It is the adjudication layer in a larger
+Agent evaluation system, not a replacement for execution or observability:
 
 | If you need to… | Use… |
 | --- | --- |

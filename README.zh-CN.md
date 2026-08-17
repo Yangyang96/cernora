@@ -7,30 +7,21 @@
 [![Python](https://img.shields.io/pypi/pyversions/cernora)](https://pypi.org/project/cernora/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-> **面向工具型 Agent 的证据绑定评测。**
+> **面向已完成 AI Agent Run 的确定性离线评测与 CI 准出。**
 
-Cernora 是一个面向已完成 Agent Run 的独立评测内核，具有确定性且运行时中立。
-这个 Python 包把完成态导出转换为 Evaluator 拥有的 `Evidence`、`Score` 和
-`GateDecision`，不启动 Agent、不相信 Agent 对成功的自我声明，也不需要网络访问。
+Cernora 是一个独立评测内核，根据记录下来的工具调用、返回数据、产物和终态回答，
+验证一个已完成的 Agent Run。它把完成态导出转换为 Evaluator 拥有的 `Evidence`、
+`Score` 和 `GateDecision`，不启动 Agent、不相信 Runtime 对成功的自我声明，也不需要
+网络访问。
+
+以下场景适合使用 Cernora：
+
+- 证明 Agent 使用了预期工具和参数，并且回答确实由返回证据支撑；
+- 把冻结的 Agent 导出转换为可复现的回归测试或 CI/发布准出决策；
+- 让评测权与 Runtime 的凭证、沙箱、重试和成功自述保持分离。
 
 > **当前版本：** `0.1.0`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
 > [平台矩阵](docs/public/compatibility-matrix.zh-CN.md)。
-
-![Cernora 将 Producer 拥有的 Agent 执行与 Evaluator 拥有的证据验证、评分和准出决策分离。](docs/assets/cernora-architecture.jpg)
-
-## 它解决什么问题
-
-看起来正确的最终回答，不能证明 Agent 正确完成了任务。Agent 可能选择了错误工具、
-传入错误参数、忽略工具返回、修改意外的产物，或在执行环境失败后仍报告成功。
-
-Cernora 把评测设计成独立的裁决权威：
-
-- **Runtime** 负责执行、凭证、沙箱、重试和证据捕获；
-- **Adapter** 把一个已完成的原生导出转换为封闭的 `EvidenceBundle v2`；
-- 版本化 **Profile** 验证证据并定义必选观察；
-- Cernora 输出可复现、且 Runtime 不能自行授予的决策。
-
-因此，结果可用于离线复核、回归测试以及 CI/发布准出。
 
 ## 五分钟运行
 
@@ -54,8 +45,35 @@ python -m cernora.examples.coding_task ./cernora-coding-run backend-v1
 pass
 ```
 
+生成的决策和评分产物会记录为什么通过。工作流示例包含等价于以下内容的结果：
+
+```text
+decision: pass
+eligible: true
+observations:
+  command_exact: true
+  response_integrity: true
+  claim_grounded: true
+```
+
 每次运行的输出目录必须尚不存在。两个示例均可直接从安装后的 wheel 运行，使用合成的
 completed export，不需要凭证或源码 checkout。
+
+## 为什么需要 Cernora？
+
+看起来正确的最终回答，不能证明 Agent 正确完成了任务。Agent 可能选择了错误工具、
+传入错误参数、忽略工具返回、修改意外的产物，或在执行环境失败后仍报告成功。
+
+Cernora 把评测设计成独立的裁决权威：
+
+- **Runtime** 负责执行、凭证、沙箱、重试和证据捕获；
+- **Adapter** 把一个已完成的原生导出转换为封闭的 `EvidenceBundle v2`；
+- 版本化 **Profile** 验证证据并定义必选观察；
+- Cernora 输出可复现、且 Runtime 不能自行授予的决策。
+
+![Cernora 将 Producer 拥有的 Agent 执行与 Evaluator 拥有的证据验证、评分和准出决策分离。](docs/assets/cernora-architecture.jpg)
+
+组件职责和信任边界见[架构文档](docs/public/architecture.zh-CN.md)。
 
 ## 明确区分失败性质
 
@@ -68,11 +86,6 @@ completed export，不需要凭证或源码 checkout。
 基础设施故障不会被伪装成 Agent 失败，无法验证的证据也永远不能变成 pass。CLI
 退出码保持相同语义：`0` 为 pass，`1` 为行为失败，`2` 为用法/权威不兼容，
 `3` 为无效或不可判定的评测。
-
-## 架构与信任边界
-
-执行权与裁决权刻意保持独立。组件职责和信任边界见
-[架构文档](docs/public/architecture.zh-CN.md)。
 
 ## 工程设计亮点
 
@@ -166,9 +179,10 @@ cmp ./cernora-public-acceptance/summary.json \
   "$repo_root/docs/public/acceptance-summary.json"
 ```
 
-## 定位与能力边界
+## 什么时候使用 Cernora
 
-Cernora 是完整 Agent 评测系统中的独立裁决层：
+Cernora 位于 Agent Runtime 完成一次 Run 之后。它是完整 Agent 评测系统中的独立
+裁决层，不替代执行或可观测系统：
 
 |如果你需要……|应使用……|
 |---|---|
