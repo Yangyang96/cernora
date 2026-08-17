@@ -57,6 +57,34 @@ def test_readme_language_switch_is_bidirectional() -> None:
     assert "[English](ROADMAP.md)" in roadmap_chinese
 
 
+def test_chinese_readme_links_to_complete_chinese_documentation() -> None:
+    root = Path(__file__).resolve().parents[2]
+    readme = (root / "README.zh-CN.md").read_text(encoding="utf-8")
+    root_documents = {
+        "CONTRIBUTING.zh-CN.md",
+        "SECURITY.zh-CN.md",
+        "CHANGELOG.zh-CN.md",
+    }
+    public_documents = {
+        "README.zh-CN.md",
+        "architecture.zh-CN.md",
+        "profile-authoring.zh-CN.md",
+        "adapter-conformance.zh-CN.md",
+        "compatibility-matrix.zh-CN.md",
+        "evidence-publication-and-rebuild.zh-CN.md",
+        "acceptance.zh-CN.md",
+        "local-release-checklist.zh-CN.md",
+        "release-day-runbook.zh-CN.md",
+    }
+
+    for name in root_documents:
+        assert (root / name).is_file()
+        assert f"]({name})" in readme
+    for name in public_documents:
+        assert (root / "docs" / "public" / name).is_file()
+        assert f"](docs/public/{name})" in readme
+
+
 def test_public_acceptance_summary_is_compact_and_explicit() -> None:
     root = Path(__file__).resolve().parents[2]
     summary = json.loads((root / "docs/public/acceptance-summary.json").read_text(encoding="utf-8"))
