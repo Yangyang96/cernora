@@ -42,18 +42,14 @@ jobs:
       - run: uv sync --frozen --all-groups
       - run: uv run python -m build
       - name: Inspect the closed release tree and artifacts
-        run: >-
-          uv run python scripts/check_release.py
-          --tree .
-          --wheel dist/cernora-0.1.0-py3-none-any.whl
-          --sdist dist/cernora-0.1.0.tar.gz
+        run: uv run python scripts/check_release.py --tree . --dist-dir dist
       - name: Retain the inspected distributions for acceptance and release reuse
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: cernora-dist-${{ github.sha }}
           path: |
-            dist/cernora-0.1.0-py3-none-any.whl
-            dist/cernora-0.1.0.tar.gz
+            dist/*.whl
+            dist/*.tar.gz
           if-no-files-found: error
           retention-days: 7
 
@@ -86,7 +82,7 @@ jobs:
           --requirement /tmp/cernora-runtime-requirements.txt
       - run: >-
           uv pip install --python /tmp/cernora-wheel-venv/bin/python
-          --offline --no-deps dist/cernora-0.1.0-py3-none-any.whl
+          --offline --no-deps dist/*.whl
       - working-directory: ${{ runner.temp }}
         run: >-
           env -u PYTHONPATH PYTHONNOUSERSITE=1

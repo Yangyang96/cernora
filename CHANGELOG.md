@@ -3,6 +3,18 @@
 All notable changes to Cernora are documented here. The project follows semantic versioning
 while pre-1.0 compatibility is further defined by the documented compatibility tiers.
 
+## Unreleased
+
+### Added
+
+- One release-maintainer command for complete local preflight and one for production-PyPI
+  artifact, clean-install and acceptance-flow verification on Python 3.12/3.13.
+
+### Changed
+
+- CI, artifact inspection, Trusted Publishing and the release runbook now derive artifact
+  names from the declared version instead of hard-coding `0.1.0`.
+
 ## 0.1.0 - 2026-08-14
 
 Initial public release.
