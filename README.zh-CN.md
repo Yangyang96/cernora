@@ -103,12 +103,14 @@ Profile 是完整且版本化的策略。评测时不能临时关闭单项观察
 
 ## 评测自己的完成态导出
 
-先导入 `EvidenceBundle v2`，再评测严格持久化后的 package：
+下面的命令复用“五分钟运行”生成的 `EvidenceBundle v2`，再评测严格持久化后的
+package。评测自己的 Run 时，请把 `--bundle` 替换为 Adapter 生成的 bundle 路径，
+并在两个命令中选择与之匹配的 Profile：
 
 ```bash
 cernora evidence import \
   --profile builtin:offline-workflow \
-  --bundle ./completed-export/bundle.json \
+  --bundle ./cernora-workflow-run/bundle/bundle.json \
   --output ./imported
 
 cernora evidence evaluate \
@@ -149,11 +151,19 @@ cernora profile validate --profile-path .cernora/profiles/my-profile
 拒绝，而有效证据证明的错误行为会保留为 eligible `fail`。
 
 查看[验收报告](docs/public/acceptance.zh-CN.md)和
-[机器可读摘要](docs/public/acceptance-summary.json)，
-或重建验收证据：
+[机器可读摘要](docs/public/acceptance-summary.json)。重建验收证据前，先激活一个已安装
+精确构建 wheel 的干净 Python 3.12 或 3.13 环境；然后从仓库根目录执行以下命令，
+在 checkout 外运行脚本并比对摘要：
 
 ```bash
-uv run python scripts/rebuild_acceptance.py --output ./cernora-public-acceptance
+repo_root=$PWD
+acceptance_root=$(mktemp -d)
+cd "$acceptance_root"
+env -u PYTHONPATH PYTHONNOUSERSITE=1 \
+  python "$repo_root/scripts/rebuild_acceptance.py" \
+  --output ./cernora-public-acceptance
+cmp ./cernora-public-acceptance/summary.json \
+  "$repo_root/docs/public/acceptance-summary.json"
 ```
 
 ## 定位与能力边界

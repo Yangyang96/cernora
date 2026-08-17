@@ -106,12 +106,14 @@ disabled at evaluation time, so identical evidence and authority produce identic
 
 ## Evaluate your own completed export
 
-Import an `EvidenceBundle v2`, then evaluate the strictly persisted package:
+The following commands reuse the `EvidenceBundle v2` produced by the five-minute workflow,
+then evaluate the strictly persisted package. For your own run, replace `--bundle` with the
+bundle path produced by your Adapter and select its matching Profile in both commands:
 
 ```bash
 cernora evidence import \
   --profile builtin:offline-workflow \
-  --bundle ./completed-export/bundle.json \
+  --bundle ./cernora-workflow-run/bundle/bundle.json \
   --output ./imported
 
 cernora evidence evaluate \
@@ -156,10 +158,19 @@ that corrupt or missing artifacts, authority mismatches, and candidate path trav
 rejected, while valid evidence of incorrect behavior remains an eligible `fail`.
 
 Review the [acceptance report](docs/public/acceptance.md) and
-[machine-readable summary](docs/public/acceptance-summary.json), or rebuild the evidence with:
+[machine-readable summary](docs/public/acceptance-summary.json). To rebuild the evidence,
+first activate a clean Python 3.12 or 3.13 environment containing the exact built wheel. Then,
+from the repository root, run the script outside the checkout and compare its summary:
 
 ```bash
-uv run python scripts/rebuild_acceptance.py --output ./cernora-public-acceptance
+repo_root=$PWD
+acceptance_root=$(mktemp -d)
+cd "$acceptance_root"
+env -u PYTHONPATH PYTHONNOUSERSITE=1 \
+  python "$repo_root/scripts/rebuild_acceptance.py" \
+  --output ./cernora-public-acceptance
+cmp ./cernora-public-acceptance/summary.json \
+  "$repo_root/docs/public/acceptance-summary.json"
 ```
 
 ## Position and scope
