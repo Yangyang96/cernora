@@ -2,277 +2,198 @@
 
 **English** | [简体中文](https://github.com/Yangyang96/cernora/blob/main/README.zh-CN.md)
 
-> Evidence-bound evaluation for tool-using agents.
+[![CI](https://github.com/Yangyang96/cernora/actions/workflows/ci.yml/badge.svg)](https://github.com/Yangyang96/cernora/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/cernora)](https://pypi.org/project/cernora/)
+[![Python](https://img.shields.io/pypi/pyversions/cernora)](https://pypi.org/project/cernora/)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
-Cernora is an independent evaluation core for completed agent runs. It is offline and
-runtime-neutral, turning producer-owned exports into evaluator-owned, reproducible results:
+> **Evidence-bound evaluation for tool-using agents.**
 
-```text
-completed export -> EvidenceBundle v2 -> Import -> Evidence -> Score -> GateDecision
-```
+Cernora is an independent evaluation core for completed Agent runs. The deterministic,
+runtime-neutral Python package turns a completed export into evaluator-owned `Evidence`,
+`Score`, and `GateDecision` artifacts—without starting the Agent, trusting its success claim,
+or requiring network access.
 
-Cernora does not ask the runtime whether it succeeded. It validates the evidence,
-binds it to an explicit Profile and Case, reloads every persisted result strictly,
-and fails closed when evidence or evaluation authority is missing, inconsistent or
-corrupt.
+> **Current release:** `0.1.0`, tested on Python 3.12 and 3.13. See the
+> [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
 
-> **Current release:** `0.1.0` is the initial public release. Python 3.12 and 3.13
-> are the tested language targets; see the
-> [platform matrix](https://github.com/Yangyang96/cernora/blob/main/docs/public/compatibility-matrix.md#platform-support-matrix)
-> for OS status.
+![Cernora separates producer-owned Agent execution from evaluator-owned evidence validation, scoring, and gate decisions.](docs/assets/cernora-architecture.jpg)
 
-## Why Cernora?
+## The problem it solves
 
-A plausible final answer is not proof that an agent completed a task correctly.
+A plausible final answer is not proof that an Agent completed a task correctly. The Agent
+may have selected the wrong tool, passed the wrong arguments, ignored the returned data,
+modified an unexpected artifact, or reported success after its environment failed.
 
-An agent can select the wrong tool, pass the wrong arguments, ignore the returned
-data, modify an unexpected artifact, or report success after its environment failed.
-If all of those outcomes are reduced to one score, behavioral failures and invalid
-evaluations become indistinguishable.
+Cernora treats evaluation as a separate authority:
 
-Cernora makes three distinctions explicit:
+- the **Runtime** owns execution, credentials, sandboxes, retries, and evidence capture;
+- an **Adapter** converts one completed native export into a closed `EvidenceBundle v2`;
+- a versioned **Profile** validates the evidence and defines required observations;
+- Cernora produces a reproducible decision that the Runtime cannot award itself.
 
-- **execution and evaluation are separate authorities;**
-- **scoring starts only after completed evidence passes strict validation;**
-- **behavioral failure is different from missing, corrupt or inconclusive evidence.**
+This makes the result suitable for offline review, regression testing, and CI/release gates.
 
-This makes evaluations replayable, reviewable and suitable for CI or release
-decisions without giving the evaluator control of the agent runtime.
+## Try it in five minutes
 
-## Where Cernora fits
-
-Cernora owns the offline decision path, not Agent execution or experiment
-orchestration. An external Runtime produces a completed export; an explicit Adapter
-normalizes it; Cernora validates, scores and emits a bound `GateDecision`. See
-[Architecture](https://github.com/Yangyang96/cernora/blob/main/docs/public/architecture.md)
-for the complete composition and exact
-component responsibilities.
-
-## Core guarantees
-
-- **Runtime-neutral:** evaluates completed local exports rather than starting or
-  supervising an agent.
-- **Evidence-bound:** binds Profile, Case, fixture, artifact, producer and run
-  identities through explicit versioned contracts and content digests.
-- **Strictly replayable:** canonical packages are persisted and reloaded before a
-  result is accepted.
-- **Fail-closed:** corrupt, incomplete or authority-incompatible evidence never
-  becomes a pass.
-- **Outcome-aware:** distinguishes eligible behavioral failure from an invalid or
-  inconclusive evaluation.
-- **Portable:** public examples and Profile resources run from the installed wheel
-  without a source checkout, service credential or network connection.
-
-Content digests detect changed bytes; they do not authenticate a producer or provide
-non-repudiation.
-
-## Quickstart
-
-### 1. Install from PyPI in a virtual environment
-
-Use CPython 3.12 or 3.13. The commands below create an isolated environment so the
-installation does not modify a system- or package-manager-owned Python. Replace
-`python3.12` with `python3.13` if that is the interpreter you installed:
+Cernora supports CPython 3.12 and 3.13.
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
 python -m pip install cernora
-cernora --version
+
+# Run a complete packaged tool-workflow evaluation
+python -m cernora.examples.offline_workflow ./cernora-workflow-run
+
+# Run a packaged coding evaluation
+python -m cernora.examples.coding_task ./cernora-coding-run backend-v1
 ```
 
-Release maintainers who need to verify exact local artifacts should use the
-[local release checklist](https://github.com/Yangyang96/cernora/blob/main/docs/public/local-release-checklist.md)
-instead of the PyPI command above.
-
-### 2. Run the packaged workflow example
-
-Run this command from any directory:
-
-```bash
-python -m cernora.examples.offline_workflow ./cernora-offline-example
-```
-
-The output directory must not already exist. When repeating the example, choose a fresh
-path such as `./cernora-offline-example-2`; Cernora refuses to overwrite a completed result.
-
-Expected terminal result:
+Each command prints:
 
 ```text
 pass
 ```
 
-The example materializes a packaged synthetic completed export, adapts it into
-EvidenceBundle v2, imports it canonically, evaluates it and strictly reloads the result.
-It does not launch an Agent, create a sandbox, capture a runtime receipt or require runtime
-credentials.
+The output directory must not already exist. Both examples work from the installed wheel,
+use synthetic completed exports, and require neither credentials nor a source checkout.
 
-### 3. Run a packaged coding case
+## Decisions with explicit failure semantics
 
-```bash
-python -m cernora.examples.coding_task ./cernora-coding-example backend-v1
-```
-
-This output directory must also be new for each run.
-
-The coding example also provides `frontend-v1` and `fail-closed-v1` cases. Each case uses a
-packaged synthetic candidate/export, binds the candidate to its terminal evidence and
-performs evaluator-owned post-terminal checks. It does not run candidate code or an Agent.
-
-## Decision semantics
-
-| Result | Meaning |
+| Decision | Meaning |
 | --- | --- |
 | `pass` | Evidence is eligible and every required observation is valid and satisfied. |
 | `fail` | Evidence is eligible and proves a behavioral mismatch. |
-| `inconclusive` | Evidence, infrastructure or evaluation authority is missing, corrupt, incompatible or otherwise invalid. |
+| `inconclusive` | Evidence, infrastructure, or evaluation authority is missing, corrupt, or incompatible. |
 
-CLI exit classes preserve the same distinction:
+An infrastructure failure never becomes an Agent failure, and unverifiable evidence never
+becomes a pass. CLI exit codes preserve the distinction: `0` pass, `1` behavioral failure,
+`2` usage/authority incompatibility, and `3` invalid or inconclusive evaluation.
 
-| Exit | Meaning |
-| --- | --- |
-| `0` | Successful command or eligible passing evaluation. |
-| `1` | Eligible evidence proves behavioral failure. |
-| `2` | Usage, selection or authority configuration incompatibility. |
-| `3` | Corrupt, incomplete or inconclusive evidence, or another fail-closed evaluation error. |
+## Architecture and trust boundary
 
-## Reference Profiles
+The design deliberately keeps execution and adjudication independent. See
+[Architecture](docs/public/architecture.md) for component ownership and trust boundaries.
+
+## Engineering highlights
+
+- **Strict versioned contracts:** Pydantic models and published JSON Schemas reject unknown
+  fields, unsupported versions, identity mismatches, unsafe paths, and invalid digests.
+- **Evidence and authority binding:** producer, run, Profile, Case, fixture, and artifact
+  identities remain attached to the decision.
+- **Deterministic replay:** canonical JSON, content digests, atomic publication, and strict
+  persisted-result reload make repeated evaluation reviewable.
+- **Fail-closed composition:** scoring begins only after import eligibility is established;
+  missing or invalid observations cannot silently pass.
+- **Narrow extension seams:** explicit `Adapter` and `Profile` protocols enable new Runtimes
+  and evaluation policies without turning Cernora into an execution framework.
+- **Release discipline:** CI tests Python 3.12/3.13, linting, formatting, strict typing,
+  distributions, and wheel-only acceptance outside the source checkout.
+
+Content digests establish byte integrity, not producer authentication, non-repudiation, or
+immutable history.
+
+## Reference evaluations
 
 | Profile | What it demonstrates |
 | --- | --- |
-| `offline-workflow` | Exact command selection, response integrity and answer grounding against protected fixture evidence. |
-| `coding-task` | Candidate format and digest binding, terminal binding and evaluator-owned post-terminal checks across backend, frontend and fail-closed cases. |
+| `offline-workflow` | Exact tool/argument selection, response integrity, and answer grounding against protected fixture evidence. |
+| `coding-task` | Candidate export format, content and terminal digest binding, plus evaluator-owned post-terminal checks across backend, frontend, and fail-closed cases. |
 
-These Profiles are neutral public examples. A Profile defines versioned evaluation
-authority; users select a Profile rather than toggling individual checks at runtime.
+Profiles are selected as complete, versioned policies. Individual observations cannot be
+disabled at evaluation time, so identical evidence and authority produce identical semantics.
 
-## Evaluate a completed export
+## Evaluate your own completed export
 
-Import an EvidenceBundle v2 for one explicit built-in Profile:
+Import an `EvidenceBundle v2`, then evaluate the strictly persisted package:
 
 ```bash
 cernora evidence import \
   --profile builtin:offline-workflow \
   --bundle ./completed-export/bundle.json \
   --output ./imported
-```
 
-Evaluate the strictly persisted import:
-
-```bash
 cernora evidence evaluate \
   --profile builtin:offline-workflow \
   --import-root ./imported \
   --output ./evaluated
 ```
 
-Cernora `0.1.x` accepts EvidenceBundle v2/import v2 only. It does not convert or
-silently reinterpret legacy bundle formats.
+Cernora `0.1.x` accepts EvidenceBundle v2/import v2 only; it never silently converts or
+reinterprets legacy bundle formats.
 
-## Profile and Adapter SDK Preview
+## Extend Cernora
 
-The Preview SDK exposes two intentionally narrow extension seams:
+The Preview SDK exposes two intentionally small seams:
 
-- a `Profile` defines authority, import validation, evidence projection, scoring
-  observations and gate policy;
-- an `Adapter` converts one already completed native export into a closed,
-  canonical EvidenceBundle v2.
-
-The Adapter never starts or retries an Agent, obtains credentials, manages a sandbox or
-performs runtime cleanup.
-
-Conformance helpers validate the documented static contract:
+- a `Profile` defines authority, import validation, evidence projection, observations, and
+  gate policy;
+- an `Adapter` converts a completed native export into a canonical `EvidenceBundle v2`.
 
 ```python
 from cernora import check_adapter_conformance, check_profile_conformance
 ```
 
-They complement, rather than replace, a real import and evaluation acceptance run.
-
-### Private-by-default Profile authoring
+Scaffold a private-by-default Profile workspace:
 
 ```bash
 cernora profile init my-profile
 cernora profile validate --profile-path .cernora/profiles/my-profile
 ```
 
-By default, Profile sources are created under the nearest project root at
-`.cernora/profiles/<name>/`. The `.cernora` workspace contains its own
-`.gitignore` so private fixtures and policies are not accidentally committed.
+Local Profiles are explicitly loaded trusted Python code. Cernora does not scan for plugins,
+modify Git state, or claim to sandbox Profile execution. See
+[Profile authoring](docs/public/profile-authoring.md) and
+[Adapter conformance](docs/public/adapter-conformance.md).
 
-Create a deliberately public Profile only by selecting another destination:
+## Verified in `0.1.0`
+
+The public acceptance process installed the exact wheel outside the repository on Python
+3.12 and 3.13. It ran the workflow representative three times and all three coding cases
+three times each, with byte-identical canonical results and strict reload. It also verified
+that corrupt or missing artifacts, authority mismatches, and candidate path traversal are
+rejected, while valid evidence of incorrect behavior remains an eligible `fail`.
+
+Review the [acceptance report](docs/public/acceptance.md) and
+[machine-readable summary](docs/public/acceptance-summary.json), or rebuild the evidence with:
 
 ```bash
-cernora profile init public-profile --output profiles/public-profile
+uv run python scripts/rebuild_acceptance.py --output ./cernora-public-acceptance
 ```
 
-Local Profile loading is explicit trusted-code execution through
-`profile.py:create_profile()`. Cernora does not scan for Profiles, maintain a
-registry, modify Git state or claim to sandbox local Python.
+## Position and scope
 
-## What `0.1.0` verified
+Cernora is the adjudication layer in a larger Agent evaluation system:
 
-The release acceptance process:
+| If you need to… | Use… |
+| --- | --- |
+| run Agents, manage sandboxes, schedule datasets, or retry infrastructure | an Agent Runtime or Experiment Harness |
+| compare prompts with a large metric library | an evaluation framework focused on experiments and scorers |
+| collect and explore production traces | an observability platform |
+| validate a completed export and issue an evidence-bound release decision | **Cernora** |
 
-- installed the exact wheel outside the repository on Python 3.12 and 3.13;
-- ran the workflow representative three times with identical canonical results;
-- ran all three coding cases three times each;
-- strictly reloaded the imported and evaluated result packages;
-- rejected corrupt, missing, authority-mismatched and path-traversal evidence;
-- preserved an eligible `fail` for valid evidence that proves behavioral mismatch;
-- scanned the public tree, wheel and source archive against a closed allowlist.
-
-See the [public acceptance report](https://github.com/Yangyang96/cernora/blob/main/docs/public/acceptance.md)
-and its compact [machine-readable summary](https://github.com/Yangyang96/cernora/blob/main/docs/public/acceptance-summary.json).
-
-These checks begin with packaged synthetic completed exports. They prove the Cernora
-evaluation-core path; they do not prove Agent launch, sandbox enforcement, trusted runtime
-receipt capture or Experiment Harness behavior.
-
-## Scope
-
-Cernora `0.1.x` is the offline evaluation core. It does not provide an Agent Runtime,
-experiment scheduler, hosted service, registry, remote judge or deployment authority.
-`1.0` will mean that the evaluator contracts are stable, not that Cernora has become
-an Experiment Harness.
-See [Architecture](https://github.com/Yangyang96/cernora/blob/main/docs/public/architecture.md)
-for current ownership boundaries and the
-[product roadmap](https://github.com/Yangyang96/cernora/blob/main/ROADMAP.md) for planned capabilities.
-
-## Roadmap
-
-The first post-`0.1` priority is broader deterministic metric coverage using the
-existing Profile/Scorer ownership model. The next priority completes the Profile
-authoring loop from scaffold to a tested first GateDecision. A reusable `MetricPlan`
-comes later, after authoring, a real reference workflow and repeated experiments
-have proven the abstraction. See the bilingual
-[product roadmap](https://github.com/Yangyang96/cernora/blob/main/ROADMAP.md) for the
-full priority order, acceptance signals and explicit non-goals.
+`0.1.x` does not provide an Agent Runtime, scheduler, hosted service, registry, remote judge,
+deployment authority, or trusted runtime receipt capture. Those belong to the Runtime or
+Experiment Harness. These omissions are explicit architectural boundaries, not implied
+features. Planned work is tracked in the
+[product roadmap](https://github.com/Yangyang96/cernora/blob/main/ROADMAP.md).
 
 ## Documentation
 
-- [Product roadmap](https://github.com/Yangyang96/cernora/blob/main/ROADMAP.md)
-- [Architecture](https://github.com/Yangyang96/cernora/blob/main/docs/public/architecture.md)
-- [Profile authoring](https://github.com/Yangyang96/cernora/blob/main/docs/public/profile-authoring.md)
-- [Adapter conformance](https://github.com/Yangyang96/cernora/blob/main/docs/public/adapter-conformance.md)
-- [Compatibility matrix](https://github.com/Yangyang96/cernora/blob/main/docs/public/compatibility-matrix.md)
-- [Evidence publication and rebuild](https://github.com/Yangyang96/cernora/blob/main/docs/public/evidence-publication-and-rebuild.md)
-- [Public acceptance](https://github.com/Yangyang96/cernora/blob/main/docs/public/acceptance.md)
-- [Local release checklist](https://github.com/Yangyang96/cernora/blob/main/docs/public/local-release-checklist.md)
-- [Release-day runbook](https://github.com/Yangyang96/cernora/blob/main/docs/public/release-day-runbook.md)
-- [Changelog](https://github.com/Yangyang96/cernora/blob/main/CHANGELOG.md)
+- [Architecture](docs/public/architecture.md)
+- [Profile authoring](docs/public/profile-authoring.md)
+- [Adapter conformance](docs/public/adapter-conformance.md)
+- [Compatibility matrix](docs/public/compatibility-matrix.md)
+- [Evidence publication and rebuild](docs/public/evidence-publication-and-rebuild.md)
+- [Public acceptance](docs/public/acceptance.md)
+- [Release-day runbook](docs/public/release-day-runbook.md)
+- [Changelog](CHANGELOG.md)
 
-## Contributing and security
+## Contributing, security, and license
 
-Contributions are welcome within the documented runtime/evaluator boundary. Start
-with [CONTRIBUTING.md](https://github.com/Yangyang96/cernora/blob/main/CONTRIBUTING.md).
+Contributions are welcome within the documented Runtime/Evaluator boundary. Start with
+[CONTRIBUTING.md](CONTRIBUTING.md). Do not place secrets in Evidence or public Profiles;
+report suspected vulnerabilities through [SECURITY.md](SECURITY.md).
 
-Do not place secrets in evidence or public Profiles. Treat local Profile Python as
-code execution with the current user permissions. Report suspected vulnerabilities
-through the process in
-[SECURITY.md](https://github.com/Yangyang96/cernora/blob/main/SECURITY.md).
-
-## License
-
-Cernora is available under the
-[Apache License 2.0](https://github.com/Yangyang96/cernora/blob/main/LICENSE).
+Cernora is licensed under the [Apache License 2.0](LICENSE).

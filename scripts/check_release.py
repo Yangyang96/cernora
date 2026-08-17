@@ -15,8 +15,11 @@ from packaging.version import InvalidVersion, Version
 _ALLOWED_ROOT_FILES = frozenset(
     {
         ".gitignore",
+        "AGENTS.md",
         "CHANGELOG.md",
+        "CHANGELOG.zh-CN.md",
         "CONTRIBUTING.md",
+        "CONTRIBUTING.zh-CN.md",
         "LICENSE",
         "NOTICE",
         "README.md",
@@ -24,6 +27,7 @@ _ALLOWED_ROOT_FILES = frozenset(
         "ROADMAP.md",
         "ROADMAP.zh-CN.md",
         "SECURITY.md",
+        "SECURITY.zh-CN.md",
         "pyproject.toml",
         "uv.lock",
     }
