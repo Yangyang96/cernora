@@ -9,7 +9,7 @@ Cernora `0.1.x` 尚未达到 1.0。兼容性按层级定义，不把所有可导
 |Python 3.12 和 3.13|Supported Preview|已测试的发布范围；移除任一版本都需要 minor 版本和迁移说明。|
 |`cernora evidence import` 和 `cernora evidence evaluate`|Supported Preview|命令形态、退出类别和 canonical JSON 行为保持兼容。|
 |`cernora profile init` 和 `cernora profile validate`|Supported Preview|默认私有 workspace 和显式 Profile 选择保持兼容。|
-|内置 Profile selector 与 authority identity|Preview|增量加入 `builtin:coding-evaluation`；`builtin:coding-task`、`builtin:offline-workflow` 和 `builtin:tool-workflow` 保持原 identity 与语义。|
+|内置 Profile selector 与 authority identity|Preview|增量加入 `builtin:tool-workflow` 和 `builtin:coding-evaluation`；`builtin:coding-task` 与 `builtin:offline-workflow` 保持原 identity 与语义。|
 |EvidenceBundle v2 和 import receipt/manifest v2|Supported Preview|`0.1.x` 内不重新解释 wire 字段和严格验证语义。|
 |Evidence v1、Score v1、GateDecision v1|Supported Preview|保留既有 wire ID 和 canonical 语义。|
 |ResultRecord v1 和 EvaluationReport v1|Preview|显式选择的增量 structured result/report wire；字段或验证变化需要 changelog 和迁移说明。|

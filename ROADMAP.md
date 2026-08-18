@@ -59,12 +59,19 @@ The roadmap starts from a released offline evaluation core that already provides
 and GateDecision v1 as its current output protocols. The compatibility matrix remains
 the authority for exact promises.
 
+The local `0.1.1` release candidate additionally provides opt-in Preview ResultRecord v1
+and EvaluationReport v1 outputs plus the explicit `tool-workflow` and `coding-evaluation`
+reference Profiles. It does not change the published `0.1.0` default behavior.
+
 Useful deterministic metric coverage is the first post-`0.1` capability. A public
 Profile authoring loop follows so third parties can prove their own assessment end to
 end. A public `MetricPlan` is deliberately later: authoring, real workflow and
 experiment evidence should shape that abstraction before it is frozen.
 
 ## Priority 1 — Deterministic metric coverage
+
+**Status:** implemented in the local `0.1.1` release candidate as opt-in Preview result
+reporting. Priority 2 remains the next product milestone.
 
 The accepted implementation baseline is specified in
 [`docs/design/priority-1-deterministic-metrics.md`](docs/design/priority-1-deterministic-metrics.md).
@@ -88,11 +95,11 @@ shape.
 
 | Layer | Scope | Gate use |
 | --- | --- | --- |
-| Required observation | One completed run; boolean or categorical and evidence-bound. | May participate in `GateDecision`. |
-| Advisory observation | One completed run; important but non-blocking. | Reported prominently; does not block by default. |
-| Diagnostic measurement | One completed run; numeric or categorical with unit, direction and validity. | Analysis and comparison only. |
+| Outcome or constraint | One completed run; boolean, evidence-bound and required by the Score policy. | Mirrors a required observation and participates in `GateDecision`. |
+| Advisory | One completed run; important but non-blocking. | Reported prominently; does not block by default. |
+| Diagnostic | One completed run; boolean, numeric or categorical with validity and, when numeric, unit and direction. | Analysis and comparison only. |
 
-### Planned coverage
+### Delivered coverage
 
 - **Tool workflow:** tool selection, argument accuracy, sequence adherence, result
   grounding, recovery behavior, idempotency and forbidden actions.
@@ -100,10 +107,11 @@ shape.
   regression, test tampering and forbidden-file changes.
 - **Reliability and security:** evidence validity and completeness, malformed input,
   timeout and infrastructure failure, repeated side effects and forbidden actions.
-- **Efficiency:** latency, steps, tool calls, retries, token usage, cost and
-  cost-per-success when the completed export provides trustworthy values.
+- **Efficiency:** Profile-owned tool-workflow evidence supplies latency, steps, tool calls,
+  retries and side effects. Token usage, cost and cost-per-success remain deferred until a
+  completed export provides trustworthy values.
 
-Each result will have an explicit identity, version, value type, unit and direction
+Each result has an explicit identity, version, value type, unit and direction
 where applicable, validity state, failure reason and references to supporting
 Evidence. New diagnostic data will first appear in a separate versioned Preview
 report rather than silently changing Score v1 within `0.1.x`.
@@ -119,13 +127,13 @@ and governed by a Profile or report contract. It must define behavior for missin
 invalid, contradictory and unavailable inputs. Metrics are not added merely to
 increase the number of measurements.
 
-### First deliveries
+### Delivered in the `0.1.1` release candidate
 
 This milestone proves metric semantics through Profile-owned implementations before
 exposing a generic `Metric` interface:
 
 1. **Result records:** emit a versioned record for each observation or measurement
-   with at least `id`, `version`, `value`, `value_type`, `validity`,
+   with at least `id`, `version`, `role`, `value`, `value_type`, `validity`,
    `failure_reason` and `evidence_refs`; numeric records also declare `unit` and
    `direction`.
 2. **Tool-workflow pack:** first cover tool selection, arguments, sequence,
@@ -135,9 +143,10 @@ exposing a generic `Metric` interface:
 3. **Coding pack:** first cover build/test, candidate/terminal binding, diff scope,
    regression, test tampering and forbidden-file changes. Every behavioral claim is
    evaluated against the reconstructed candidate, not the Agent's assertion.
-4. **Reliability and efficiency report:** report validity, infrastructure failure,
-   latency, steps, tool calls, retries, tokens and cost separately. Missing or
-   untrusted measurements are unavailable, never zero.
+4. **Reliability and efficiency report:** report validity and infrastructure failure;
+   report tool-workflow latency, steps, tool calls, retries and side effects separately.
+   Missing or untrusted measurements are unavailable, never zero. Token and cost metrics
+   remain deferred.
 5. **Profile acceptance:** repeat the same frozen input three times with byte-stable
    deterministic results, covering true, behavioral false, missing evidence,
    contradictory evidence and unavailable infrastructure.
@@ -147,11 +156,11 @@ valid. Missing, invalid or contradictory input remains `inconclusive`; a diagnos
 measurement can never offset a required failure into pass. This milestone also does
 not introduce arbitrary cross-metric weighted totals.
 
-### Completion signal
+### Completion evidence
 
-A representative completed-run Profile produces required Gate observations and
-richer diagnostics from one frozen Evidence package; the values are reproducible,
-actionable in failure analysis and incapable of turning invalid evidence into pass.
+The `tool-workflow` and `coding-evaluation` Profiles produce required Gate observations and
+richer diagnostics from frozen Evidence packages. Their accepted matrices repeat each valid
+input three times with byte-identical output, and invalid evidence cannot become pass.
 
 ## Priority 2 — Complete Profile authoring loop
 

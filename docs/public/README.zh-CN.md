@@ -10,8 +10,8 @@
   EvidenceBundle v2 目录树。
 - [证据发布与重建](evidence-publication-and-rebuild.zh-CN.md)：哪些证据可以公开，以及如何
   重建生成证据。
-- [公开 V1/V2 代表性验收](acceptance.zh-CN.md)：合成 completed export 重放、对抗矩阵、
-  范围限制和重建命令。
+- [公开评测内核与确定性指标验收](acceptance.zh-CN.md)：合成 completed export 重放、冻结的
+  Tool/Coding 矩阵、范围限制和重建命令。
 - [兼容性矩阵](compatibility-matrix.zh-CN.md)：`0.1.x` 稳定层级和版本化契约。
 - [本地发布检查清单](local-release-checklist.zh-CN.md)：发布候选交付前的源码、artifact 和
   wheel-only 检查。

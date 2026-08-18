@@ -28,6 +28,27 @@ Follow Ruff's Python 3.12 rules and 100-character line limit from `pyproject.tom
 
 Tests use pytest and should be deterministic, offline, and named `test_*.py`. Apply the configured `unit`, `integration`, or `adversarial` marker when classification adds value. Cover successful behavior, behavioral failure, and malformed or incompatible input. Missing or unverifiable evidence must remain inconclusive, never pass. Do not weaken fixtures, thresholds, or expected observations merely to satisfy a test.
 
-## Commit & Pull Request Guidelines
+## Commit and Publication Guidelines
 
-Recent history uses concise, imperative, sentence-case subjects (for example, `Generalize the release workflow (#2)`). Keep commits focused and avoid secrets, customer data, raw transcripts, personal paths, or real endpoints. Pull requests should explain user-visible behavior and compatibility impact, link relevant issues, include deterministic tests, and update `CHANGELOG.md` plus migration notes for Preview or Supported Preview changes. Consult `CONTRIBUTING.md` and `docs/public/compatibility-matrix.md` before changing a public contract.
+Write every commit message entirely in English using Conventional Commits:
+`<type>[(<scope>)][!]: <subject>`. Allowed types are `build`, `chore`, `ci`, `docs`,
+`feat`, `fix`, `perf`, `refactor`, `revert`, `style`, and `test`. Use an optional scope only
+for a stable subsystem; never use temporary phases such as `stage-a` or `stage-b`.
+
+Use a lowercase imperative subject, aim for 50 characters, never exceed 72 characters, and
+do not end it with a period. Non-trivial commits require an English body separated by a blank
+line and wrapped at 72 characters. Explain what changed and why; use the relevant `Why`,
+`Changes`, `Compatibility`, `Validation`, and `Boundaries` sections rather than empty or
+generic headings.
+
+Keep each commit focused. Review the staged diff and exclude secrets, customer data, raw
+transcripts, personal paths, local agent state, generated artifacts, and unrelated changes.
+Consult `CONTRIBUTING.md` and `docs/public/compatibility-matrix.md` before changing a public
+contract, and update `CHANGELOG.md` plus migration notes for Preview or Supported Preview
+changes.
+
+Committing and pushing are separate permissions. Use a normal direct push only when the user
+explicitly requests it; never force-push or rewrite a pushed commit without explicit approval.
+Do not create a pull request unless the user asks for one. When a pull request is requested,
+describe user-visible behavior and compatibility impact, link relevant issues, and include
+deterministic validation evidence.

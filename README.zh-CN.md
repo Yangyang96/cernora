@@ -25,14 +25,17 @@ Cernora 是一个独立评测内核，根据记录下来的工具调用、返回
 >
 > **本地发布候选：** `0.1.1`；此 checkout 尚未发布该版本。
 
-## 五分钟运行
+## 五分钟运行 `0.1.1` 发布候选
 
 Cernora 支持 CPython 3.12 和 3.13。
+
+生产安装命令仍为 `python -m pip install cernora`。在 `0.1.1` 正式发布前，该命令安装的是
+尚不包含以下两个示例的 `0.1.0`；请从仓库根目录使用下面的命令安装当前 checkout。
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install cernora
+python -m pip install .
 
 # 运行完整的工具工作流评测
 python -m cernora.examples.tool_workflow ./cernora-workflow-run happy-path
@@ -47,20 +50,28 @@ python -m cernora.examples.coding_evaluation ./cernora-coding-run happy-path
 pass
 ```
 
-生成的决策和评分产物会记录为什么通过。工作流示例包含等价于以下内容的结果：
+生成的 `GateDecision` 和 Preview `EvaluationReport` 会记录为什么通过。
+Tool Workflow 示例包含等价于以下内容的结果：
 
 ```text
 decision: pass
 eligible: true
-observations:
-  command_exact: true
-  response_integrity: true
-  claim_grounded: true
+report:
+  conclusion: pass
+  evaluation_validity: valid
+  required_results:
+    task_outcome: true
+    policy_compliance: true
+  diagnostics:
+    milestone_coverage: 1.0
+    tool_calls: 3
 ```
 
 每次运行的输出目录必须尚不存在。两个示例均可直接从安装后的 wheel 运行，使用
 Profile-owned 合成 completed export，不需要凭证或源码 checkout，并会写入和严格重载
 Preview `EvaluationReport`。它们验证冻结的评测语义，不证明真实外部动作或测试运行发生过。
+Coding 示例还会报告 F2P/P2P 比率、构建状态、Candidate/Terminal Binding、Diff Policy、
+篡改检查和 Retry Policy Compliance。
 
 ## 为什么需要 Cernora？
 
@@ -118,6 +129,8 @@ Cernora 把评测设计成独立的裁决权威：
 
 Profile 是完整且版本化的策略。评测时不能临时关闭单项观察，因此相同证据和权威会得到
 相同语义。
+两个新增 Profile 都是显式选择的参考实现；加入它们不会改变既有 Profile 的行为，也不会
+让其他 Profile 自动生成 Structured Report。
 
 ## 评测自己的完成态导出
 
@@ -127,12 +140,12 @@ package。评测自己的 Run 时，请把 `--bundle` 替换为 Adapter 生成�
 
 ```bash
 cernora evidence import \
-  --profile builtin:offline-workflow \
+  --profile builtin:tool-workflow \
   --bundle ./cernora-workflow-run/bundle/bundle.json \
   --output ./imported
 
 cernora evidence evaluate \
-  --profile builtin:offline-workflow \
+  --profile builtin:tool-workflow \
   --import-root ./imported \
   --output ./evaluated
 ```
@@ -165,8 +178,8 @@ cernora profile validate --profile-path .cernora/profiles/my-profile
 
 公开验收流程在源码仓库外的 Python 3.12 和 3.13 环境中安装精确 wheel。除原有代表任务
 外，它还验收全部 18 个 `tool-workflow` 场景和 20 个 `coding-evaluation` 场景；每个可接受
-场景都运行三次，
-结果 byte-identical 且可严格 reload。无效权威、损坏输入和路径边界场景都会 fail closed，
+场景都运行三次，结果 byte-identical 且可严格 reload。无效权威、损坏输入和路径边界场景
+都会 fail closed，
 而有效证据证明的错误行为会保留为 eligible `fail`。
 
 查看[验收报告](docs/public/acceptance.zh-CN.md)和

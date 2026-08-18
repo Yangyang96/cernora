@@ -56,11 +56,17 @@ Runner，也不表示它会接管凭证、Sandbox 或进程所有权。
 `0.1.x` 只接受 EvidenceBundle v2/import v2，并继续使用 Evidence v1、Score v1
 和 GateDecision v1 作为当前输出协议。精确兼容承诺以 Compatibility Matrix 为准。
 
+本地 `0.1.1` 发布候选还提供显式选择的 Preview ResultRecord v1、EvaluationReport v1，
+以及 `tool-workflow` 和 `coding-evaluation` 参考 Profile；它不改变已发布 `0.1.0` 的默认行为。
+
 有用的确定性指标覆盖是 `0.1` 之后的第一项能力；随后补齐 Profile Authoring
 Loop，让第三方能够端到端证明自己的 Assessment。公共 `MetricPlan` 会刻意后置：
 先由 Authoring、真实工作流和实验结果塑造抽象，再将它冻结为接口。
 
 ## 优先级 1——确定性指标覆盖
+
+**状态：** 已在本地 `0.1.1` 发布候选中以显式选择的 Preview Result Report 实现。
+优先级 2 仍是下一项产品里程碑。
 
 已接受的实现基线见
 [`docs/design/priority-1-deterministic-metrics.md`](docs/design/priority-1-deterministic-metrics.md)。
@@ -80,11 +86,11 @@ Loop，让第三方能够端到端证明自己的 Assessment。公共 `MetricPla
 
 |层级|范围|Gate 用途|
 |---|---|---|
-|Required Observation|单个 Completed Run；布尔或分类结果，并与证据绑定。|可以参与 `GateDecision`。|
-|Advisory Observation|单个 Completed Run；重要但不阻断。|突出报告，默认不阻断。|
-|Diagnostic Measurement|单个 Completed Run；带单位、方向和 Validity 的数值或分类结果。|只用于分析和比较。|
+|Outcome 或 Constraint|单个 Completed Run；布尔、证据绑定，并由 Score Policy 要求。|映射必选 Observation 并参与 `GateDecision`。|
+|Advisory|单个 Completed Run；重要但不阻断。|突出报告，默认不阻断。|
+|Diagnostic|单个 Completed Run；布尔、数值或分类结果，带 Validity；数值还带 Unit 和 Direction。|只用于分析和比较。|
 
-### 计划覆盖
+### 已交付覆盖
 
 - **工具工作流：** Tool Selection、Argument Accuracy、Sequence Adherence、
   Result Grounding、Recovery、Idempotency 和 Forbidden Action。
@@ -92,10 +98,11 @@ Loop，让第三方能够端到端证明自己的 Assessment。公共 `MetricPla
   Scope、Regression、Test Tampering 和 Forbidden-file Change。
 - **可靠性与安全：** Evidence Validity 与 Completeness、Malformed Input、
   Timeout 与 Infrastructure Failure、Repeated Side Effect 和 Forbidden Action。
-- **效率：** 当 Completed Export 提供可信数值时，统计时延、Step、Tool Call、
-  Retry、Token 用量、成本和 Cost-per-success。
+- **效率：** Profile-owned Tool Workflow 证据提供 Latency、Step、Tool Call、Retry
+  和 Side Effect。Token 用量、成本和 Cost-per-success 等 Completed Export 能提供
+  可信数值后再实现。
 
-每项结果都会具有明确 Identity、Version、Value Type、适用时的 Unit 与
+每项结果具有明确 Identity、Version、Value Type、适用时的 Unit 与
 Direction、Validity State、Failure Reason，以及支撑它的 Evidence Reference。
 新的诊断数据会先进入独立、版本化的 Preview Report，而不会在 `0.1.x` 中静默
 修改 Score v1。
@@ -110,12 +117,12 @@ Artifact Digest、Authority Binding、Contained Path、Conflict-safe Publication
 Contract 管理；还必须定义输入缺失、无效、矛盾和不可用时的行为。不会仅为了
 增加指标数量而加入 Metric。
 
-### 第一批交付
+### `0.1.1` 发布候选已交付内容
 
 本阶段先用 Profile-owned 实现证明指标语义，不提前暴露通用 `Metric` 接口：
 
 1. **结果记录：** 为每项 Observation/Measurement 输出版本化记录，至少包含
-   `id`、`version`、`value`、`value_type`、`validity`、`failure_reason` 与
+   `id`、`version`、`role`、`value`、`value_type`、`validity`、`failure_reason` 与
    `evidence_refs`；数值项再声明 `unit` 与 `direction`。
 2. **Tool Workflow 包：** 先实现 Tool Selection、Argument、Sequence、Grounding、
    Recovery、Idempotency 与 Forbidden Action，并为乱序、错误参数、伪造结果和
@@ -123,9 +130,9 @@ Contract 管理；还必须定义输入缺失、无效、矛盾和不可用时�
 3. **Coding 包：** 先实现 Build/Test、Candidate/Terminal Binding、Diff Scope、
    Regression、Test Tampering 与 Forbidden-file Change；所有行为结论都针对重建后
    的确切 Candidate，而不是 Agent 的声明。
-4. **可靠性与效率报告：** 单独输出 Validity、Infrastructure Failure、Latency、
-   Step、Tool Call、Retry、Token 与 Cost；缺失或不可信的计量值显示为不可用，
-   不按零处理。
+4. **可靠性与效率报告：** 输出 Validity 与 Infrastructure Failure，并单独报告 Tool
+   Workflow 的 Latency、Step、Tool Call、Retry 与 Side Effect；缺失或不可信的计量值
+   显示为不可用，不按零处理。Token 与 Cost 指标仍未实现。
 5. **Profile 验收：** 同一冻结输入重复三次得到字节稳定的确定性结果，并覆盖
    真值、行为假值、证据缺失、证据矛盾和基础设施不可用。
 
@@ -133,11 +140,11 @@ Required Observation 只有在输入有效时才能产生行为 `pass` 或 `fail
 无效或互相矛盾必须保持 `inconclusive`；Diagnostic Measurement 永远不能把 Required
 Failure 抵消为通过。本阶段也不产生跨指标的任意加权总分。
 
-### 完成信号
+### 完成证据
 
-一个代表性的 Completed-run Profile 能从同一份冻结 Evidence 生成 Required Gate
-Observation 与更丰富的诊断；数值可复现、能直接用于失败分析，并且不能让无效
-Evidence 变成 pass。
+`tool-workflow` 与 `coding-evaluation` Profile 能从冻结 Evidence Package 生成 Required
+Gate Observation 和更丰富的诊断。已接受矩阵会让每个有效输入重复运行三次并得到
+byte-identical 输出，且无效 Evidence 不能变成 pass。
 
 ## 优先级 2——完整 Profile Authoring Loop
 

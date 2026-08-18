@@ -5,7 +5,7 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ## Unreleased
 
-## 0.1.1 - 2026-08-18
+Target release: `0.1.1`.
 
 ### Added
 

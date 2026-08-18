@@ -47,7 +47,7 @@ Generated output should be written to a new directory. Rebuilds must not overwri
 evidence. Compare canonical bytes or a sorted path-to-digest manifest, not timestamps or host
 metadata.
 
-The wheel-packaged evaluation-core reference rebuild is:
+The published `0.1.0` wheel-packaged evaluation-core reference rebuild is:
 
 ```sh
 python -m cernora.examples.offline_workflow ./cernora-offline-example
@@ -57,6 +57,18 @@ It materializes a synthetic neutral completed export, adapts it to EvidenceBundl
 and evaluates it, then strictly reloads the persisted result. Run it in a new directory;
 success prints `pass`. It does not launch an Agent, exercise a sandbox or capture a runtime
 receipt.
+
+The local `0.1.1` release candidate adds opt-in structured-result examples:
+
+```sh
+python -m cernora.examples.tool_workflow ./cernora-tool-example happy-path
+python -m cernora.examples.coding_evaluation ./cernora-coding-example happy-path
+```
+
+Both write and strictly reload an EvaluationReport from Profile-owned synthetic evidence.
+The complete frozen tool/coding matrices, adversarial cases and exact rebuild command are
+documented in [public acceptance](acceptance.md). These examples still prove only the
+evaluation-core path, not external runtime execution.
 
 ## Rebuild review
 

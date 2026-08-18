@@ -27,14 +27,18 @@ Use Cernora when you need to:
 >
 > **Local release candidate:** `0.1.1`; this checkout has not published it.
 
-## Try it in five minutes
+## Try the `0.1.1` release candidate in five minutes
 
 Cernora supports CPython 3.12 and 3.13.
+
+The production install command remains `python -m pip install cernora`. Until `0.1.1` is
+published, that command installs `0.1.0`, which does not contain these two examples. From the
+repository root, use the commands below to install the current checkout instead.
 
 ```bash
 python3.12 -m venv .venv
 source .venv/bin/activate
-python -m pip install cernora
+python -m pip install .
 
 # Run a complete packaged tool-workflow evaluation
 python -m cernora.examples.tool_workflow ./cernora-workflow-run happy-path
@@ -49,22 +53,29 @@ Each command prints:
 pass
 ```
 
-The generated decision and score artifacts record why the run passed. The workflow example
-contains the equivalent of:
+The generated `GateDecision` and Preview `EvaluationReport` record why the run passed. The
+tool-workflow example contains the equivalent of:
 
 ```text
 decision: pass
 eligible: true
-observations:
-  command_exact: true
-  response_integrity: true
-  claim_grounded: true
+report:
+  conclusion: pass
+  evaluation_validity: valid
+  required_results:
+    task_outcome: true
+    policy_compliance: true
+  diagnostics:
+    milestone_coverage: 1.0
+    tool_calls: 3
 ```
 
 The output directory must not already exist. Both examples work from the installed wheel,
 use Profile-owned synthetic completed exports, require neither credentials nor a source
 checkout, and write and strictly reload a Preview `EvaluationReport`. They validate frozen
 evaluation semantics; neither example attests that a real external action or test run occurred.
+The coding example additionally reports F2P/P2P rates, build status, candidate and terminal
+binding, diff policy, tamper checks, and retry-policy compliance.
 
 ## Why Cernora?
 
@@ -124,6 +135,8 @@ immutable history.
 
 Profiles are selected as complete, versioned policies. Individual observations cannot be
 disabled at evaluation time, so identical evidence and authority produce identical semantics.
+The two new Profiles are opt-in references: adding them does not change existing Profile
+behavior or make other Profiles emit structured reports.
 
 ## Evaluate your own completed export
 
@@ -133,12 +146,12 @@ bundle path produced by your Adapter and select its matching Profile in both com
 
 ```bash
 cernora evidence import \
-  --profile builtin:offline-workflow \
+  --profile builtin:tool-workflow \
   --bundle ./cernora-workflow-run/bundle/bundle.json \
   --output ./imported
 
 cernora evidence evaluate \
-  --profile builtin:offline-workflow \
+  --profile builtin:tool-workflow \
   --import-root ./imported \
   --output ./evaluated
 ```
@@ -175,8 +188,8 @@ modify Git state, or claim to sandbox Profile execution. See
 The public acceptance process installed the exact wheel outside the repository on Python
 3.12 and 3.13. In addition to the original representatives, it verified all 18
 `tool-workflow` rows and all 20 `coding-evaluation` rows; every accepted row ran three times
-with byte-identical results and
-strict reload. Invalid authority, corrupt input and path-boundary cases fail closed, while
+with byte-identical results and strict reload. Invalid authority, corrupt input and
+path-boundary cases fail closed, while
 valid evidence of incorrect behavior remains an eligible `fail`.
 
 Review the [acceptance report](docs/public/acceptance.md) and

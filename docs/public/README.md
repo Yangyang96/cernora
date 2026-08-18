@@ -10,8 +10,8 @@
   closed EvidenceBundle v2 tree.
 - [Evidence publication and rebuild](evidence-publication-and-rebuild.md): what may be
   published and how generated evidence is reproduced.
-- [Public V1/V2 evaluation-core representative acceptance](acceptance.md): synthetic
-  completed-export replay, adversarial matrix, scope limits and exact rebuild command.
+- [Public evaluation-core and deterministic metric acceptance](acceptance.md): synthetic
+  completed-export replay, frozen tool/coding matrices, scope limits and exact rebuild command.
 - [Compatibility matrix](compatibility-matrix.md): `0.1.x` stability tiers and versioned
   contracts.
 - [Local release checklist](local-release-checklist.md): source, artifact and wheel-only

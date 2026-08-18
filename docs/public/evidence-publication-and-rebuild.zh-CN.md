@@ -47,7 +47,7 @@ Cernora 证据可能记录工具输出、路径和 terminal 内容。任何导�
 生成输出应写入新目录，重建不能覆盖旧证据。比较 canonical 字节或排序后的
 path-to-digest manifest，不比较时间戳和宿主机元数据。
 
-wheel 内置的 evaluation-core 参考重建命令是：
+已发布 `0.1.0` wheel 内置的 evaluation-core 参考重建命令是：
 
 ```sh
 python -m cernora.examples.offline_workflow ./cernora-offline-example
@@ -56,6 +56,17 @@ python -m cernora.examples.offline_workflow ./cernora-offline-example
 它会生成合成的中立 completed export，将其转换成 EvidenceBundle v2，执行 import 和
 evaluation，再严格 reload 持久化结果。请使用新目录；成功时输出 `pass`。该命令不会启动
 Agent、运行 sandbox 或捕获 runtime receipt。
+
+本地 `0.1.1` 发布候选新增显式选择 Structured Result 的示例：
+
+```sh
+python -m cernora.examples.tool_workflow ./cernora-tool-example happy-path
+python -m cernora.examples.coding_evaluation ./cernora-coding-example happy-path
+```
+
+两个示例都会从 Profile-owned 合成证据写入并严格 reload EvaluationReport。完整冻结的
+Tool/Coding 矩阵、对抗 Case 和精确重建命令见[公开验收](acceptance.zh-CN.md)。这些示例
+仍然只证明 evaluation-core 链路，不证明外部 Runtime 执行。
 
 ## 重建评审
 
