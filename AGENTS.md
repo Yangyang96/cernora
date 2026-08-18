@@ -37,9 +37,11 @@ for a stable subsystem; never use temporary phases such as `stage-a` or `stage-b
 
 Use a lowercase imperative subject, aim for 50 characters, never exceed 72 characters, and
 do not end it with a period. Non-trivial commits require an English body separated by a blank
-line and wrapped at 72 characters. Explain what changed and why; use the relevant `Why`,
-`Changes`, `Compatibility`, `Validation`, and `Boundaries` sections rather than empty or
-generic headings.
+line and wrapped at 72 characters. Keep the body compact: explain the reason and primary
+outcome, group broad work by capability rather than file or implementation detail, and use
+only a few short paragraphs or bullets. Do not require fixed headings. Mention compatibility,
+safety boundaries or migrations only when material, and summarize routine validation instead
+of listing every command.
 
 Keep each commit focused. Review the staged diff and exclude secrets, customer data, raw
 transcripts, personal paths, local agent state, generated artifacts, and unrelated changes.
