@@ -73,6 +73,18 @@ def test_cli_init_and_explicit_validation(
     built_in = json.loads(capfd.readouterr().out)
     assert built_in["profile_id"] == "cernora-offline-workflow-v1"
 
+    assert main(["profile", "validate", "--profile", "builtin:tool-workflow"]) == 0
+    tool_workflow = json.loads(capfd.readouterr().out)
+    assert tool_workflow["profile_id"] == "cernora-tool-workflow-v1"
+
+    assert main(["profile", "validate", "--profile", "builtin:coding-evaluation"]) == 0
+    coding_evaluation = json.loads(capfd.readouterr().out)
+    assert coding_evaluation["profile_id"] == "cernora-coding-evaluation-v1"
+
+    assert main(["profile", "validate", "--profile", "builtin:coding-task"]) == 0
+    coding_task = json.loads(capfd.readouterr().out)
+    assert coding_task["profile_id"] == "cernora-coding-task-v1"
+
 
 def test_cli_rejects_implicit_or_legacy_profile_selection() -> None:
     with pytest.raises(SystemExit) as missing:

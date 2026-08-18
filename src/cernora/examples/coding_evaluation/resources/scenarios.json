@@ -1,0 +1,25 @@
+{
+  "schema_version": "cernora.coding-evaluation-fixture-matrix/v1",
+  "fixtures": [
+    {"id": "happy-path", "variant": "happy", "expected": "pass"},
+    {"id": "allowed-change", "variant": "allowed_change", "expected": "pass"},
+    {"id": "build-failure", "variant": "build_failure", "expected": "fail"},
+    {"id": "unresolved-f2p", "variant": "unresolved_f2p", "expected": "fail"},
+    {"id": "regression-failure", "variant": "regression_failure", "expected": "fail"},
+    {"id": "forbidden-file-change", "variant": "forbidden_file_change", "expected": "fail"},
+    {"id": "protected-test-tamper", "variant": "protected_test_tamper", "expected": "fail"},
+    {"id": "terminal-binding-mismatch", "variant": "terminal_binding_mismatch", "expected": "fail"},
+    {"id": "candidate-self-mutation", "variant": "candidate_self_mutation", "expected": "fail"},
+    {"id": "retry-policy-violation", "variant": "retry_policy_violation", "expected": "fail"},
+    {"id": "missing-execution-evidence", "variant": "missing_execution_evidence", "expected": "inconclusive"},
+    {"id": "untrusted-execution-authority", "variant": "untrusted_execution_authority", "expected": "inconclusive"},
+    {"id": "wrong-capsule-binding", "variant": "wrong_capsule_binding", "expected": "inconclusive"},
+    {"id": "partial-test-results", "variant": "partial_test_results", "expected": "inconclusive"},
+    {"id": "duplicate-test-result", "variant": "duplicate_test_result", "expected": "inconclusive"},
+    {"id": "skipped-test", "variant": "skipped_test", "expected": "inconclusive"},
+    {"id": "xfailed-test", "variant": "xfailed_test", "expected": "inconclusive"},
+    {"id": "infrastructure-unavailable", "variant": "infrastructure_unavailable", "expected": "inconclusive"},
+    {"id": "conflicting-attempts", "variant": "conflicting_attempts", "expected": "inconclusive"},
+    {"id": "corrupt-candidate-tree", "variant": "corrupt_candidate_tree", "expected": "import_rejection"}
+  ]
+}

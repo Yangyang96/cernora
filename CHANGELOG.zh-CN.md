@@ -7,13 +7,24 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ## Unreleased
 
+## 0.1.1 - 2026-08-18
+
 ### Added
 
+- 新增 Preview `ResultRecord` v1、`EvaluationReport` v1、公开 schema，以及针对显式选择
+  structured result 的 Profile 的 manifest 绑定严格持久化。
+- 新增独立版本化的 `builtin:tool-workflow` Profile，并提供冻结的 18 Case 合成
+  验收矩阵，覆盖 pass、行为 fail、inconclusive 和损坏输入拒绝。
+- 新增独立版本化的 `builtin:coding-evaluation` Profile，覆盖 Candidate Tree v1
+  重建、Profile-owned 冻结执行 capsule、F2P/P2P 诊断、派生 diff/篡改策略和 20 行确定性
+  验收矩阵；原有 `builtin:coding-task` Profile 保持不变。
 - 为发布维护者提供完整本地 preflight 命令，以及生产 PyPI artifact、干净安装和
   Python 3.12/3.13 验收流程验证命令。
 
 ### Changed
 
+- `ProfileAssessment` 新增可选字段 `result_records=()`。现有 Profile 保持原有
+  Score/Gate 行为；只有显式提供 records 的 Profile 才会生成 evaluation report。
 - CI、artifact 检查、Trusted Publishing 和发布流程现在从声明版本推导 artifact 名称，
   不再硬编码 `0.1.0`。
 

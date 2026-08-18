@@ -22,6 +22,8 @@ Cernora 是一个独立评测内核，根据记录下来的工具调用、返回
 
 > **当前版本：** `0.1.0`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
 > [平台矩阵](docs/public/compatibility-matrix.zh-CN.md)。
+>
+> **本地发布候选：** `0.1.1`；此 checkout 尚未发布该版本。
 
 ## 五分钟运行
 
@@ -33,10 +35,10 @@ source .venv/bin/activate
 python -m pip install cernora
 
 # 运行完整的工具工作流评测
-python -m cernora.examples.offline_workflow ./cernora-workflow-run
+python -m cernora.examples.tool_workflow ./cernora-workflow-run happy-path
 
 # 运行打包的 Coding 评测
-python -m cernora.examples.coding_task ./cernora-coding-run backend-v1
+python -m cernora.examples.coding_evaluation ./cernora-coding-run happy-path
 ```
 
 每个命令都会输出：
@@ -56,8 +58,9 @@ observations:
   claim_grounded: true
 ```
 
-每次运行的输出目录必须尚不存在。两个示例均可直接从安装后的 wheel 运行，使用合成的
-completed export，不需要凭证或源码 checkout。
+每次运行的输出目录必须尚不存在。两个示例均可直接从安装后的 wheel 运行，使用
+Profile-owned 合成 completed export，不需要凭证或源码 checkout，并会写入和严格重载
+Preview `EvaluationReport`。它们验证冻结的评测语义，不证明真实外部动作或测试运行发生过。
 
 ## 为什么需要 Cernora？
 
@@ -110,6 +113,8 @@ Cernora 把评测设计成独立的裁决权威：
 |---|---|
 |`offline-workflow`|精确工具/参数选择、响应完整性，以及回答是否由受保护 fixture 证据支撑。|
 |`coding-task`|候选导出格式、内容和终态摘要绑定，以及覆盖 backend、frontend 和 fail-closed Case 的 Evaluator post-terminal checks。|
+|`tool-workflow`|针对有状态合成工作流的 outcome-first structured result，绑定精确 Profile-owned observation；不证明真实外部动作已发生。|
+|`coding-evaluation`|针对精确 Profile-owned 合成 capsule，验证 Candidate Tree v1 重建、F2P/P2P、build/回归结果、派生 diff policy、篡改检查和终态绑定。|
 
 Profile 是完整且版本化的策略。评测时不能临时关闭单项观察，因此相同证据和权威会得到
 相同语义。
@@ -156,12 +161,13 @@ cernora profile validate --profile-path .cernora/profiles/my-profile
 也不声称 sandbox Profile 执行。详见 [Profile 编写](docs/public/profile-authoring.zh-CN.md)和
 [Adapter conformance](docs/public/adapter-conformance.zh-CN.md)。
 
-## `0.1.0` 已验证内容
+## `0.1.1` 发布候选已验证内容
 
-公开验收流程在源码仓库外的 Python 3.12 和 3.13 环境中安装精确 wheel，将 workflow
-代表任务运行三次，并将三个 Coding Case 分别运行三次；结果保持 byte-identical，
-且都经过严格 reload。验收还确认：损坏或缺失 artifact、权威不一致和候选路径穿越会被
-拒绝，而有效证据证明的错误行为会保留为 eligible `fail`。
+公开验收流程在源码仓库外的 Python 3.12 和 3.13 环境中安装精确 wheel。除原有代表任务
+外，它还验收全部 18 个 `tool-workflow` 场景和 20 个 `coding-evaluation` 场景；每个可接受
+场景都运行三次，
+结果 byte-identical 且可严格 reload。无效权威、损坏输入和路径边界场景都会 fail closed，
+而有效证据证明的错误行为会保留为 eligible `fail`。
 
 查看[验收报告](docs/public/acceptance.zh-CN.md)和
 [机器可读摘要](docs/public/acceptance-summary.json)。重建验收证据前，先激活一个已安装

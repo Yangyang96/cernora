@@ -11,6 +11,7 @@ from typing import Protocol, runtime_checkable
 
 from cernora.core.case import CaseProfile
 from cernora.core.evidence import Evidence
+from cernora.core.result import ResultRecord
 from cernora.core.score import Score
 from cernora.ingestion.contracts_v2 import AuthorityBoundImportPackageV2
 
@@ -32,6 +33,7 @@ class ProfileAssessment:
     evidence: Evidence
     score: Score
     required_observations: tuple[str, ...]
+    result_records: tuple[ResultRecord, ...] = ()
 
 
 @runtime_checkable

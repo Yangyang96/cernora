@@ -4,11 +4,20 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from typing import Literal
 
 from cernora.composition.gating import compose_gate
 from cernora.core.canonical import canonical_json
-from cernora.core.evidence import Artifact, Evidence, EvidenceReference, Failure, ToolAction
+from cernora.core.evidence import (
+    Artifact,
+    Evidence,
+    EvidenceReference,
+    Failure,
+    ToolAction,
+    evidence_reference_sort_key,
+)
 from cernora.core.identity import component_identity, external_producer_identity, identity_digest
+from cernora.core.result import EvaluationReport, ResultRecord
 from cernora.core.score import Score, ScoreObservation
 from cernora.evaluation.contracts import (
     ImportedCaseEvaluation,
@@ -206,6 +215,104 @@ def _check_assessment(
         bound.profile.scorer_policy.required_observations
     ):
         raise IngestionIntegrityError("Profile Score observations do not match authority order")
+    _check_result_records(bound, context, assessment)
+
+
+def _reference_is_bound(
+    bound: AuthorityBoundImportPackageV2,
+    context: ProfileEvaluationContext,
+    reference: EvidenceReference,
+) -> bool:
+    if reference.evidence_id != context.evidence_id or reference.sha256 is None:
+        return False
+    if (
+        reference.locator == "source-import/import-receipt.json"
+        and reference.sha256 == context.source_receipt_sha256
+    ):
+        return True
+    for artifact in bound.content.bundle.artifacts:
+        locators = {
+            artifact.path,
+            f"artifact:{artifact.artifact_id}",
+            f"artifacts/{artifact.path}",
+            f"source-import/artifacts/{artifact.path}",
+        }
+        if reference.locator in locators and reference.sha256 == artifact.sha256:
+            return True
+    return False
+
+
+def _check_result_records(
+    bound: AuthorityBoundImportPackageV2,
+    context: ProfileEvaluationContext,
+    assessment: ProfileAssessment,
+) -> None:
+    records = assessment.result_records
+    if not records:
+        return
+    indexed = {record.id: record for record in records}
+    if len(indexed) != len(records):
+        raise IngestionIntegrityError("Profile result record IDs must be unique")
+    if any(
+        len(record.evidence_refs)
+        != len({evidence_reference_sort_key(reference) for reference in record.evidence_refs})
+        for record in records
+    ):
+        raise IngestionIntegrityError("Profile result Evidence references must be unique")
+    required = assessment.required_observations
+    if any(result_id not in indexed for result_id in required):
+        raise IngestionIntegrityError("Profile result records omit a required observation")
+    if any(
+        record.role in {"outcome", "constraint"} and record.id not in required for record in records
+    ):
+        raise IngestionIntegrityError("Profile result records added an undeclared Gate input")
+    if any(
+        not _reference_is_bound(bound, context, reference)
+        for record in records
+        for reference in record.evidence_refs
+    ):
+        raise IngestionIntegrityError("Profile result record has an unbound Evidence reference")
+
+    observations = {item.observation_id: item for item in assessment.score.observations}
+    for result_id in required:
+        record = indexed[result_id]
+        observation = observations[result_id]
+        if record.role not in {"outcome", "constraint"} or record.value_type != "boolean":
+            raise IngestionIntegrityError("required result records must be boolean Gate inputs")
+        if observation.applicability == "observed":
+            if (
+                record.validity != "valid"
+                or type(record.value) is not bool
+                or record.value is not observation.value
+                or record.evidence_refs != observation.evidence_references
+            ):
+                raise IngestionIntegrityError("Profile result record contradicts Score v1")
+        elif observation.applicability == "not_applicable":
+            if (
+                record.validity != "not_applicable"
+                or record.failure_reason != observation.reason
+                or record.evidence_refs != observation.evidence_references
+            ):
+                raise IngestionIntegrityError("Profile result applicability contradicts Score v1")
+        elif (
+            record.validity not in {"invalid", "unavailable"}
+            or record.failure_reason != observation.reason
+            or record.evidence_refs != observation.evidence_references
+        ):
+            raise IngestionIntegrityError("Profile result validity contradicts Score v1")
+
+
+def _evaluation_validity(
+    records: tuple[ResultRecord, ...],
+    required: tuple[str, ...],
+) -> Literal["valid", "invalid", "unavailable"]:
+    indexed = {record.id: record for record in records}
+    validities = tuple(indexed[result_id].validity for result_id in required)
+    if "invalid" in validities:
+        return "invalid"
+    if any(validity != "valid" for validity in validities):
+        return "unavailable"
+    return "valid"
 
 
 def evaluate_imported_case_v2(import_root: Path, profile: Profile) -> ImportedCaseEvaluation:
@@ -244,11 +351,30 @@ def evaluate_imported_case_v2(import_root: Path, profile: Profile) -> ImportedCa
     )
     if decision.decision not in bound.content.bundle.evaluation_boundary:
         raise IngestionIntegrityError("Profile outcome contradicts the evidence boundary")
+    report = None
+    if assessment.result_records:
+        report = EvaluationReport(
+            schema_version="agent.evaluator.evaluation-report/v1",
+            evaluation_id=context.evaluation_id,
+            evidence_id=context.evidence_id,
+            score_id=context.score_id,
+            decision_id=decision.decision_id,
+            evaluation_input_sha256=evaluation_input_sha256,
+            authority_id=authority.authority_id,
+            authority_sha256=authority.authority_sha256,
+            conclusion=decision.decision,
+            evaluation_validity=_evaluation_validity(
+                assessment.result_records,
+                assessment.required_observations,
+            ),
+            records=assessment.result_records,
+        )
     return ImportedCaseEvaluation(
         authority=authority,
         evidence=assessment.evidence,
         score=assessment.score,
         decision=decision,
+        report=report,
     )
 
 

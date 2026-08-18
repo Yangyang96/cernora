@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "cernora-result-record-v1.schema.json",
+  "title": "ResultRecord",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "version",
+    "role",
+    "value",
+    "value_type",
+    "validity",
+    "failure_reason",
+    "evidence_refs",
+    "unit",
+    "direction"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9][a-z0-9._-]*$"
+    },
+    "version": {"const": "agent.evaluator.result-record/v1"},
+    "role": {"enum": ["outcome", "constraint", "advisory", "diagnostic"]},
+    "value": {"type": ["boolean", "integer", "number", "string", "null"]},
+    "value_type": {"enum": ["boolean", "integer", "number", "string"]},
+    "validity": {"enum": ["valid", "invalid", "unavailable", "not_applicable"]},
+    "failure_reason": {"type": ["string", "null"]},
+    "evidence_refs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/evidenceReference"}
+    },
+    "unit": {
+      "anyOf": [{"type": "string", "minLength": 1}, {"type": "null"}]
+    },
+    "direction": {
+      "enum": ["higher_is_better", "lower_is_better", "neutral", null]
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"validity": {"const": "valid"}}, "required": ["validity"]},
+      "then": {
+        "properties": {
+          "value": {"not": {"type": "null"}},
+          "failure_reason": {"const": null},
+          "evidence_refs": {"minItems": 1}
+        }
+      },
+      "else": {
+        "properties": {
+          "value": {"const": null},
+          "failure_reason": {"type": "string", "minLength": 1, "pattern": "\\S"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"value_type": {"const": "boolean"}}, "required": ["value_type"]},
+      "then": {
+        "properties": {
+          "value": {"type": ["boolean", "null"]},
+          "unit": {"const": null},
+          "direction": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"role": {"enum": ["outcome", "constraint"]}},
+        "required": ["role"]
+      },
+      "then": {"properties": {"value_type": {"const": "boolean"}}}
+    },
+    {
+      "if": {"properties": {"value_type": {"const": "integer"}}, "required": ["value_type"]},
+      "then": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              {"type": "null"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"value_type": {"const": "number"}}, "required": ["value_type"]},
+      "then": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {"type": "number", "minimum": -1e308, "maximum": 1e308},
+              {"type": "null"}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"value_type": {"const": "string"}}, "required": ["value_type"]},
+      "then": {
+        "properties": {
+          "value": {"type": ["string", "null"]},
+          "unit": {"const": null},
+          "direction": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "validity": {"const": "valid"},
+          "value_type": {"enum": ["integer", "number"]}
+        },
+        "required": ["validity", "value_type"]
+      },
+      "then": {
+        "properties": {
+          "unit": {"type": "string", "minLength": 1},
+          "direction": {"enum": ["higher_is_better", "lower_is_better", "neutral"]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"unit": {"type": "string"}}, "required": ["unit"]},
+      "then": {
+        "properties": {
+          "direction": {"enum": ["higher_is_better", "lower_is_better", "neutral"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "direction": {"enum": ["higher_is_better", "lower_is_better", "neutral"]}
+        },
+        "required": ["direction"]
+      },
+      "then": {"properties": {"unit": {"type": "string"}}}
+    }
+  ],
+  "$defs": {
+    "evidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_id", "locator"],
+      "properties": {
+        "evidence_id": {"type": "string", "minLength": 1},
+        "locator": {"type": "string", "minLength": 1},
+        "sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

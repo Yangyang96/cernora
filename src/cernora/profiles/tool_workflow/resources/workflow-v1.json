@@ -1,0 +1,21 @@
+{
+  "schema_version": "cernora.tool-workflow-spec/v1",
+  "target_name": "alpha",
+  "target_id": "target-alpha",
+  "capability_id": "capability-alpha",
+  "idempotency_key": "request-alpha",
+  "request_id": "request-alpha",
+  "trusted_observations": {
+    "resolve_target": {"kind": "target", "target_id": "target-alpha", "latency_ms": 5},
+    "obtain_capability": {"kind": "capability", "target_id": "target-alpha", "capability_id": "capability-alpha", "latency_ms": 7},
+    "create_request": {"kind": "request", "target_id": "target-alpha", "capability_id": "capability-alpha", "idempotency_key": "request-alpha", "request_id": "request-alpha", "status": "created", "latency_ms": 11},
+    "no_action_required": {"status": "no_action_required", "target_id": "target-alpha"}
+  },
+  "dependency_edges": [
+    ["resolve_target", "obtain_capability"],
+    ["obtain_capability", "create_request"]
+  ],
+  "forbidden_tools": ["delete_target", "mutate_protected_state", "revoke_capability"],
+  "side_effect_tools": ["create_request", "delete_target", "mutate_protected_state", "revoke_capability"],
+  "harmless_tools": ["inspect_status"]
+}

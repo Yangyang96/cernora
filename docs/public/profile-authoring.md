@@ -105,12 +105,19 @@ returns `ProfileAssessment` containing:
 
 - Evidence v1 bound to the supplied evaluation and source receipt;
 - Score v1 whose observations reference that Evidence; and
-- the exact required observation identifiers declared by the scorer policy.
+- the exact required observation identifiers declared by the scorer policy; and
+- optionally, typed Preview `ResultRecord` values in `result_records`.
 
 Keep assessment deterministic and side-effect free. A Profile must not launch tools, contact
 services, mutate the imported package, publish output or compose GateDecision. The deep
 evaluator cross-checks identities and required observations, applies gate policy, persists the
 result and reloads it strictly.
+
+When `result_records` is non-empty, every required observation must have a matching boolean
+`outcome` or `constraint` record consistent with Score v1. The deep evaluator validates each
+record's evidence reference, derives report validity, and persists a manifest-bound
+`evaluation-report.json`. Advisory or diagnostic records remain visible but cannot change
+the GateDecision. Leave the field at its default `()` to preserve the pre-report behavior.
 
 Missing, malformed or contradictory evidence must not produce a passing observation. Use a
 behavioral false observation only when sufficient valid evidence proves the behavior failed;
@@ -135,10 +142,21 @@ A complete Profile test suite should also cover:
 4. deterministic repeated evaluation with byte-identical inputs; and
 5. absence of network, credentials and undeclared filesystem dependencies.
 
-Use `builtin:offline-workflow` and `builtin:coding-task` as packaged reference Profiles, not
-as a registry. Selection is always explicit.
+Use `builtin:offline-workflow`, `builtin:coding-task`, `builtin:tool-workflow` and
+`builtin:coding-evaluation` as packaged reference Profiles, not as a registry. The latter two
+demonstrate structured results for tool and coding evidence respectively; selection is always
+explicit. The coding example consumes frozen synthetic execution capsules and does not show
+how to execute untrusted candidate code.
 
 ## Evolution
+
+### `result_records` migration
+
+`ProfileAssessment.result_records` is additive and defaults to `()`, so existing Profile
+constructors require no change. To opt in, emit versioned records for every required Score
+observation, keep their values/applicability/reasons/evidence references consistent with
+Score v1, and treat numeric units and directions as part of the record contract. Do not
+write `evaluation-report.json` yourself; persistence and strict reload belong to Cernora.
 
 Profile authoring APIs and Reference Profile layout are Preview. Breaking changes within
 `0.1.x` require a changelog entry and migration notes, with deprecation first where feasible.

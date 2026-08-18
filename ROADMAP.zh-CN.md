@@ -62,6 +62,11 @@ Loop，让第三方能够端到端证明自己的 Assessment。公共 `MetricPla
 
 ## 优先级 1——确定性指标覆盖
 
+已接受的实现基线见
+[`docs/design/priority-1-deterministic-metrics.md`](docs/design/priority-1-deterministic-metrics.md)。
+`coding-evaluation` 只在独立 Coding evidence review 冻结 candidate reconstruction、
+合成执行权威、测试分类、篡改和 change-policy 语义后实现。
+
 ### 目标
 
 在初始 Profile 自有布尔 Observation 之外增加有用、可由证据推导的指标，同时

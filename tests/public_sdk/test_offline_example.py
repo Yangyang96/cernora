@@ -15,7 +15,11 @@ from cernora.conformance import (
     check_profile_conformance,
 )
 from cernora.core.evidence_bundle_v2 import decode_evidence_bundle_v2
-from cernora.evaluation.package import evaluate_imported_case, read_imported_evaluation
+from cernora.evaluation.package import (
+    evaluate_imported_case,
+    read_evaluation_report,
+    read_imported_evaluation,
+)
 from cernora.examples.offline_workflow import (
     OfflineWorkflowAdapter,
     materialize_completed_export,
@@ -86,6 +90,7 @@ def test_packaged_example_is_protocol_conformant_deterministic_and_offline(
     assert receipt.case_outcome == "pass"
     assert receipt.eligible is True
     assert read_imported_evaluation(evaluated, profile) == receipt
+    assert read_evaluation_report(evaluated, profile) is None
 
 
 def test_public_conformance_helpers_validate_profile_and_closed_adapter_tree(

@@ -1,10 +1,11 @@
-# 公开 V1/V2 评测内核代表性验收
+# 公开评测内核与 Priority 1 验收
 
 [English](acceptance.md) | **简体中文**
 
-Cernora `0.1.0` 使用原项目 V1 workflow 任务和 V2 coding 任务的脱敏公开代表进行验收。
-这些任务标签并不表示 EvidenceBundle v1：所有运行都使用 EvidenceBundle v2/import v2，
-并输出 Evidence v1、Score v1 和 GateDecision v1。
+Cernora `0.1.1` 发布候选使用原项目 V1/V2 脱敏公开代表，以及 Priority 1
+`tool-workflow` 和 `coding-evaluation` 矩阵进行验收。这些任务标签并不表示
+EvidenceBundle v1：所有运行都使用 EvidenceBundle v2/import v2；Priority 1 运行还输出
+ResultRecord v1 和 EvaluationReport v1。
 
 验收使用仓库外的干净 Python 3.12.12 和 3.13.12 环境。每个环境都安装固定 Python
 依赖和构建后的 Cernora wheel，然后在取消 `PYTHONPATH`、禁用用户级 package 的情况下
@@ -27,12 +28,17 @@ assessment、Score、GateDecision 和严格 reload。它不是完整端到端 Ag
 - 脱敏 V1 workflow：三次 `pass`，canonical 字节完全相同，并严格 reload 持久化结果。
 - 脱敏 V2 coding：backend、frontend 和 fail-closed Case 各运行三次，结果字节相同并严格
   reload。
+- `tool-workflow`：18 个冻结场景全部符合预期；17 个可接受场景各生成三次字节相同且
+  可严格 reload 的结果树，corrupt 场景被拒绝。
+- `coding-evaluation`：20 个冻结场景全部符合 2 pass / 8 fail / 9 inconclusive / 1 rejection；
+  19 个可接受场景各生成三次字节相同且可严格 reload 的结果树。
 - 损坏 artifact、缺失 artifact、Profile 权威不一致和候选路径穿越都在 eligible pass
   前被拒绝。
 - 格式正确但行为错误的 coding candidate 保持 evidence eligible，并生成预期的行为
   `fail` GateDecision。
-- Python 3.12 和 3.13 生成字节完全相同的摘要，SHA-256 为
-  `c04c86654b37bad5be1c79be5821c36824d1ef601e405ea368b1f6c22870b8e3`。
+- Python 3.12.12 和 3.13.12 生成字节完全相同的 3,778-file 验收树，SHA-256 为
+  `c3c8b8f7edfdd8072ba2459cd7eab8886e9dce1609bbbeff670d196aacaae7b9`；已审阅摘要的
+  SHA-256 为 `6ebf251c0d83db68cd8dac6dab2c828012383f59544706e9f5b1db64e1b8d4d1`。
 
 精简结果见 [acceptance-summary.json](acceptance-summary.json)。仓库不提交生成的 Bundle、
 import 和 evaluation 原始目录树：它们可以确定性重建，且体积大于有效评审范围。此次验收
@@ -48,9 +54,9 @@ env -u PYTHONPATH PYTHONNOUSERSITE=1 \
   --output ./cernora-public-acceptance
 ```
 
-命令会输出 `pass`。将 `cernora-public-acceptance/summary.json` 与
-`docs/public/acceptance-summary.json` 按字节比较；SHA-256 必须与上面的值一致。输出目录
-必须尚不存在。
+命令只有在将 `cernora-public-acceptance/summary.json` 与
+`docs/public/acceptance-summary.json` 按字节比较一致后才会输出 `pass`；SHA-256 必须与
+上面的值一致。输出目录必须尚不存在。
 
 这是 evaluation-core release candidate 的证据，不是 Agent Runtime/sandbox 证据，也不
 表示已经完成 GitHub 或 PyPI 发布。

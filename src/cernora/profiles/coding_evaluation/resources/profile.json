@@ -1,0 +1,40 @@
+{
+  "schema_version": "agent.evaluator.case-profile/v1",
+  "profile_id": "cernora-coding-evaluation-v1",
+  "profile_version": "1.0.0",
+  "description": "Deterministic offline coding outcome, regression and change-policy evaluation.",
+  "cases": [
+    {
+      "case_id": "repair-calculator-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-coding-evaluation",
+      "input": {
+        "prompt": "Repair calculator addition while preserving regressions and the frozen change policy.",
+        "parameters": {"candidate_tree_schema": "cernora.candidate-tree/v1"}
+      },
+      "declared_capabilities": ["profile-owned-synthetic-coding-evaluation"],
+      "fixture_references": [
+        {
+          "fixture_id": "coding-evaluation-authority-v1",
+          "path": "resources/authority-v1.json",
+          "sha256": "b5d40f6d05d98f8310433633fa7e85496c116672346d1c2235185959b2614f95"
+        },
+        {
+          "fixture_id": "coding-evaluation-oracle-v1",
+          "path": "resources/oracle-v1.json",
+          "sha256": "2bf4a498bbf48af4fe3d76372ad06dbc941d6db163a1f0386bd2f67ecded5e4b"
+        }
+      ],
+      "tags": ["offline", "synthetic", "coding"]
+    }
+  ],
+  "scorer_policy": {
+    "policy_version": "cernora.coding-evaluation-scorer/v1",
+    "required_observations": ["task_outcome", "policy_compliance"]
+  },
+  "gate_policy": {
+    "policy_version": "cernora.coding-evaluation-gate/v1",
+    "required_score_ids": ["coding-evaluation-score"],
+    "invalid_result": "inconclusive"
+  }
+}

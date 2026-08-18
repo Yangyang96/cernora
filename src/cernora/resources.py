@@ -6,6 +6,7 @@ PUBLIC_SCHEMAS = (
     "case-profile-v1.schema.json",
     "evidence-bundle-v2.schema.json",
     "evidence-v1.schema.json",
+    "evaluation-report-v1.schema.json",
     "gate-decision-v1.schema.json",
     "import-manifest-v2.schema.json",
     "import-receipt-v2.schema.json",
@@ -13,6 +14,7 @@ PUBLIC_SCHEMAS = (
     "imported-evaluation-manifest-v1.schema.json",
     "imported-evaluation-receipt-v1.schema.json",
     "score-v1.schema.json",
+    "result-record-v1.schema.json",
 )
 
 

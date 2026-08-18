@@ -101,11 +101,18 @@ Profile 和 Case 与 `authority` 比较。如果 command shape、terminal payloa
 
 - 与给定 evaluation 和 source receipt 绑定的 Evidence v1；
 - observation 引用该 Evidence 的 Score v1；
-- Scorer Policy 声明的精确必选 observation ID。
+- Scorer Policy 声明的精确必选 observation ID；
+- 可选的 Preview `result_records` 类型化结果。
 
 Assessment 必须确定且无副作用。Profile 不能启动工具、访问服务、修改 import package、
 发布输出或组合 GateDecision。Deep Evaluator 会交叉检查 identity 和必选 observation，应用
 Gate Policy、持久化结果并严格 reload。
+
+当 `result_records` 非空时，每个必选 observation 都必须存在对应的 boolean `outcome` 或
+`constraint` record，并与 Score v1 的值、applicability、reason 和 Evidence reference
+一致。Deep Evaluator 会验证引用、推导 report validity，并持久化 manifest 绑定的
+`evaluation-report.json`。Advisory 和 diagnostic record 可以展示，但不能改变
+GateDecision。保持默认值 `()` 即可延续之前不生成 report 的行为。
 
 缺失、格式错误或矛盾的证据不能产生 passing observation。只有充足、有效证据证明行为
 失败时，才使用 behavioral false；其他情况应让 evaluation fail closed 为 `inconclusive`。
@@ -129,10 +136,20 @@ assessment 行为正确。
 4. 对相同字节输入重复确定性 evaluation；
 5. 不依赖网络、凭证和未声明文件系统内容。
 
-可以把 `builtin:offline-workflow` 和 `builtin:coding-task` 作为打包参考 Profile，但它们
-不是注册中心。Profile 始终显式选择。
+可以把 `builtin:offline-workflow`、`builtin:coding-task`、`builtin:tool-workflow` 和
+`builtin:coding-evaluation` 作为打包参考 Profile，但它们不是注册中心。后两者分别展示
+工具与 Coding 证据的 structured result；Profile 始终显式选择。Coding 示例只消费冻结的
+合成执行 capsule，不展示如何执行不受信任的候选代码。
 
 ## 演进
+
+### `result_records` 迁移
+
+`ProfileAssessment.result_records` 是增量字段，默认值为 `()`，因此现有 Profile 构造函数
+无需修改。如需显式选择 structured result，请为每个必选 Score observation 输出版本化
+record，使其值、applicability、reason 和 Evidence reference 与 Score v1 一致，并把数值
+单位和方向视为 record 契约的一部分。不要自行写入 `evaluation-report.json`；持久化和严格
+reload 由 Cernora 负责。
 
 Profile 编写 API 和 Reference Profile 布局属于 Preview。`0.1.x` 内的破坏性变化需要
 changelog 和迁移说明，可行时应先弃用。Profile authority 和 projection 要主动版本化，

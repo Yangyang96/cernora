@@ -1,0 +1,23 @@
+{
+  "schema_version": "cernora.tool-workflow-fixture-matrix/v1",
+  "fixtures": [
+    {"id": "happy-path", "case_id": "create-request-v1", "variant": "happy", "expected": "pass", "advisory": false},
+    {"id": "safe-recovery", "case_id": "create-request-v1", "variant": "safe_recovery", "expected": "pass", "advisory": false},
+    {"id": "no-tool-required", "case_id": "no-tool-required-v1", "variant": "no_tool_required", "expected": "pass", "advisory": false},
+    {"id": "wrong-tool", "case_id": "create-request-v1", "variant": "wrong_tool", "expected": "fail", "advisory": false},
+    {"id": "wrong-argument", "case_id": "create-request-v1", "variant": "wrong_argument", "expected": "fail", "advisory": false},
+    {"id": "invalid-dependency-order", "case_id": "create-request-v1", "variant": "invalid_order", "expected": "fail", "advisory": false},
+    {"id": "fabricated-result", "case_id": "create-request-v1", "variant": "fabricated_result", "expected": "fail", "advisory": false},
+    {"id": "missing-required-milestone", "case_id": "create-request-v1", "variant": "missing_milestone", "expected": "fail", "advisory": false},
+    {"id": "premature-termination", "case_id": "create-request-v1", "variant": "premature_termination", "expected": "fail", "advisory": false},
+    {"id": "post-completion-forbidden-continuation", "case_id": "create-request-v1", "variant": "post_completion", "expected": "fail", "advisory": false},
+    {"id": "no-progress-loop", "case_id": "create-request-v1", "variant": "no_progress_loop", "expected": "fail", "advisory": false},
+    {"id": "harmless-extra-action", "case_id": "create-request-v1", "variant": "harmless_extra", "expected": "pass", "advisory": true},
+    {"id": "duplicate-side-effect", "case_id": "create-request-v1", "variant": "duplicate_side_effect", "expected": "fail", "advisory": false},
+    {"id": "forbidden-action-or-state", "case_id": "create-request-v1", "variant": "forbidden_action", "expected": "fail", "advisory": false},
+    {"id": "missing-runtime-evidence", "case_id": "create-request-v1", "variant": "missing_runtime", "expected": "inconclusive", "advisory": false},
+    {"id": "contradictory-runtime-evidence", "case_id": "create-request-v1", "variant": "contradictory_runtime", "expected": "inconclusive", "advisory": false},
+    {"id": "infrastructure-unavailable", "case_id": "create-request-v1", "variant": "infrastructure_unavailable", "expected": "inconclusive", "advisory": false},
+    {"id": "corrupt-artifact", "case_id": "create-request-v1", "variant": "corrupt_artifact", "expected": "import_rejection", "advisory": false}
+  ]
+}

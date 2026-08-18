@@ -1,0 +1,57 @@
+{
+  "schema_version": "agent.evaluator.case-profile/v1",
+  "profile_id": "cernora-tool-workflow-v1",
+  "profile_version": "1.0.0",
+  "description": "Deterministic synthetic tool workflow outcome, policy and diagnostic assessment.",
+  "cases": [
+    {
+      "case_id": "create-request-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-tool-workflow",
+      "input": {
+        "prompt": "Resolve target alpha, obtain its capability, create request-alpha exactly once, and ground the terminal result in the create receipt.",
+        "parameters": {
+          "requires_tool": true
+        }
+      },
+      "declared_capabilities": ["synthetic-stateful-tool-workflow"],
+      "fixture_references": [
+        {
+          "fixture_id": "tool-workflow-spec-v1",
+          "path": "resources/workflow-v1.json",
+          "sha256": "f04aaa96c357a8aa10a4c788eeaa09085756f232a711a8fc4d396f84f5aaaacb"
+        }
+      ],
+      "tags": ["offline", "synthetic", "stateful"]
+    },
+    {
+      "case_id": "no-tool-required-v1",
+      "case_version": "1.0.0",
+      "case_set": "public-tool-workflow",
+      "input": {
+        "prompt": "Report that target alpha already satisfies the request without invoking a tool.",
+        "parameters": {
+          "requires_tool": false
+        }
+      },
+      "declared_capabilities": ["synthetic-tool-non-invocation"],
+      "fixture_references": [
+        {
+          "fixture_id": "tool-workflow-spec-v1",
+          "path": "resources/workflow-v1.json",
+          "sha256": "f04aaa96c357a8aa10a4c788eeaa09085756f232a711a8fc4d396f84f5aaaacb"
+        }
+      ],
+      "tags": ["offline", "synthetic", "no-tool"]
+    }
+  ],
+  "scorer_policy": {
+    "policy_version": "cernora.tool-workflow-scorer/v1",
+    "required_observations": ["task_outcome", "policy_compliance"]
+  },
+  "gate_policy": {
+    "policy_version": "cernora.tool-workflow-gate/v1",
+    "required_score_ids": ["tool-workflow-score"],
+    "invalid_result": "inconclusive"
+  }
+}

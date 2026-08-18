@@ -16,7 +16,17 @@ from unittest.mock import patch
 
 import cernora
 from cernora.core.errors import ContractError
-from cernora.evaluation.package import evaluate_imported_case, read_imported_evaluation
+from cernora.evaluation.package import (
+    evaluate_imported_case,
+    read_evaluation_report,
+    read_imported_evaluation,
+)
+from cernora.examples.coding_evaluation import (
+    fixture_matrix as coding_evaluation_fixture_matrix,
+)
+from cernora.examples.coding_evaluation import (
+    materialize_fixture as materialize_coding_evaluation_fixture,
+)
 from cernora.examples.coding_task import (
     CodingTaskAdapter,
     CompletedExportError,
@@ -24,14 +34,17 @@ from cernora.examples.coding_task import (
     run_coding_task,
 )
 from cernora.examples.offline_workflow import run_offline_workflow
+from cernora.examples.tool_workflow import fixture_matrix, materialize_fixture
 from cernora.ingestion.errors import (
     AuthorityIncompatibleError,
     IngestionConfigurationError,
     IngestionIntegrityError,
 )
 from cernora.ingestion.package_v2 import import_evidence_bundle_v2
+from cernora.profiles.coding_evaluation import CodingEvaluationProfile
 from cernora.profiles.coding_task import CodingTaskProfile
 from cernora.profiles.offline_workflow import OfflineWorkflowProfile
+from cernora.profiles.tool_workflow import ToolWorkflowProfile
 
 _CODING_CASES = ("backend-v1", "frontend-v1", "fail-closed-v1")
 _REPETITIONS = 3
@@ -138,12 +151,130 @@ def _positive_runs(root: Path) -> tuple[dict[str, object], dict[str, Path]]:
                 for case_id, runs in coding_runs.items()
             }
         },
+        "tool-workflow": _tool_workflow_runs(root / "tool-workflow"),
+        "coding-evaluation": _coding_evaluation_runs(root / "coding-evaluation"),
     }
     exemplars = {
         "workflow": workflow_runs[0],
         "coding": coding_runs["backend-v1"][0],
     }
     return summary, exemplars
+
+
+def _tool_workflow_runs(root: Path) -> dict[str, object]:
+    profile = ToolWorkflowProfile()
+    cases: dict[str, object] = {}
+    for expectation in fixture_matrix():
+        if expectation.expected == "import_rejection":
+            run = root / expectation.fixture_id
+            adapted = materialize_fixture(expectation.fixture_id, run / "bundle")
+            outcome = _expect_rejection(
+                lambda bundle_path=adapted.bundle_path, output=run / "imported": (
+                    import_evidence_bundle_v2(
+                        profile=profile,
+                        bundle_path=bundle_path,
+                        output=output,
+                    )
+                )
+            )
+            cases[expectation.fixture_id] = {
+                "outcome": outcome,
+                "expected": "import_rejection",
+                "repetitions": 1,
+            }
+            continue
+
+        runs: list[Path] = []
+        for index in range(_REPETITIONS):
+            run = root / expectation.fixture_id / f"run-{index + 1}"
+            adapted = materialize_fixture(expectation.fixture_id, run / "bundle")
+            imported = run / "imported"
+            import_evidence_bundle_v2(
+                profile=profile,
+                bundle_path=adapted.bundle_path,
+                output=imported,
+            )
+            evaluated = run / "evaluated"
+            receipt = evaluate_imported_case(profile, imported, evaluated)
+            report = read_evaluation_report(evaluated, profile)
+            if (
+                receipt.case_outcome != expectation.expected
+                or read_imported_evaluation(evaluated, profile) != receipt
+                or report is None
+                or report.conclusion != receipt.case_outcome
+            ):
+                raise AcceptanceError(
+                    f"tool workflow fixture did not strictly accept: {expectation.fixture_id}"
+                )
+            runs.append(run)
+        cases[expectation.fixture_id] = {
+            "outcome": expectation.expected,
+            "repetitions": _REPETITIONS,
+            "strict_reload": True,
+            "tree_sha256": _same_digest(runs),
+        }
+    return {"cases": cases}
+
+
+def _coding_evaluation_runs(root: Path) -> dict[str, object]:
+    profile = CodingEvaluationProfile()
+    cases: dict[str, object] = {}
+    for expectation in coding_evaluation_fixture_matrix():
+        if expectation.expected == "import_rejection":
+            run = root / expectation.fixture_id
+            adapted = materialize_coding_evaluation_fixture(
+                expectation.fixture_id,
+                run / "bundle",
+            )
+            outcome = _expect_rejection(
+                lambda bundle_path=adapted.bundle_path, output=run / "imported": (
+                    import_evidence_bundle_v2(
+                        profile=profile,
+                        bundle_path=bundle_path,
+                        output=output,
+                    )
+                )
+            )
+            cases[expectation.fixture_id] = {
+                "outcome": outcome,
+                "expected": "import_rejection",
+                "repetitions": 1,
+            }
+            continue
+
+        runs: list[Path] = []
+        for index in range(_REPETITIONS):
+            run = root / expectation.fixture_id / f"run-{index + 1}"
+            adapted = materialize_coding_evaluation_fixture(
+                expectation.fixture_id,
+                run / "bundle",
+            )
+            imported = run / "imported"
+            import_evidence_bundle_v2(
+                profile=profile,
+                bundle_path=adapted.bundle_path,
+                output=imported,
+            )
+            evaluated = run / "evaluated"
+            receipt = evaluate_imported_case(profile, imported, evaluated)
+            report = read_evaluation_report(evaluated, profile)
+            if (
+                receipt.case_outcome != expectation.expected
+                or read_imported_evaluation(evaluated, profile) != receipt
+                or report is None
+                or report.conclusion != receipt.case_outcome
+            ):
+                raise AcceptanceError(
+                    f"coding evaluation fixture did not strictly accept: {expectation.fixture_id}"
+                )
+            runs.append(run)
+        cases[expectation.fixture_id] = {
+            "outcome": expectation.expected,
+            "repetitions": _REPETITIONS,
+            "strict_reload": True,
+            "tree_sha256": _same_digest(runs),
+        }
+    return {"cases": cases}
 
 
 def _adversarial_runs(root: Path, exemplars: dict[str, Path]) -> dict[str, str]:
@@ -252,6 +383,8 @@ def rebuild(output: Path) -> dict[str, object]:
             "agent.evaluator.evidence/v1",
             "agent.evaluator.score/v1",
             "agent.evaluator.gate-decision/v1",
+            "agent.evaluator.result-record/v1",
+            "agent.evaluator.evaluation-report/v1",
         ],
         "execution": {
             "credentials_required": False,
@@ -270,10 +403,13 @@ def rebuild(output: Path) -> dict[str, object]:
         "tasks": tasks,
         "adversarial": adversarial,
     }
-    (output / "summary.json").write_text(
-        json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    summary_bytes = (
+        json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    (output / "summary.json").write_bytes(summary_bytes)
+    expected_summary = repository / "docs/public/acceptance-summary.json"
+    if not expected_summary.is_file() or expected_summary.read_bytes() != summary_bytes:
+        raise AcceptanceError("rebuilt public acceptance summary differs from the reviewed summary")
     return summary
 
 

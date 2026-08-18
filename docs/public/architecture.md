@@ -6,9 +6,9 @@ Cernora is a deterministic Python evaluator for already completed agent runs. It
 ordinary local files and produces evaluator-owned Evidence, Score and GateDecision records.
 It does not own agent execution.
 
-This document describes the architecture shipped in the `0.1.x` line. Planned metrics,
-reporting, Runtime Connectors and Gate consumers belong in the product roadmap rather
-than in this current-state contract.
+This document describes the architecture shipped in the `0.1.x` line, including the
+opt-in Preview result report. Generic Metric SDKs, batch reporting, Runtime Connectors and
+Gate consumers remain roadmap work rather than current contracts.
 
 ## Complete-system composition
 
@@ -43,8 +43,9 @@ producer-owned completed export
   -> EvidenceBundle v2 plus declared artifacts
   -> canonical import and strict reload
   -> explicitly selected Profile
-  -> Evidence v1 and Score v1
+  -> Evidence v1 and Score v1, plus optional Preview ResultRecords
   -> evaluator-composed GateDecision v1
+  -> optional EvaluationReport v1 that explains but cannot alter the GateDecision
   -> atomic persistence and strict result reload
 ```
 
@@ -76,8 +77,9 @@ package instead of trusting objects kept in memory.
 ### Profile
 
 A Profile owns one `CaseProfile` authority, Profile-specific import validation and
-deterministic assessment. Assessment returns bound Evidence, Score and the required
-observation set. It does not persist results or compose GateDecision.
+deterministic assessment. Assessment returns bound Evidence, Score, the required
+observation set and, when the Profile opts in, typed Preview ResultRecords. It does not
+persist results, compose GateDecision or author the final report.
 
 Profiles are selected explicitly as a built-in identifier or a local path. There is no scan,
 entry-point discovery or registry. Local Profile Python is trusted code executed with the
@@ -88,9 +90,12 @@ See [Profile authoring](profile-authoring.md).
 ### Deep evaluator
 
 The evaluator reloads imported content, binds current authority, creates deterministic
-evaluation identities, invokes the Profile, cross-checks returned Evidence and Score, and
-composes GateDecision from the Profile's gate policy. It publishes a closed result package
-and reloads it strictly before the result is accepted.
+evaluation identities, invokes the Profile, cross-checks returned Evidence, Score and
+optional ResultRecords, and composes GateDecision from the Profile's gate policy. For an
+opted-in Profile it derives EvaluationReport validity from required records, binds the
+report to the existing decision and authority, publishes the closed result package and
+reloads it strictly before the result is accepted. A report can explain a GateDecision but
+cannot rewrite it.
 
 Behavioral failure remains distinguishable from missing or invalid evidence. Infrastructure,
 integrity or authority uncertainty cannot become a passing decision.
@@ -109,6 +114,14 @@ The evaluator emits and retains these established output wires:
 - `agent.evaluator.score/v1`; and
 - `agent.evaluator.gate-decision/v1`.
 
+Profiles may additionally opt in to the Preview output wires:
+
+- `agent.evaluator.result-record/v1`; and
+- `agent.evaluator.evaluation-report/v1`.
+
+The report is stored as `evaluation-report.json`, included in `digests.json`, recomputed on
+strict reload and absent for Profiles that do not supply ResultRecords.
+
 The `agent.evaluator.*` strings are protocol identifiers, not Python package names. Bundle
 or import v1 is not accepted, converted or silently upgraded.
 
@@ -123,6 +136,20 @@ EvidenceBundle v2. It does not generate or authenticate an external-runtime atte
 it cannot establish that a sandbox was created, that isolation policy was enforced or that
 observations were captured outside Agent control. Those claims require a trusted external
 runtime producer and its own conformance and security evidence.
+
+The built-in `tool-workflow` Profile is intentionally synthetic. A passing outcome requires
+the recorded milestone artifacts to equal exact Profile-owned observations protected by the
+Profile fixture digest, and Evidence labels the scope as a Profile-owned synthetic
+observation with `external_action_attested=false`. Copying those bytes into a producer export
+does not prove that an external action occurred; the Profile validates the frozen evaluation
+model, not a real runtime.
+
+The built-in `coding-evaluation` Profile has the same explicit synthetic boundary. Its
+authority fixtures freeze a baseline tree, test plan, harness, execution policy and an exact
+oracle of accepted candidate/capsule artifact digests. Cernora derives the candidate tree
+identity and diff, then reports build, FAIL_TO_PASS and PASS_TO_PASS observations from those
+frozen capsules. It never executes candidate code and records
+`external_action_attested=false`; real build/test attestation remains external-runtime work.
 
 Cernora opens only declared ordinary files, rejects symbolic links in closed output trees,
 and avoids in-place repair of persisted evidence. These controls protect deterministic local

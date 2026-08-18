@@ -5,13 +5,27 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ## Unreleased
 
+## 0.1.1 - 2026-08-18
+
 ### Added
 
+- Preview `ResultRecord` v1 and `EvaluationReport` v1 contracts, public schemas and strict
+  manifest-bound persistence for Profiles that opt in to structured results.
+- The separately versioned `builtin:tool-workflow` Profile with a frozen 18-case
+  synthetic acceptance matrix covering pass, behavioral fail, inconclusive and corrupt
+  input outcomes.
+- The separately versioned `builtin:coding-evaluation` Profile with Candidate Tree
+  v1 reconstruction, Profile-owned frozen execution capsules, F2P/P2P diagnostics, derived
+  diff and tamper policy, and a 20-row deterministic acceptance matrix. The existing
+  `builtin:coding-task` Profile is unchanged.
 - One release-maintainer command for complete local preflight and one for production-PyPI
   artifact, clean-install and acceptance-flow verification on Python 3.12/3.13.
 
 ### Changed
 
+- `ProfileAssessment` now has an additive optional `result_records=()` field. Existing
+  Profiles retain their prior Score/Gate behavior and do not emit an evaluation report
+  unless they supply records.
 - CI, artifact inspection, Trusted Publishing and the release runbook now derive artifact
   names from the declared version instead of hard-coding `0.1.0`.
 

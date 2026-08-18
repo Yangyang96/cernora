@@ -15,6 +15,7 @@ from cernora.core.errors import ContractError
 from cernora.core.evidence import Evidence
 from cernora.core.gate import GateDecision
 from cernora.core.identity import ExternalProducerIdentity
+from cernora.core.result import EvaluationReport
 from cernora.core.score import Score
 from cernora.evaluation.contracts import (
     ImportedEvaluationAuthority,
@@ -35,6 +36,7 @@ AUTHORITY_PATH = "evaluation-authority.json"
 EVIDENCE_PATH = "evidence.json"
 SCORE_PATH = "score.json"
 DECISION_PATH = "case-decision.json"
+REPORT_PATH = "evaluation-report.json"
 RECEIPT_PATH = "evaluation-receipt.json"
 MANIFEST_PATH = "digests.json"
 SOURCE_PREFIX = "source-import"
@@ -151,6 +153,8 @@ def _build_package(
             RECEIPT_PATH: canonical_json(receipt),
         }
     )
+    if evaluation.report is not None:
+        files[REPORT_PATH] = canonical_json(evaluation.report)
     files[MANIFEST_PATH] = canonical_json(_manifest(files))
     return receipt, files
 
@@ -193,7 +197,7 @@ def _decode_stored_package(
     root: Path,
     files: Mapping[str, bytes],
     profile: Profile,
-) -> ImportedEvaluationReceipt:
+) -> tuple[ImportedEvaluationReceipt, EvaluationReport | None]:
     try:
         manifest = decode_contract(files[MANIFEST_PATH], ImportedEvaluationManifest)
     except (KeyError, ContractError) as exc:
@@ -212,6 +216,9 @@ def _decode_stored_package(
         score = decode_contract(files[SCORE_PATH], Score)
         decision = decode_contract(files[DECISION_PATH], GateDecision)
         receipt = decode_contract(files[RECEIPT_PATH], ImportedEvaluationReceipt)
+        report = (
+            decode_contract(files[REPORT_PATH], EvaluationReport) if REPORT_PATH in files else None
+        )
     except (KeyError, ContractError) as exc:
         raise IngestionIntegrityError("invalid imported evaluation contract") from exc
     if receipt.authority != authority:
@@ -227,18 +234,38 @@ def _decode_stored_package(
         or receipt.eligible != decision.eligible
     ):
         raise IngestionIntegrityError("evaluation receipt does not bind stored results")
+    if report is not None and (
+        report.evaluation_id != receipt.evaluation_id
+        or report.evidence_id != receipt.evidence_id
+        or report.score_id != receipt.score_id
+        or report.decision_id != receipt.decision_id
+        or report.evaluation_input_sha256 != receipt.evaluation_input_sha256
+        or report.authority_id != authority.authority_id
+        or report.authority_sha256 != receipt.authority_sha256
+        or report.conclusion != receipt.case_outcome
+    ):
+        raise IngestionIntegrityError("evaluation report does not bind stored results")
 
     expected_receipt, expected_files = _build_package(root / SOURCE_PREFIX, profile)
     if receipt != expected_receipt or dict(files) != expected_files:
         raise IngestionIntegrityError("stored imported evaluation is not canonical")
-    return receipt
+    return receipt, report
 
 
 def read_imported_evaluation(root: Path, profile: Profile) -> ImportedEvaluationReceipt:
     """Strictly reload and recompute one persisted imported evaluation."""
 
     files = _ordinary_tree_files(root)
-    return _decode_stored_package(root, files, profile)
+    receipt, _ = _decode_stored_package(root, files, profile)
+    return receipt
+
+
+def read_evaluation_report(root: Path, profile: Profile) -> EvaluationReport | None:
+    """Strictly reload and recompute one optional Preview evaluation report."""
+
+    files = _ordinary_tree_files(root)
+    _, report = _decode_stored_package(root, files, profile)
+    return report
 
 
 def _paths_overlap(left: Path, right: Path) -> bool:
@@ -367,4 +394,4 @@ def evaluate_imported_case(
     return read_imported_evaluation(destination, profile)
 
 
-__all__ = ["evaluate_imported_case", "read_imported_evaluation"]
+__all__ = ["evaluate_imported_case", "read_evaluation_report", "read_imported_evaluation"]

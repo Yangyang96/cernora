@@ -22,6 +22,7 @@ from cernora.core.identity import (
     ExternalProducerIdentity,
     identity_digest,
 )
+from cernora.core.result import EvaluationReport
 from cernora.core.score import Score
 from cernora.ingestion.contracts_v2 import ImportedBundleIdentityV2
 
@@ -99,6 +100,7 @@ class ImportedCaseEvaluation(StrictModel):
     evidence: Evidence
     score: Score
     decision: GateDecision
+    report: EvaluationReport | None = None
 
 
 def _validate_contained_path(path: str, *, label: str) -> None:

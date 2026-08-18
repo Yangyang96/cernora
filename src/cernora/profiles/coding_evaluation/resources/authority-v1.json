@@ -1,0 +1,66 @@
+{
+  "schema_version": "cernora.coding-evaluation-authority/v1",
+  "baseline_tree": {
+    "schema_version": "cernora.candidate-tree/v1",
+    "entries": [
+      {
+        "path": "README.md",
+        "size_bytes": 28,
+        "sha256": "429639a5c8a407d66d02af8daa7dd0950e1e4d0e28f44abc5b2a069db314a234",
+        "executable": false,
+        "content": "# Calculator\n\nExample code.\n"
+      },
+      {
+        "path": "pyproject.toml",
+        "size_bytes": 44,
+        "sha256": "0313f32554fac56962eb1bcb2d4b0eb0d522e663f1b43c611e48eadae9944d18",
+        "executable": false,
+        "content": "[project]\nname = \"calculator\"\nversion = \"1\"\n"
+      },
+      {
+        "path": "src/calc.py",
+        "size_bytes": 63,
+        "sha256": "8f85450200db13108dc37d54ada5376d715d7c7aff3bceb5ffa1f6a75b0c8a03",
+        "executable": false,
+        "content": "def add(left: int, right: int) -> int:\n    return left - right\n"
+      },
+      {
+        "path": "tests/test_calc.py",
+        "size_bytes": 86,
+        "sha256": "d8061bbd213149d9f36c9db297cfb20f035d81a7cc2d88008dafb74d8a89d9a3",
+        "executable": false,
+        "content": "from src.calc import add\n\n\ndef test_add_positive() -> None:\n    assert add(2, 3) == 5\n"
+      }
+    ],
+    "tree_sha256": "9ccac38e36007ff8995a7479915db5bfdd97802cf9cda219d224ad7ccdccf5c6"
+  },
+  "test_plan": {
+    "schema_version": "cernora.coding-test-plan/v1",
+    "test_plan_id": "calculator-tests-v1",
+    "tests": [
+      {"test_id": "f2p-add-positive", "classification": "fail_to_pass"},
+      {"test_id": "f2p-add-negative", "classification": "fail_to_pass"},
+      {"test_id": "p2p-import-module", "classification": "pass_to_pass"},
+      {"test_id": "p2p-type-contract", "classification": "pass_to_pass"}
+    ]
+  },
+  "harness": {
+    "schema_version": "cernora.coding-harness/v1",
+    "harness_id": "python-pytest-synthetic-v1",
+    "entrypoint": "python -m pytest -q",
+    "read_only_roots": ["candidate", "authority"],
+    "scratch_root": "scratch"
+  },
+  "execution": {
+    "toolchain": {"python": "3.12.8", "pytest": "8.4.1"},
+    "platform": {"os": "synthetic-linux", "arch": "x86_64"},
+    "command": ["python", "-m", "pytest", "-q"],
+    "limits": {"timeout_seconds": 60, "memory_mb": 512},
+    "attempt_policy": {"max_attempts": 2, "retry_only_after": "infrastructure_unavailable"}
+  },
+  "change_policy": {
+    "allowed_patterns": ["src/**", "README.md"],
+    "protected_patterns": ["tests/**"],
+    "forbidden_patterns": ["pyproject.toml", ".cernora/**"]
+  }
+}

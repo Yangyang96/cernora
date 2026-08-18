@@ -66,6 +66,13 @@ experiment evidence should shape that abstraction before it is frozen.
 
 ## Priority 1 — Deterministic metric coverage
 
+The accepted implementation baseline is specified in
+[`docs/design/priority-1-deterministic-metrics.md`](docs/design/priority-1-deterministic-metrics.md).
+That document is authoritative for both the `tool-workflow` and `coding-evaluation`
+boundaries. The coding Profile was implemented only after a separate evidence review froze
+candidate reconstruction, synthetic execution authority, test classification, tamper and
+change-policy semantics.
+
 ### Goal
 
 Expand beyond the initial Profile-owned boolean observations with useful,

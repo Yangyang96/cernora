@@ -1,9 +1,9 @@
-# Public V1/V2 evaluation-core representative acceptance
+# Public evaluation-core and Priority 1 acceptance
 
-Cernora `0.1.0` was exercised with sanitized public representatives of the original
-project's V1 workflow task and V2 coding task. These task labels do not mean EvidenceBundle
-v1: every run uses EvidenceBundle v2/import v2 and emits Evidence v1, Score v1 and
-GateDecision v1.
+Cernora `0.1.1` release candidate was exercised with the original sanitized V1/V2
+representatives plus the Priority 1 `tool-workflow` and `coding-evaluation` matrices. These
+task labels do not mean EvidenceBundle v1: every run uses EvidenceBundle v2/import v2. The
+Priority 1 runs also emit ResultRecord v1 and EvaluationReport v1.
 
 The accepted run used clean repository-external Python 3.12.12 and 3.13.12 environments.
 Each environment installed fixed Python dependencies and the built Cernora wheel, then ran
@@ -30,12 +30,17 @@ acceptance.
   reload.
 - Sanitized V2 coding: backend, frontend and fail-closed cases each produced three
   byte-identical `pass` runs with strict reload.
+- `tool-workflow`: all 18 frozen rows matched their expected outcome; 17 accepted rows
+  produced three byte-identical trees with strict reload and the corrupt row was rejected.
+- `coding-evaluation`: all 20 frozen rows matched the 2 pass / 8 fail / 9 inconclusive / 1
+  rejection matrix; 19 accepted rows produced three byte-identical trees with strict reload.
 - Corrupt artifact, missing artifact, Profile-authority mismatch and candidate traversal
   were rejected before an eligible pass.
 - A well-formed but incorrect coding candidate remained eligible evidence and produced the
   expected behavioral `fail` GateDecision.
-- Python 3.12 and 3.13 produced byte-identical summaries with SHA-256
-  `c04c86654b37bad5be1c79be5821c36824d1ef601e405ea368b1f6c22870b8e3`.
+- Python 3.12.12 and 3.13.12 produced byte-identical 3,778-file acceptance trees with SHA-256
+  `c3c8b8f7edfdd8072ba2459cd7eab8886e9dce1609bbbeff670d196aacaae7b9`; the reviewed
+  summary SHA-256 is `6ebf251c0d83db68cd8dac6dab2c828012383f59544706e9f5b1db64e1b8d4d1`.
 
 The exact compact result is [acceptance-summary.json](acceptance-summary.json). Raw generated
 Bundle, import and evaluation trees are not committed: they are deterministic, larger than
@@ -53,9 +58,9 @@ env -u PYTHONPATH PYTHONNOUSERSITE=1 \
   --output ./cernora-public-acceptance
 ```
 
-The command prints `pass`. Compare `cernora-public-acceptance/summary.json` byte-for-byte
-with `docs/public/acceptance-summary.json`; its SHA-256 must match the value above. The output
-directory must not already exist.
+The command prints `pass` only after comparing `cernora-public-acceptance/summary.json`
+byte-for-byte with `docs/public/acceptance-summary.json`; its SHA-256 must match the value
+above. The output directory must not already exist.
 
 This is evaluation-core release-candidate evidence, not Agent-runtime/sandbox evidence and
 not a claim that GitHub or PyPI publication occurred.

@@ -24,6 +24,8 @@ Use Cernora when you need to:
 
 > **Current release:** `0.1.0`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
+>
+> **Local release candidate:** `0.1.1`; this checkout has not published it.
 
 ## Try it in five minutes
 
@@ -35,10 +37,10 @@ source .venv/bin/activate
 python -m pip install cernora
 
 # Run a complete packaged tool-workflow evaluation
-python -m cernora.examples.offline_workflow ./cernora-workflow-run
+python -m cernora.examples.tool_workflow ./cernora-workflow-run happy-path
 
-# Run a packaged coding evaluation
-python -m cernora.examples.coding_task ./cernora-coding-run backend-v1
+# Run the packaged coding evaluation
+python -m cernora.examples.coding_evaluation ./cernora-coding-run happy-path
 ```
 
 Each command prints:
@@ -59,8 +61,10 @@ observations:
   claim_grounded: true
 ```
 
-The output directory must not already exist. Both examples run from the installed wheel,
-use synthetic completed exports, and require neither credentials nor a source checkout.
+The output directory must not already exist. Both examples work from the installed wheel,
+use Profile-owned synthetic completed exports, require neither credentials nor a source
+checkout, and write and strictly reload a Preview `EvaluationReport`. They validate frozen
+evaluation semantics; neither example attests that a real external action or test run occurred.
 
 ## Why Cernora?
 
@@ -115,6 +119,8 @@ immutable history.
 | --- | --- |
 | `offline-workflow` | Exact tool/argument selection, response integrity, and answer grounding against protected fixture evidence. |
 | `coding-task` | Candidate export format, content and terminal digest binding, plus evaluator-owned post-terminal checks across backend, frontend, and fail-closed cases. |
+| `tool-workflow` | Outcome-first structured results for a stateful synthetic workflow, bound to exact Profile-owned observations; it does not attest a real external action. |
+| `coding-evaluation` | Candidate Tree v1 reconstruction, F2P/P2P rates, build and regression outcomes, derived diff policy, tamper checks and terminal binding against exact Profile-owned synthetic capsules. |
 
 Profiles are selected as complete, versioned policies. Individual observations cannot be
 disabled at evaluation time, so identical evidence and authority produce identical semantics.
@@ -164,13 +170,14 @@ modify Git state, or claim to sandbox Profile execution. See
 [Profile authoring](docs/public/profile-authoring.md) and
 [Adapter conformance](docs/public/adapter-conformance.md).
 
-## Verified in `0.1.0`
+## Verified in the `0.1.1` release candidate
 
 The public acceptance process installed the exact wheel outside the repository on Python
-3.12 and 3.13. It ran the workflow representative three times and all three coding cases
-three times each, with byte-identical canonical results and strict reload. It also verified
-that corrupt or missing artifacts, authority mismatches, and candidate path traversal are
-rejected, while valid evidence of incorrect behavior remains an eligible `fail`.
+3.12 and 3.13. In addition to the original representatives, it verified all 18
+`tool-workflow` rows and all 20 `coding-evaluation` rows; every accepted row ran three times
+with byte-identical results and
+strict reload. Invalid authority, corrupt input and path-boundary cases fail closed, while
+valid evidence of incorrect behavior remains an eligible `fail`.
 
 Review the [acceptance report](docs/public/acceptance.md) and
 [machine-readable summary](docs/public/acceptance-summary.json). To rebuild the evidence,

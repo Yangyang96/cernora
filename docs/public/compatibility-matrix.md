@@ -8,8 +8,10 @@ importable module as stable.
 | Python 3.12 and 3.13 | Supported Preview | Tested release range; dropping either requires a minor version and migration note. |
 | `cernora evidence import` and `cernora evidence evaluate` | Supported Preview | Command shape, exit classes and canonical JSON behavior remain compatible. |
 | `cernora profile init` and `cernora profile validate` | Supported Preview | Private-default workspace and explicit Profile selection remain compatible. |
+| Built-in Profile selectors and authority identities | Preview | `builtin:coding-evaluation` is additive; `builtin:coding-task`, `builtin:offline-workflow` and `builtin:tool-workflow` retain their existing identities and semantics. |
 | EvidenceBundle v2 and import receipt/manifest v2 | Supported Preview | Wire fields and strict validation semantics are not reinterpreted within `0.1.x`. |
 | Evidence v1, Score v1 and GateDecision v1 | Supported Preview | Existing wire identifiers and canonical semantics are retained. |
+| ResultRecord v1 and EvaluationReport v1 | Preview | Additive opt-in structured result/report wires; field or validation changes require changelog and migration notes. |
 | Documented package-root models and import/evaluate functions | Supported Preview | Compatible within `0.1.x`; additions may be made without changing established behavior. |
 | Canonicalization, authority binding, digest checks, conflict-safe publication, strict reload and fail-closed outcomes | Supported Preview | Safety semantics are preserved; they are not relaxed for compatibility. |
 | `Profile`, `Adapter`, authoring dataclasses and conformance helpers | Preview | May evolve within `0.1.x` with changelog and migration notes; deprecate first where feasible. |
@@ -44,6 +46,11 @@ agent.evaluator.evidence/v1
 agent.evaluator.score/v1
 agent.evaluator.gate-decision/v1
 ```
+
+An opted-in Profile may also emit `agent.evaluator.result-record/v1` records inside an
+`agent.evaluator.evaluation-report/v1`. Profiles that leave
+`ProfileAssessment.result_records` at its default empty tuple preserve the earlier package
+shape and do not produce `evaluation-report.json`.
 
 The different version numbers are intentional. Bundle v2 is the evaluation-capable input;
 the established Evidence, Score and GateDecision output contracts remain v1. Wire identifiers

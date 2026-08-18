@@ -22,7 +22,7 @@ def test_release_metadata_and_governance_are_explicit() -> None:
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert project["name"] == "cernora"
-    assert project["version"] == "0.1.0"
+    assert project["version"] == "0.1.1"
     assert project["requires-python"] == ">=3.12,<3.14"
     assert project["license"] == "Apache-2.0"
     assert project["license-files"] == ["LICENSE"]
@@ -90,7 +90,14 @@ def test_public_acceptance_summary_is_compact_and_explicit() -> None:
     summary = json.loads((root / "docs/public/acceptance-summary.json").read_text(encoding="utf-8"))
 
     assert summary["schema_version"] == "cernora.public-acceptance-summary/v1"
-    assert summary["cernora_version"] == "0.1.0"
+    assert summary["cernora_version"] == "0.1.1"
+    assert summary["output_protocols"] == [
+        "agent.evaluator.evidence/v1",
+        "agent.evaluator.score/v1",
+        "agent.evaluator.gate-decision/v1",
+        "agent.evaluator.result-record/v1",
+        "agent.evaluator.evaluation-report/v1",
+    ]
     assert summary["execution"] == {
         "credentials_required": False,
         "network_blocked": True,
@@ -110,6 +117,15 @@ def test_public_acceptance_summary_is_compact_and_explicit() -> None:
     coding = summary["tasks"]["sanitized-v2-coding"]["cases"]
     assert set(coding) == {"backend-v1", "frontend-v1", "fail-closed-v1"}
     assert all(case["outcome"] == "pass" and case["repetitions"] == 3 for case in coding.values())
+    tool_workflow = summary["tasks"]["tool-workflow"]["cases"]
+    assert len(tool_workflow) == 18
+    assert [case["outcome"] for case in tool_workflow.values()].count("rejected") == 1
+    coding_evaluation = summary["tasks"]["coding-evaluation"]["cases"]
+    assert len(coding_evaluation) == 20
+    assert [case["outcome"] for case in coding_evaluation.values()].count("pass") == 2
+    assert [case["outcome"] for case in coding_evaluation.values()].count("fail") == 8
+    assert [case["outcome"] for case in coding_evaluation.values()].count("inconclusive") == 9
+    assert [case["outcome"] for case in coding_evaluation.values()].count("rejected") == 1
     assert summary["adversarial"] == {
         "authority_mismatch": "rejected",
         "behavioral_mismatch": "fail",
@@ -119,6 +135,8 @@ def test_public_acceptance_summary_is_compact_and_explicit() -> None:
     }
     assert (root / "scripts/rebuild_acceptance.py").is_file()
     assert (root / "scripts/release.py").is_file()
+    rebuild_script = (root / "scripts/rebuild_acceptance.py").read_text(encoding="utf-8")
+    assert "rebuilt public acceptance summary differs from the reviewed summary" in rebuild_script
 
 
 def test_public_docs_preserve_composed_system_boundary() -> None:

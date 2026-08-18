@@ -6,8 +6,8 @@
 Cernora 是一个确定性 Python Evaluator，用于评测已经完成的 Agent Run。它读取普通本地
 文件，输出由 Evaluator 拥有的 Evidence、Score 和 GateDecision，但不负责 Agent 执行。
 
-本文描述 `0.1.x` 已交付的架构。计划中的指标、报告、Runtime Connector 和 Gate Consumer
-属于产品路线图，不是当前契约。
+本文描述 `0.1.x` 已交付的架构，包括显式选择的 Preview result report。通用 Metric SDK、
+批量报告、Runtime Connector 和 Gate Consumer 仍属于产品路线图，不是当前契约。
 
 ## 完整系统构成
 
@@ -40,8 +40,9 @@ producer-owned completed export
   -> EvidenceBundle v2 plus declared artifacts
   -> canonical import and strict reload
   -> explicitly selected Profile
-  -> Evidence v1 and Score v1
+  -> Evidence v1 and Score v1，以及可选的 Preview ResultRecord
   -> evaluator-composed GateDecision v1
+  -> 只能解释、不能修改 GateDecision 的可选 EvaluationReport v1
   -> atomic persistence and strict result reload
 ```
 
@@ -69,8 +70,8 @@ reload 会重新检查落盘后的封闭 package，不信任内存中的对象�
 ### Profile
 
 Profile 拥有一个 `CaseProfile` 权威、Profile 特定的 import validation 和确定性 assessment。
-Assessment 返回绑定后的 Evidence、Score 和必选观察集合，但不持久化结果，也不组合
-GateDecision。
+Assessment 返回绑定后的 Evidence、Score、必选观察集合，以及 Profile 显式选择时的
+Preview ResultRecord；它不持久化结果、不组合 GateDecision，也不生成最终 report。
 
 Profile 通过内置 ID 或本地路径显式选择，不扫描、不使用 entry-point discovery，也没有
 注册中心。本地 Profile Python 是受信任代码，以当前用户权限执行，不受 sandbox 保护。
@@ -80,8 +81,10 @@ Profile 通过内置 ID 或本地路径显式选择，不扫描、不使用 entr
 ### Deep evaluator
 
 Evaluator 重新加载已导入内容、绑定当前权威、生成确定性 evaluation identity、调用 Profile、
-交叉检查返回的 Evidence 和 Score，再根据 Profile Gate Policy 组合 GateDecision。结果会
-写入封闭 package，并在接受前严格 reload。
+交叉检查返回的 Evidence、Score 和可选 ResultRecord，再根据 Profile Gate Policy 组合
+GateDecision。对显式选择 structured result 的 Profile，它会从必选 record 推导 validity，
+把 EvaluationReport 与既有 decision 和权威绑定，写入封闭 package，并在接受前严格
+reload。Report 可以解释 GateDecision，但不能改写它。
 
 行为失败与证据缺失或无效始终分开。基础设施、完整性或权威存在不确定性时，不能得到
 `pass`。
@@ -100,6 +103,14 @@ Evaluator 输出并保留：
 - `agent.evaluator.score/v1`；
 - `agent.evaluator.gate-decision/v1`。
 
+Profile 还可以显式选择以下 Preview 输出 wire：
+
+- `agent.evaluator.result-record/v1`；
+- `agent.evaluator.evaluation-report/v1`。
+
+Report 以 `evaluation-report.json` 持久化，纳入 `digests.json`，严格 reload 时重新计算；
+未提供 ResultRecord 的 Profile 不生成该文件。
+
 `agent.evaluator.*` 是协议 ID，不是 Python 包名。Bundle 或 import v1 不会被接受、转换或
 静默升级。
 
@@ -113,6 +124,18 @@ Cernora 只验证 EvidenceBundle v2 中的 receipt 字段和已声明 artifact �
 认证外部 Runtime attestation，也无法证明 sandbox 已创建、隔离策略已执行，或观察是在
 Agent 控制范围外捕获的。这些声明需要可信的外部 Runtime Producer 及其 conformance 和
 安全证据。
+
+内置 `tool-workflow` Profile 刻意限定为合成场景。只有记录的 milestone artifact 与
+Profile fixture 摘要保护的精确 Profile-owned observation 相等时，outcome 才能通过；
+Evidence 会把范围标记为 Profile-owned synthetic observation，并记录
+`external_action_attested=false`。Producer 即使复制这些字节，也不能证明真实外部动作已
+发生；该 Profile 验证的是冻结的评测模型，不是真实 Runtime。
+
+内置 `coding-evaluation` Profile 采用同样明确的合成边界。其 authority fixture 冻结
+baseline tree、test plan、harness、execution policy，以及精确允许的 candidate/capsule
+artifact 摘要 oracle。Cernora 派生 candidate tree identity 与 diff，再从这些冻结 capsule
+报告 build、FAIL_TO_PASS 和 PASS_TO_PASS observation。它不执行候选代码，并记录
+`external_action_attested=false`；真实 build/test attestation 仍属于外部 Runtime。
 
 Cernora 只打开已声明的普通文件，拒绝封闭输出树中的符号链接，也不会原地修复持久化证据。
 这些控制用于保护确定性本地评测，不会把 Cernora 变成 Runtime sandbox 或证据仓库。

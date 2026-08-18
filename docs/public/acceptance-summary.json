@@ -6,7 +6,7 @@
     "corrupt_artifact": "rejected",
     "missing_artifact": "rejected"
   },
-  "cernora_version": "0.1.0",
+  "cernora_version": "0.1.1",
   "execution": {
     "credentials_required": false,
     "network_blocked": true,
@@ -17,7 +17,9 @@
   "output_protocols": [
     "agent.evaluator.evidence/v1",
     "agent.evaluator.score/v1",
-    "agent.evaluator.gate-decision/v1"
+    "agent.evaluator.gate-decision/v1",
+    "agent.evaluator.result-record/v1",
+    "agent.evaluator.evaluation-report/v1"
   ],
   "schema_version": "cernora.public-acceptance-summary/v1",
   "scope": {
@@ -29,6 +31,129 @@
     "sandbox_execution": false
   },
   "tasks": {
+    "coding-evaluation": {
+      "cases": {
+        "allowed-change": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "ca84fd775ca5cb07db64fc9346dc7f8edc63fc02558cf7b68cfdd4f76bf1dabd"
+        },
+        "build-failure": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "e6bbe8356f8e53d349d1dca43e7a1f7dcd92327db3c3ea72b9e51b6605445907"
+        },
+        "candidate-self-mutation": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "6430ee19bdf7cbeaef3d1342cef51030bb6f6bcdacc9e1701ff5d494720eff44"
+        },
+        "conflicting-attempts": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "56bd69960e8c77415378e74b98fd8f3f2f5592244151405b17bc44e9c3f81a81"
+        },
+        "corrupt-candidate-tree": {
+          "expected": "import_rejection",
+          "outcome": "rejected",
+          "repetitions": 1
+        },
+        "duplicate-test-result": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "870d2a890963e504bfdb771926b7f0b9a2f37354eef53e307cfd6beb417e9d13"
+        },
+        "forbidden-file-change": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "8d211a737791d29263ef2ec83a5cbebb905a1755c33b11d94dd62b3c49f88e31"
+        },
+        "happy-path": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "f9a9b16d0e0c9809f4e1adc00af7dd0ab146aea49bc7b53605ba77a124d490db"
+        },
+        "infrastructure-unavailable": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "b25a3211afb981be8db2bce881ae3a022f0b0a3fd6895209b0b9bfe8d8d94e5c"
+        },
+        "missing-execution-evidence": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "33afa8feb249f6f28077beee6466a574ca280e8d6bcc87b8ceb3ce84271a3a75"
+        },
+        "partial-test-results": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "e631d2547cf42de4fdd09396db6cc22ba2342ac573eae604ad71cb6b39cdaf5c"
+        },
+        "protected-test-tamper": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "27b46bfe1afc47c62c25d196154b4acaa88c0a6f04a77b2aa79af98eed4ec546"
+        },
+        "regression-failure": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "2ee2e17c24524d82d79dd079907edcbe0eee25c64d48ebeb6eb831c657f9c2f4"
+        },
+        "retry-policy-violation": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "72350c2363350e03f2066aa4ac795bb832cc6675ca380c8aa70ef5948f1f6d12"
+        },
+        "skipped-test": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "908f953e0651b3c596b2f6152523ab9066f8a2a0616f0d098fef940a790a81fa"
+        },
+        "terminal-binding-mismatch": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "962f0b148916902b8eb9fdea899ae53ff538468194ab5ed4a0baaeb5a04f7ee4"
+        },
+        "unresolved-f2p": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "ea7b2919581e87b81e1fa3e5aca4a05d6601f3fcade5fb7a052617d67df91cc8"
+        },
+        "untrusted-execution-authority": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "39eeac4d08a2257a9b8b6c0293e88607204366d233db339012cc11cd30914715"
+        },
+        "wrong-capsule-binding": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "714213a1f98b2f869bdc2370959bead257359f863eff9305dd67822b0bc60ce7"
+        },
+        "xfailed-test": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "690d3b77c086e581dc49884e0dfb80d8f3d444cfbb4913e003adebd15e1a840c"
+        }
+      }
+    },
     "sanitized-v1-workflow": {
       "case_id": "tool-result-grounding-v1",
       "outcome": "pass",
@@ -55,6 +180,117 @@
           "repetitions": 3,
           "strict_reload": true,
           "tree_sha256": "7cb6773c2a46e513ce718afdf1d42c10065915f2c5d065b8734998b5bfe6e332"
+        }
+      }
+    },
+    "tool-workflow": {
+      "cases": {
+        "contradictory-runtime-evidence": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "22cb89e6563e9b285cdae377933b43b6ccbee0b38811fbdf7838a75adad9e5c9"
+        },
+        "corrupt-artifact": {
+          "expected": "import_rejection",
+          "outcome": "rejected",
+          "repetitions": 1
+        },
+        "duplicate-side-effect": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "0d08ca3645aab700048ab7575f5ae15fdcc8ee9bf14c96fc5cf64afca28b463b"
+        },
+        "fabricated-result": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "82dd4402a8290c05b2c994c85839732f64666ed446d547f8f7d3a16464fdeb84"
+        },
+        "forbidden-action-or-state": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "a8604947c0937155e1b17b0e248033bde7e8773ef8d17cad307e844a498159a5"
+        },
+        "happy-path": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "4053ed9218bd568e7e49de3149f0dcb0f3428ed77bebc8ab361d5958f93551aa"
+        },
+        "harmless-extra-action": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "f1bc8213cc8169460c467a56fd6cef04fb55670652af8d9e335169b8743e8dad"
+        },
+        "infrastructure-unavailable": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "805542d555ff0d6f886af3517badffa48737d549eef4411ee3cf0101356f98c9"
+        },
+        "invalid-dependency-order": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "0cba0e42ade8538024ef561dc2d71a49ad70a34eef4ecf13c0d2a9773c169d1b"
+        },
+        "missing-required-milestone": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "cbe94f34356e7f57d9d047962dac6399821fcf4125bda44594de81fb45b4c17b"
+        },
+        "missing-runtime-evidence": {
+          "outcome": "inconclusive",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "19eda4ffb762e13063814b35db9f78854749c4e5963cbad7692c40abc8c7e6e2"
+        },
+        "no-progress-loop": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "e0e586edea9aeb875bf8777c7b332c719b6e4292a76033b155d05722e99b7cb7"
+        },
+        "no-tool-required": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "e0b986d38e1e7c27953d67dcdef17145c0bf17dddaf1bd94ff63ed92f03462b9"
+        },
+        "post-completion-forbidden-continuation": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "3182d5af009fafe00c05abca5b1e5b35858b588093a66108172a651981921c7c"
+        },
+        "premature-termination": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "d0a15961c13670c0866a263889dc9b63b854ec646045c779738c3b246ca4fd39"
+        },
+        "safe-recovery": {
+          "outcome": "pass",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "54b5f69e5724292fd42cad1fabf8858b5d3740ddcda60dbc75fc0e3b1fd94c94"
+        },
+        "wrong-argument": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "6702470a19faf4d0690dafddf35439f0857befcdd3bfb18604ffb6875d290fc7"
+        },
+        "wrong-tool": {
+          "outcome": "fail",
+          "repetitions": 3,
+          "strict_reload": true,
+          "tree_sha256": "45334f37c8b10e1c689100a87547e8af374a89c1730a7ca69561b705ea9e4af1"
         }
       }
     }
