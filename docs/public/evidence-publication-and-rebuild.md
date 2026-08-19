@@ -58,7 +58,7 @@ and evaluates it, then strictly reloads the persisted result. Run it in a new di
 success prints `pass`. It does not launch an Agent, exercise a sandbox or capture a runtime
 receipt.
 
-The local `0.1.1` release candidate adds opt-in structured-result examples:
+The `0.1.1` release adds opt-in structured-result examples:
 
 ```sh
 python -m cernora.examples.tool_workflow ./cernora-tool-example happy-path

@@ -57,7 +57,7 @@ python -m cernora.examples.offline_workflow ./cernora-offline-example
 evaluation，再严格 reload 持久化结果。请使用新目录；成功时输出 `pass`。该命令不会启动
 Agent、运行 sandbox 或捕获 runtime receipt。
 
-本地 `0.1.1` 发布候选新增显式选择 Structured Result 的示例：
+`0.1.1` 新增显式选择 Structured Result 的示例：
 
 ```sh
 python -m cernora.examples.tool_workflow ./cernora-tool-example happy-path

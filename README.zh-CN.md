@@ -20,17 +20,15 @@ Cernora 是一个独立评测内核，根据记录下来的工具调用、返回
 - 把冻结的 Agent 导出转换为可复现的回归测试或 CI/发布准出决策；
 - 让评测权与 Runtime 的凭证、沙箱、重试和成功自述保持分离。
 
-> **当前版本：** `0.1.0`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
+> **当前版本：** `0.1.1`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
 > [平台矩阵](docs/public/compatibility-matrix.zh-CN.md)。
->
-> **本地发布候选：** `0.1.1`；此 checkout 尚未发布该版本。
 
-## 五分钟运行 `0.1.1` 发布候选
+## 五分钟运行 `0.1.1`
 
 Cernora 支持 CPython 3.12 和 3.13。
 
-生产安装命令仍为 `python -m pip install cernora`。在 `0.1.1` 正式发布前，该命令安装的是
-尚不包含以下两个示例的 `0.1.0`；请从仓库根目录使用下面的命令安装当前 checkout。
+生产安装命令为 `python -m pip install cernora`。如需安装当前 checkout 而不是已发布版本，
+请从仓库根目录使用下面的命令。
 
 ```bash
 python3.12 -m venv .venv
@@ -174,7 +172,7 @@ cernora profile validate --profile-path .cernora/profiles/my-profile
 也不声称 sandbox Profile 执行。详见 [Profile 编写](docs/public/profile-authoring.zh-CN.md)和
 [Adapter conformance](docs/public/adapter-conformance.zh-CN.md)。
 
-## `0.1.1` 发布候选已验证内容
+## `0.1.1` 已验证内容
 
 公开验收流程在源码仓库外的 Python 3.12 和 3.13 环境中安装精确 wheel。除原有代表任务
 外，它还验收全部 18 个 `tool-workflow` 场景和 20 个 `coding-evaluation` 场景；每个可接受

@@ -22,18 +22,15 @@ Use Cernora when you need to:
 - keep evaluation authority separate from Runtime credentials, sandboxes, retries, and
   self-reported success.
 
-> **Current release:** `0.1.0`, tested on Python 3.12 and 3.13. See the
+> **Current release:** `0.1.1`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
->
-> **Local release candidate:** `0.1.1`; this checkout has not published it.
 
-## Try the `0.1.1` release candidate in five minutes
+## Try `0.1.1` in five minutes
 
 Cernora supports CPython 3.12 and 3.13.
 
-The production install command remains `python -m pip install cernora`. Until `0.1.1` is
-published, that command installs `0.1.0`, which does not contain these two examples. From the
-repository root, use the commands below to install the current checkout instead.
+The production install command is `python -m pip install cernora`. To install this exact
+checkout instead of the published release, use the commands below from the repository root.
 
 ```bash
 python3.12 -m venv .venv
@@ -183,7 +180,7 @@ modify Git state, or claim to sandbox Profile execution. See
 [Profile authoring](docs/public/profile-authoring.md) and
 [Adapter conformance](docs/public/adapter-conformance.md).
 
-## Verified in the `0.1.1` release candidate
+## Verified in `0.1.1`
 
 The public acceptance process installed the exact wheel outside the repository on Python
 3.12 and 3.13. In addition to the original representatives, it verified all 18
