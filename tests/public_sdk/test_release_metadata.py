@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
+import subprocess
 import tomllib
 import zipfile
 from pathlib import Path
@@ -9,7 +11,9 @@ from pathlib import Path
 import pytest
 
 from scripts.check_release import (
+    _ALLOWED_ROOT_FILES,
     ReleaseCheckError,
+    _tree_files,
     artifact_paths,
     check_artifacts,
     project_version,
@@ -265,6 +269,42 @@ def test_release_checker_rejects_oversized_compressed_members(tmp_path: Path) ->
 
     with pytest.raises(ReleaseCheckError, match="exceeds 100 KB"):
         check_artifacts(wheel, sdist, "0.1.0")
+
+
+def test_release_tree_excludes_gitignored_private_state(tmp_path: Path) -> None:
+    if shutil.which("git") is None:
+        pytest.skip("git is unavailable")
+
+    forbidden = "".join(("ob", "serv"))  # the word must not appear literally here
+    for name in _ALLOWED_ROOT_FILES:
+        (tmp_path / name).write_text("", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text("private/\n", encoding="utf-8")
+    (tmp_path / "private").mkdir()
+    (tmp_path / "private" / "secret.md").write_text(f"{forbidden}\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+
+    files = _tree_files(tmp_path)
+    assert "private/secret.md" not in files
+    assert ".gitignore" in files
+
+
+def test_release_tree_flags_force_tracked_private_state(tmp_path: Path) -> None:
+    if shutil.which("git") is None:
+        pytest.skip("git is unavailable")
+
+    forbidden = "".join(("ob", "serv"))  # the word must not appear literally here
+    for name in _ALLOWED_ROOT_FILES:
+        (tmp_path / name).write_text("", encoding="utf-8")
+    (tmp_path / ".gitignore").write_text("private/\n", encoding="utf-8")
+    (tmp_path / "private").mkdir()
+    (tmp_path / "private" / "secret.md").write_text(f"{forbidden}\n", encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "."], cwd=tmp_path, check=True)
+    subprocess.run(["git", "add", "-f", "private/secret.md"], cwd=tmp_path, check=True)
+
+    with pytest.raises(ReleaseCheckError, match="forbidden private vocabulary"):
+        _tree_files(tmp_path)
 
 
 def test_public_markdown_relative_links_resolve() -> None:

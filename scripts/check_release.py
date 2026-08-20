@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import subprocess
 import tarfile
 import tomllib
 import zipfile
@@ -33,9 +34,6 @@ _ALLOWED_ROOT_FILES = frozenset(
     }
 )
 _ALLOWED_ROOT_DIRECTORIES = frozenset({".github", "docs", "examples", "scripts", "src", "tests"})
-_IGNORED_GENERATED = frozenset(
-    {".git", ".mypy_cache", ".pytest_cache", ".ruff_cache", ".venv", "dist", "__pycache__"}
-)
 _MAX_PUBLIC_FILE_BYTES = 100_000
 _OLD_IMPORT = "_".join(("agent", "evaluator"))
 _FORBIDDEN_TEXT = (
@@ -129,18 +127,32 @@ def _validate_public_names(names: set[str]) -> None:
 
 
 def _tree_files(root: Path) -> dict[str, bytes]:
+    """Return the files a VCS-aware sdist build includes from the source tree.
+
+    The sdist is built by the backend from the same VCS view, so private
+    local state (`.cernora/` Profiles, `.agent/`, run outputs and other
+    gitignored files) must never become part of the checked public tree.
+    """
+
+    completed = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+    )
+    if completed.returncode != 0:
+        detail = completed.stderr.decode(errors="replace").strip()
+        raise ReleaseCheckError(f"cannot enumerate the public tree with git: {detail}")
     files: dict[str, bytes] = {}
-    for path in sorted(root.rglob("*")):
-        relative = path.relative_to(root)
-        if any(part in _IGNORED_GENERATED for part in relative.parts):
+    for entry in completed.stdout.split(b"\0"):
+        if not entry:
             continue
+        name = entry.decode("utf-8")
+        path = root / name
         if path.is_symlink():
-            raise ReleaseCheckError(f"public tree contains a symlink: {relative.as_posix()}")
-        if path.is_dir():
-            continue
+            raise ReleaseCheckError(f"public tree contains a symlink: {name}")
         if not path.is_file():
-            raise ReleaseCheckError(f"public tree contains a non-file: {relative.as_posix()}")
-        name = relative.as_posix()
+            raise ReleaseCheckError(f"public tree contains a non-file: {name}")
         payload = path.read_bytes()
         _scan_payload(name, payload)
         files[name] = payload
