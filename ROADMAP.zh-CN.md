@@ -56,7 +56,7 @@ Runner，也不表示它会接管凭证、Sandbox 或进程所有权。
 `0.1.x` 只接受 EvidenceBundle v2/import v2，并继续使用 Evidence v1、Score v1
 和 GateDecision v1 作为当前输出协议。精确兼容承诺以 Compatibility Matrix 为准。
 
-本地 `0.1.1` 发布候选还提供显式选择的 Preview ResultRecord v1、EvaluationReport v1，
+已发布的 `0.1.1` 还提供显式选择的 Preview ResultRecord v1、EvaluationReport v1，
 以及 `tool-workflow` 和 `coding-evaluation` 参考 Profile；它不改变已发布 `0.1.0` 的默认行为。
 
 有用的确定性指标覆盖是 `0.1` 之后的第一项能力；随后补齐 Profile Authoring
@@ -65,7 +65,7 @@ Loop，让第三方能够端到端证明自己的 Assessment。公共 `MetricPla
 
 ## 优先级 1——确定性指标覆盖
 
-**状态：** 已在本地 `0.1.1` 发布候选中以显式选择的 Preview Result Report 实现。
+**状态：** 已在 `0.1.1` 中实现并发布，采用显式选择的 Preview Result Report。
 优先级 2 仍是下一项产品里程碑。
 
 已接受的实现基线见
@@ -117,7 +117,7 @@ Artifact Digest、Authority Binding、Contained Path、Conflict-safe Publication
 Contract 管理；还必须定义输入缺失、无效、矛盾和不可用时的行为。不会仅为了
 增加指标数量而加入 Metric。
 
-### `0.1.1` 发布候选已交付内容
+### `0.1.1` 已交付内容
 
 本阶段先用 Profile-owned 实现证明指标语义，不提前暴露通用 `Metric` 接口：
 

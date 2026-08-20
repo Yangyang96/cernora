@@ -59,7 +59,7 @@ The roadmap starts from a released offline evaluation core that already provides
 and GateDecision v1 as its current output protocols. The compatibility matrix remains
 the authority for exact promises.
 
-The local `0.1.1` release candidate additionally provides opt-in Preview ResultRecord v1
+The released `0.1.1` additionally provides opt-in Preview ResultRecord v1
 and EvaluationReport v1 outputs plus the explicit `tool-workflow` and `coding-evaluation`
 reference Profiles. It does not change the published `0.1.0` default behavior.
 
@@ -70,7 +70,7 @@ experiment evidence should shape that abstraction before it is frozen.
 
 ## Priority 1 — Deterministic metric coverage
 
-**Status:** implemented in the local `0.1.1` release candidate as opt-in Preview result
+**Status:** implemented and released in `0.1.1` as opt-in Preview result
 reporting. Priority 2 remains the next product milestone.
 
 The accepted implementation baseline is specified in
@@ -127,7 +127,7 @@ and governed by a Profile or report contract. It must define behavior for missin
 invalid, contradictory and unavailable inputs. Metrics are not added merely to
 increase the number of measurements.
 
-### Delivered in the `0.1.1` release candidate
+### Delivered in `0.1.1`
 
 This milestone proves metric semantics through Profile-owned implementations before
 exposing a generic `Metric` interface:

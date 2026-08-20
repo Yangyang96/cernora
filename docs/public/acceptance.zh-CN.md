@@ -2,7 +2,7 @@
 
 [English](acceptance.md) | **简体中文**
 
-Cernora `0.1.1` 发布候选使用原项目 V1/V2 脱敏公开代表，以及 Priority 1
+Cernora `0.1.1` 使用原项目 V1/V2 脱敏公开代表，以及 Priority 1
 `tool-workflow` 和 `coding-evaluation` 矩阵进行验收。这些任务标签并不表示
 EvidenceBundle v1：所有运行都使用 EvidenceBundle v2/import v2；Priority 1 运行还输出
 ResultRecord v1 和 EvaluationReport v1。
@@ -58,5 +58,4 @@ env -u PYTHONPATH PYTHONNOUSERSITE=1 \
 `docs/public/acceptance-summary.json` 按字节比较一致后才会输出 `pass`；SHA-256 必须与
 上面的值一致。输出目录必须尚不存在。
 
-这是 evaluation-core release candidate 的证据，不是 Agent Runtime/sandbox 证据，也不
-表示已经完成 GitHub 或 PyPI 发布。
+这是 evaluation-core 正式版本的证据，不是 Agent Runtime/sandbox 证据。

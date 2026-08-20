@@ -1,6 +1,6 @@
 # Public evaluation-core and Priority 1 acceptance
 
-Cernora `0.1.1` release candidate was exercised with the original sanitized V1/V2
+Cernora `0.1.1` was exercised with the original sanitized V1/V2
 representatives plus the Priority 1 `tool-workflow` and `coding-evaluation` matrices. These
 task labels do not mean EvidenceBundle v1: every run uses EvidenceBundle v2/import v2. The
 Priority 1 runs also emit ResultRecord v1 and EvaluationReport v1.
@@ -62,5 +62,4 @@ The command prints `pass` only after comparing `cernora-public-acceptance/summar
 byte-for-byte with `docs/public/acceptance-summary.json`; its SHA-256 must match the value
 above. The output directory must not already exist.
 
-This is evaluation-core release-candidate evidence, not Agent-runtime/sandbox evidence and
-not a claim that GitHub or PyPI publication occurred.
+This is evaluation-core release evidence, not Agent-runtime/sandbox evidence.
