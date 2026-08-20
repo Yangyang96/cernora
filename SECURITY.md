@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Cernora `0.1.0` is the current release. Security fixes target only the latest published
+Cernora `0.1.1` is the current release. Security fixes target only the latest published
 `0.1.x` revision. No long-term support window is promised.
 
 ## Reporting a vulnerability
