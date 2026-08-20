@@ -6,7 +6,7 @@
     "corrupt_artifact": "rejected",
     "missing_artifact": "rejected"
   },
-  "cernora_version": "0.1.1",
+  "cernora_version": "0.1.1rc1",
   "execution": {
     "credentials_required": false,
     "network_blocked": true,
