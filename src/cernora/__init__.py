@@ -48,7 +48,7 @@ from cernora.profile_loader import ProfileLoadError, load_local_profile
 from cernora.profile_workspace import ProfileInitResult, ProfileWorkspaceError, init_profile
 from cernora.resources import PUBLIC_SCHEMAS, read_public_schema
 
-__version__ = "0.1.1rc1"
+__version__ = "0.1.1"
 
 __all__ = [
     "PUBLIC_SCHEMAS",

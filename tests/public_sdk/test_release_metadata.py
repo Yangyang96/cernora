@@ -26,7 +26,7 @@ def test_release_metadata_and_governance_are_explicit() -> None:
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert project["name"] == "cernora"
-    assert project["version"] == "0.1.1rc1"
+    assert project["version"] == "0.1.1"
     assert project["requires-python"] == ">=3.12,<3.14"
     assert project["license"] == "Apache-2.0"
     assert project["license-files"] == ["LICENSE"]
