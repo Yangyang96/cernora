@@ -3,6 +3,8 @@
 All notable changes to Cernora are documented here. The project follows semantic versioning
 while pre-1.0 compatibility is further defined by the documented compatibility tiers.
 
+## Unreleased
+
 ## 0.1.1 - 2026-08-20
 
 ### Added
