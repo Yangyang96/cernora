@@ -36,6 +36,17 @@ def test_wheel_check_authoring_loop_reaches_every_outcome(tmp_path: Path) -> Non
     assert persisted == result
 
 
+def test_wheel_check_accepts_relative_output(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.chdir(tmp_path)
+
+    result = run(Path("wheel-check"), allow_source=True)
+
+    assert result["repetitions"] == 3
+    assert (tmp_path / "wheel-check" / "summary.json").is_file()
+
+
 def test_wheel_check_rejects_source_checkout(tmp_path: Path) -> None:
     with pytest.raises(ProfileAuthoringCheckError, match="installed wheel"):
         run(tmp_path / "rejected", allow_source=False)

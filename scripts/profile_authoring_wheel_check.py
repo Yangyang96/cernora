@@ -47,6 +47,7 @@ def _block_network(*args: object, **kwargs: object) -> NoReturn:
 def run(output: Path, *, allow_source: bool = False) -> dict[str, object]:
     """Author one scaffold from an installed wheel and prove every outcome class."""
 
+    output = output.resolve()
     repository = Path(__file__).resolve().parents[1]
     module_path = Path(cernora.__file__).resolve()
     if module_path.is_relative_to(repository) and not allow_source:
