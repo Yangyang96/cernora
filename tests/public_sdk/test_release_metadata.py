@@ -94,7 +94,7 @@ def test_public_acceptance_summary_is_compact_and_explicit() -> None:
     summary = json.loads((root / "docs/public/acceptance-summary.json").read_text(encoding="utf-8"))
 
     assert summary["schema_version"] == "cernora.public-acceptance-summary/v1"
-    assert summary["cernora_version"] == "0.1.1"
+    assert summary["cernora_version"] == "0.1.2"
     assert summary["output_protocols"] == [
         "agent.evaluator.evidence/v1",
         "agent.evaluator.score/v1",
