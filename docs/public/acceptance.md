@@ -1,6 +1,6 @@
 # Public evaluation-core and Priority 1 acceptance
 
-Cernora `0.1.1` was exercised with the original sanitized V1/V2
+Cernora `0.1.2` was exercised with the original sanitized V1/V2
 representatives plus the Priority 1 `tool-workflow` and `coding-evaluation` matrices. These
 task labels do not mean EvidenceBundle v1: every run uses EvidenceBundle v2/import v2. The
 Priority 1 runs also emit ResultRecord v1 and EvaluationReport v1.
@@ -39,8 +39,8 @@ acceptance.
 - A well-formed but incorrect coding candidate remained eligible evidence and produced the
   expected behavioral `fail` GateDecision.
 - Python 3.12.12 and 3.13.12 produced byte-identical 3,778-file acceptance trees with SHA-256
-  `c3c8b8f7edfdd8072ba2459cd7eab8886e9dce1609bbbeff670d196aacaae7b9`; the reviewed
-  summary SHA-256 is `6ebf251c0d83db68cd8dac6dab2c828012383f59544706e9f5b1db64e1b8d4d1`.
+  `5c9437c125a1e18988196c2c51c09f29f269cb2c60e88aa157f47a2fb191e6d1`; the reviewed
+  summary SHA-256 is `132f5dd15a7ff0819e59a47a994e705c016bdbd9474d29151e6112a6b7c1d279`.
 
 The exact compact result is [acceptance-summary.json](acceptance-summary.json). Raw generated
 Bundle, import and evaluation trees are not committed: they are deterministic, larger than

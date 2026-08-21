@@ -2,7 +2,7 @@
 
 [English](acceptance.md) | **简体中文**
 
-Cernora `0.1.1` 使用原项目 V1/V2 脱敏公开代表，以及 Priority 1
+Cernora `0.1.2` 使用原项目 V1/V2 脱敏公开代表，以及 Priority 1
 `tool-workflow` 和 `coding-evaluation` 矩阵进行验收。这些任务标签并不表示
 EvidenceBundle v1：所有运行都使用 EvidenceBundle v2/import v2；Priority 1 运行还输出
 ResultRecord v1 和 EvaluationReport v1。
@@ -37,8 +37,8 @@ assessment、Score、GateDecision 和严格 reload。它不是完整端到端 Ag
 - 格式正确但行为错误的 coding candidate 保持 evidence eligible，并生成预期的行为
   `fail` GateDecision。
 - Python 3.12.12 和 3.13.12 生成字节完全相同的 3,778-file 验收树，SHA-256 为
-  `c3c8b8f7edfdd8072ba2459cd7eab8886e9dce1609bbbeff670d196aacaae7b9`；已审阅摘要的
-  SHA-256 为 `6ebf251c0d83db68cd8dac6dab2c828012383f59544706e9f5b1db64e1b8d4d1`。
+  `5c9437c125a1e18988196c2c51c09f29f269cb2c60e88aa157f47a2fb191e6d1`；已审阅摘要的
+  SHA-256 为 `132f5dd15a7ff0819e59a47a994e705c016bdbd9474d29151e6112a6b7c1d279`。
 
 精简结果见 [acceptance-summary.json](acceptance-summary.json)。仓库不提交生成的 Bundle、
 import 和 evaluation 原始目录树：它们可以确定性重建，且体积大于有效评审范围。此次验收

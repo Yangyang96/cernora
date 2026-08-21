@@ -66,7 +66,7 @@ Loop，让第三方能够端到端证明自己的 Assessment。公共 `MetricPla
 ## 优先级 1——确定性指标覆盖
 
 **状态：** 已在 `0.1.1` 中实现并发布，采用显式选择的 Preview Result Report。
-优先级 2 已在 `0.1.2` Release Candidate 中实现。
+优先级 2 已在 `0.1.2` 中实现并发布。
 
 已接受的实现基线见
 [`docs/design/priority-1-deterministic-metrics.md`](docs/design/priority-1-deterministic-metrics.md)。
@@ -148,8 +148,7 @@ byte-identical 输出，且无效 Evidence 不能变成 pass。
 
 ## 优先级 2——完整 Profile Authoring Loop
 
-**状态：** 已在 `0.1.2` Release Candidate 中实现。正式发布仍是 Release Owner 的独立
-操作；优先级 3 是下一项实现里程碑。
+**状态：** 已在 `0.1.2` 中实现并发布。优先级 3 是下一项实现里程碑。
 
 ### 目标
 

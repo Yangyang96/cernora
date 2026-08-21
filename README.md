@@ -22,14 +22,14 @@ Use Cernora when you need to:
 - keep evaluation authority separate from Runtime credentials, sandboxes, retries, and
   self-reported success.
 
-> **Current release:** `0.1.1`, tested on Python 3.12 and 3.13. See the
+> **Current release:** `0.1.2`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
 >
-> **Development status:** `main` prepares the validated `0.1.2` release candidate with the
-> completed Priority 2 Profile authoring loop. It is not published yet; see the
-> [product roadmap](ROADMAP.md) for the exact milestone status.
+> **Development status:** Priority 2 Profile authoring is released in `0.1.2`; Priority 3,
+> the public Reference Evaluation Workflow, is the next implementation milestone. See the
+> [product roadmap](ROADMAP.md) for the exact scope.
 
-## Try `0.1.1` in five minutes
+## Try `0.1.2` in five minutes
 
 Cernora supports CPython 3.12 and 3.13.
 
@@ -186,7 +186,7 @@ modify Git state, or claim to sandbox Profile execution. See
 [Profile authoring](docs/public/profile-authoring.md) and
 [Adapter conformance](docs/public/adapter-conformance.md).
 
-## Verified in `0.1.1`
+## Verified in `0.1.2`
 
 The public acceptance process installed the exact wheel outside the repository on Python
 3.12 and 3.13. In addition to the original representatives, it verified all 18
