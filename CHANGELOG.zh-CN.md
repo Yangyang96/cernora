@@ -7,6 +7,26 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ## Unreleased
 
+## 0.1.2 - 2026-08-21
+
+### Added
+
+- 引导式 `cernora profile init` scaffold，包含一个可实现的 assessment、带注释的 fixture、
+  打包的合成 EvidenceBundle v2 负例 fixture 集、本地测试，以及 fail-closed 默认行为：在
+  实现 `assess()` 之前不会让 completed evidence 通过。
+- `cernora profile test` 命令：对每个声明的 `cases/*.json` 行运行静态 conformance 以及真实
+  import、evaluation 和严格 reload，要求重复结果字节一致，并在行为不匹配时返回独立退出码。
+- wheel-only 的 `scripts/profile_authoring_wheel_check.py` 验收：从已安装 wheel 编写 Profile，
+  并覆盖 `pass`、`fail`、`inconclusive` 和 `import_rejection`。
+
+### Changed
+
+- Profile 行为测试现在会把每个声明的 Case 与 Profile authority 和 fixture 绑定，保留具体的
+  import-rejection 诊断，并在 GateDecision 通过前拒绝缺失 observation、scorer 不一致和未绑定
+  Evidence reference。
+- Release preflight 会离线安装刚构建的 wheel 并运行完整 Profile authoring 验收；CI 在
+  Python 3.12 和 3.13 上重复同一 wheel-only 流程。
+
 ## 0.1.1 - 2026-08-20
 
 ### Added

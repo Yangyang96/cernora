@@ -26,7 +26,7 @@ def test_release_metadata_and_governance_are_explicit() -> None:
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert project["name"] == "cernora"
-    assert project["version"] == "0.1.1"
+    assert project["version"] == "0.1.2"
     assert project["requires-python"] == ">=3.12,<3.14"
     assert project["license"] == "Apache-2.0"
     assert project["license-files"] == ["LICENSE"]
@@ -225,6 +225,8 @@ def test_release_commands_and_runbook_are_version_generic() -> None:
     assert "cernora-0.1.0" not in checker
     assert '"--isolated"' in automation
     assert "sys.version_info[:2]" in automation
+    assert "_verify_built_profile_authoring(wheel, temporary_root)" in automation
+    assert "scripts/profile_authoring_wheel_check.py" in automation
 
 
 def test_release_artifact_names_follow_the_declared_version(tmp_path: Path) -> None:

@@ -205,16 +205,50 @@ def _check_assessment(
         or evidence.artifacts != expected_artifacts
     ):
         raise IngestionIntegrityError("Profile Evidence changed imported producer facts")
-    if (
-        score.score_id != context.score_id
-        or score.evidence_id != context.evidence_id
-        or score.scorer_version != bound.profile.scorer_policy.policy_version
-    ):
+    if score.score_id != context.score_id or score.evidence_id != context.evidence_id:
         raise IngestionIntegrityError("Profile Score identity is not authority-bound")
-    if tuple(item.observation_id for item in score.observations) != (
-        bound.profile.scorer_policy.required_observations
-    ):
-        raise IngestionIntegrityError("Profile Score observations do not match authority order")
+    if score.scorer_version != bound.profile.scorer_policy.policy_version:
+        raise IngestionIntegrityError(
+            "Profile Score scorer version does not match authority: "
+            f"expected={bound.profile.scorer_policy.policy_version} "
+            f"actual={score.scorer_version}"
+        )
+    expected_observations = bound.profile.scorer_policy.required_observations
+    actual_observations = tuple(item.observation_id for item in score.observations)
+    if actual_observations != expected_observations:
+        missing = tuple(item for item in expected_observations if item not in actual_observations)
+        unexpected = tuple(
+            item for item in actual_observations if item not in expected_observations
+        )
+        raise IngestionIntegrityError(
+            "Profile Score observations do not match authority: "
+            f"missing={missing} unexpected={unexpected}"
+        )
+    for observation in score.observations:
+        for reference in observation.evidence_references:
+            _require_bound_reference(
+                bound,
+                context,
+                reference,
+                label=f"Profile Score observation {observation.observation_id!r}",
+            )
+    if evidence.answer is not None:
+        for claim in evidence.answer.claims:
+            for reference in claim.evidence_references:
+                _require_bound_reference(
+                    bound,
+                    context,
+                    reference,
+                    label=f"Profile Evidence answer claim {claim.name!r}",
+                )
+    for failure in evidence.failures:
+        for reference in failure.evidence_references:
+            _require_bound_reference(
+                bound,
+                context,
+                reference,
+                label=f"Profile Evidence failure {failure.code!r}",
+            )
     _check_result_records(bound, context, assessment)
 
 
@@ -242,6 +276,21 @@ def _reference_is_bound(
     return False
 
 
+def _require_bound_reference(
+    bound: AuthorityBoundImportPackageV2,
+    context: ProfileEvaluationContext,
+    reference: EvidenceReference,
+    *,
+    label: str,
+) -> None:
+    if _reference_is_bound(bound, context, reference):
+        return
+    raise IngestionIntegrityError(
+        f"{label} has an unbound Evidence reference: "
+        f"locator={reference.locator!r} sha256={reference.sha256!r}"
+    )
+
+
 def _check_result_records(
     bound: AuthorityBoundImportPackageV2,
     context: ProfileEvaluationContext,
@@ -266,12 +315,14 @@ def _check_result_records(
         record.role in {"outcome", "constraint"} and record.id not in required for record in records
     ):
         raise IngestionIntegrityError("Profile result records added an undeclared Gate input")
-    if any(
-        not _reference_is_bound(bound, context, reference)
-        for record in records
-        for reference in record.evidence_refs
-    ):
-        raise IngestionIntegrityError("Profile result record has an unbound Evidence reference")
+    for record in records:
+        for reference in record.evidence_refs:
+            _require_bound_reference(
+                bound,
+                context,
+                reference,
+                label=f"Profile result record {record.id!r}",
+            )
 
     observations = {item.observation_id: item for item in assessment.score.observations}
     for result_id in required:

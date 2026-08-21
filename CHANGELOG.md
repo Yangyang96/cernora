@@ -5,6 +5,27 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ## Unreleased
 
+## 0.1.2 - 2026-08-21
+
+### Added
+
+- A guided `cernora profile init` scaffold with one implementable assessment, annotated
+  fixtures, a packaged synthetic EvidenceBundle v2 negative fixture set, local tests and a
+  fail-closed default that never passes completed evidence before `assess()` is implemented.
+- A `cernora profile test` command that runs static conformance plus real import, evaluation
+  and strict reload for every declared `cases/*.json` row, requires byte-identical repeated
+  results, and reports a distinct exit code on behavioral mismatch.
+- A wheel-only `scripts/profile_authoring_wheel_check.py` acceptance that authors a Profile
+  from an installed wheel and reaches `pass`, `fail`, `inconclusive` and `import_rejection`.
+
+### Changed
+
+- Profile behavior tests now bind every declared Case to the Profile authority and fixture,
+  retain specific import-rejection diagnostics, and reject missing observations, scorer
+  mismatches and unbound Evidence references before a GateDecision can pass.
+- The release preflight installs its freshly built wheel offline and runs the complete Profile
+  authoring acceptance; CI repeats that wheel-only flow on Python 3.12 and 3.13.
+
 ## 0.1.1 - 2026-08-20
 
 ### Added

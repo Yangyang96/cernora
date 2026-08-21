@@ -39,8 +39,8 @@ uv run python -m build
 git diff --check
 ```
 
-准备发布候选时，使用统一命令运行上述检查、在全新临时目录中构建，并验证 wheel
-和源码归档：
+准备发布候选时，使用统一命令运行上述检查、在全新临时目录中构建、验证 wheel 和源码归档，
+再离线安装 wheel 并运行完整 Profile Authoring Loop：
 
 ```sh
 uv run python scripts/release.py preflight

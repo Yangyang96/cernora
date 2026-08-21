@@ -24,6 +24,10 @@ Use Cernora when you need to:
 
 > **Current release:** `0.1.1`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
+>
+> **Development status:** `main` prepares the validated `0.1.2` release candidate with the
+> completed Priority 2 Profile authoring loop. It is not published yet; see the
+> [product roadmap](ROADMAP.md) for the exact milestone status.
 
 ## Try `0.1.1` in five minutes
 
@@ -101,7 +105,8 @@ See [Architecture](docs/public/architecture.md) for component ownership and trus
 
 An infrastructure failure never becomes an Agent failure, and unverifiable evidence never
 becomes a pass. CLI exit codes preserve the distinction: `0` pass, `1` behavioral failure,
-`2` usage/authority incompatibility, and `3` invalid or inconclusive evaluation.
+`2` usage/authority incompatibility, `3` invalid or inconclusive evaluation, and `4` a
+`profile test` behavioral mismatch or nondeterministic result.
 
 ## Engineering highlights
 
@@ -173,6 +178,7 @@ Scaffold a private-by-default Profile workspace:
 ```bash
 cernora profile init my-profile
 cernora profile validate --profile-path .cernora/profiles/my-profile
+cernora profile test --profile-path .cernora/profiles/my-profile
 ```
 
 Local Profiles are explicitly loaded trusted Python code. Cernora does not scan for plugins,

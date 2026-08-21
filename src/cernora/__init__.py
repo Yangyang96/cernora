@@ -45,10 +45,17 @@ from cernora.ingestion.contracts_v2 import AuthorityBoundImportPackageV2
 from cernora.ingestion.package_v2 import import_evidence_bundle_v2
 from cernora.profile import Profile, ProfileAssessment, ProfileEvaluationContext
 from cernora.profile_loader import ProfileLoadError, load_local_profile
+from cernora.profile_testing import (
+    ProfileTestCase,
+    ProfileTestCaseResult,
+    ProfileTestError,
+    ProfileTestSummary,
+    run_profile_tests,
+)
 from cernora.profile_workspace import ProfileInitResult, ProfileWorkspaceError, init_profile
 from cernora.resources import PUBLIC_SCHEMAS, read_public_schema
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 __all__ = [
     "PUBLIC_SCHEMAS",
@@ -80,6 +87,10 @@ __all__ = [
     "ProfileEvaluationContext",
     "ProfileInitResult",
     "ProfileLoadError",
+    "ProfileTestCase",
+    "ProfileTestCaseResult",
+    "ProfileTestError",
+    "ProfileTestSummary",
     "ProfileWorkspaceError",
     "ResultRecord",
     "Score",
@@ -99,4 +110,5 @@ __all__ = [
     "read_evaluation_report",
     "read_imported_evaluation",
     "read_public_schema",
+    "run_profile_tests",
 ]

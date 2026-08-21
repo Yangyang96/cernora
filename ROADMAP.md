@@ -71,7 +71,7 @@ experiment evidence should shape that abstraction before it is frozen.
 ## Priority 1 — Deterministic metric coverage
 
 **Status:** implemented and released in `0.1.1` as opt-in Preview result
-reporting. Priority 2 remains the next product milestone.
+reporting. Priority 2 is implemented in the `0.1.2` release candidate.
 
 The accepted implementation baseline is specified in
 [`docs/design/priority-1-deterministic-metrics.md`](docs/design/priority-1-deterministic-metrics.md).
@@ -163,6 +163,9 @@ richer diagnostics from frozen Evidence packages. Their accepted matrices repeat
 input three times with byte-identical output, and invalid evidence cannot become pass.
 
 ## Priority 2 — Complete Profile authoring loop
+
+**Status:** implemented in the `0.1.2` release candidate. Publication remains a separate
+release-owner action; Priority 3 is the next implementation milestone.
 
 ### Goal
 

@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -17,6 +19,11 @@ from cernora.ingestion.errors import IngestionConfigurationError, IngestionInteg
 from cernora.ingestion.package_v2 import import_evidence_bundle_v2
 from cernora.profile import Profile
 from cernora.profile_loader import ProfileLoadError, load_local_profile
+from cernora.profile_testing import (
+    ProfileTestError,
+    profile_test_exit_code,
+    run_profile_tests,
+)
 from cernora.profile_workspace import ProfileWorkspaceError, init_profile
 
 
@@ -39,6 +46,10 @@ def parser() -> argparse.ArgumentParser:
     init.add_argument("--output", type=Path)
     validate = profile_commands.add_parser("validate")
     _add_profile_selector(validate)
+    test = profile_commands.add_parser("test")
+    test.add_argument("--profile-path", type=Path, required=True)
+    test.add_argument("--output", type=Path)
+    test.add_argument("--repetitions", type=int, default=3)
 
     evidence = commands.add_parser("evidence")
     evidence_commands = evidence.add_subparsers(dest="evidence_command", required=True)
@@ -72,10 +83,25 @@ def _emit(value: Any) -> None:
 def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     result: Any
+    temporary_output: Path | None = None
     try:
         if args.command == "profile" and args.profile_command == "init":
             result = init_profile(args.name, output=args.output)
             code = 0
+        elif args.command == "profile" and args.profile_command == "test":
+            profile = load_local_profile(args.profile_path)
+            output = args.output
+            if output is None:
+                temporary_output = Path(tempfile.mkdtemp(prefix="cernora-profile-test-"))
+                output = temporary_output
+            summary = run_profile_tests(
+                profile,
+                args.profile_path,
+                output,
+                repetitions=args.repetitions,
+            )
+            result = summary
+            code = profile_test_exit_code(summary)
         else:
             profile = _load_selected_profile(args)
         if args.command == "profile" and args.profile_command == "validate":
@@ -100,6 +126,7 @@ def main(argv: list[str] | None = None) -> int:
         ConformanceError,
         IngestionConfigurationError,
         ProfileLoadError,
+        ProfileTestError,
         ProfileWorkspaceError,
     ) as exc:
         print(str(exc), file=sys.stderr)
@@ -113,6 +140,9 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:
         print(f"evaluation failed closed: {type(exc).__name__}", file=sys.stderr)
         return 3
+    finally:
+        if temporary_output is not None:
+            shutil.rmtree(temporary_output, ignore_errors=True)
     _emit(result)
     return code
 

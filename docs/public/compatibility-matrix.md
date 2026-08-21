@@ -7,7 +7,7 @@ importable module as stable.
 | --- | --- | --- |
 | Python 3.12 and 3.13 | Supported Preview | Tested release range; dropping either requires a minor version and migration note. |
 | `cernora evidence import` and `cernora evidence evaluate` | Supported Preview | Command shape, exit classes and canonical JSON behavior remain compatible. |
-| `cernora profile init` and `cernora profile validate` | Supported Preview | Private-default workspace and explicit Profile selection remain compatible. |
+| `cernora profile init`, `cernora profile validate` and `cernora profile test` | Supported Preview | Private-default workspace, explicit Profile selection and the behavior-test summary shape remain compatible. |
 | Built-in Profile selectors and authority identities | Preview | `builtin:tool-workflow` and `builtin:coding-evaluation` are additive; `builtin:coding-task` and `builtin:offline-workflow` retain their existing identities and semantics. |
 | EvidenceBundle v2 and import receipt/manifest v2 | Supported Preview | Wire fields and strict validation semantics are not reinterpreted within `0.1.x`. |
 | Evidence v1, Score v1 and GateDecision v1 | Supported Preview | Existing wire identifiers and canonical semantics are retained. |
@@ -76,6 +76,7 @@ are protocol identities and do not follow the Python package name.
 | `1` | Eligible evidence proves a behavioral failure. |
 | `2` | Usage, selection or authority configuration incompatibility. |
 | `3` | Corrupt, incomplete or inconclusive evidence, or another fail-closed evaluation error. |
+| `4` | A `profile test` case mismatched its expected outcome or produced nondeterministic results. |
 
 ## Explicit exclusions
 

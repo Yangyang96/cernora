@@ -20,9 +20,39 @@ creates:
   .gitignore
   profiles/
     my-profile/
-      profile.json
       profile.py
+      profile.json
+      resources/
+        expected-value.json
+      cases/
+        pass.json
+        fail.json
+        inconclusive.json
+        corrupt-artifact.json
+        authority-mismatch.json
+        scorer-policy-mismatch.json
+        gate-policy-mismatch.json
+      fixtures/
+        pass/
+        fail/
+        inconclusive/
+        corrupt-artifact/
+        authority-mismatch/
+        scorer-policy-mismatch/
+        gate-policy-mismatch/
+      tests/
+        test_profile.py
+      README.md
 ```
+
+- `profile.json` is the strict CaseProfile v1 authority; `profile.py` is the fixed,
+  fail-closed factory.
+- `resources/expected-value.json` is the frozen expected stdout the scaffold Case compares
+  against; its digest is bound in `profile.json`.
+- `cases/*.json` declares one behavior test row each for `cernora profile test`.
+- `fixtures/*/` holds one complete synthetic EvidenceBundle v2 package per row.
+- `tests/test_profile.py` proves the scaffold loads and fails closed; `README.md` documents
+  authority roles and version-bump rules.
 
 The ignore file contains `*`, making the workspace private by default. Cernora does not run
 Git commands and does not stage or publish the Profile. Do not force-add `.cernora/`.
@@ -134,6 +164,30 @@ cernora profile validate --profile-path .cernora/profiles/my-profile
 This command executes trusted local Python. Review `profile.py` before running it. Static
 conformance does not prove assessment behavior.
 
+`profile test` runs the complete behavior workflow in one command: static conformance plus a
+real import, evaluation and strict reload for every `cases/*.json` row:
+
+```sh
+cernora profile test --profile-path .cernora/profiles/my-profile
+```
+
+Each row declares a `fixture` subdirectory under `fixtures/` and an `expected` outcome of
+`pass`, `fail`, `inconclusive` or `import_rejection`. The command runs every row three times,
+requires byte-identical persisted results, and reports a canonical JSON summary. It exits `0`
+only when every row matches its expected outcome deterministically; a behavioral mismatch is a
+distinct non-zero exit, so a CI gate cannot mistake "loads successfully" for "evaluates
+correctly." `--output` selects a disposable output directory (a temporary directory is used
+otherwise); `--repetitions` overrides the default of three.
+
+Every declared `case_id` must belong to the Profile authority and match the fixture bundle.
+Expected import rejections retain their deterministic diagnostic, including stale Profile,
+scorer-policy and gate-policy authority. Evaluation rejects and identifies missing required
+observations, mismatched scorer versions and unbound Evidence-reference locators and digests.
+
+The generated scaffold stays fail-closed until you implement `assess()`. Its `profile test`
+run reports `inconclusive` for the missing-evidence fixture and fails closed for completed
+evidence, proving the scaffold never silently passes.
+
 A complete Profile test suite should also cover:
 
 1. one valid import and evaluation followed by strict result reload;
@@ -147,6 +201,29 @@ Use `builtin:offline-workflow`, `builtin:coding-task`, `builtin:tool-workflow` a
 demonstrate structured results for tool and coding evidence respectively; selection is always
 explicit. The coding example consumes frozen synthetic execution capsules and does not show
 how to execute untrusted candidate code.
+
+## Implement the scaffold assessment
+
+The minimal implemented assessment for the generated scaffold is shipped as the
+`cernora.examples.profile_authoring` reference. It implements one required observation,
+`claim_grounded`, which is `true` exactly when the run recorded one `check_value --key alpha`
+action, its stdout equals `resources/expected-value.json`, the terminal claim equals the frozen
+value, and the claim's `evidence_sha256` equals the stdout SHA-256. Missing or
+infrastructure-inconclusive evidence emits an `invalid` observation rather than a behavioral
+`false`, so it stays `inconclusive`.
+
+```python
+from cernora.examples.profile_authoring import write_implemented_profile
+
+write_implemented_profile(Path(".cernora/profiles/my-profile"))
+```
+
+After implementing `assess()`, rerun both commands. The first three fixtures report `pass`,
+`fail` and `inconclusive`; the corruption, authority, scorer-policy and gate-policy mismatch
+fixtures report `import_rejection` with their deterministic diagnostics. The
+`scripts/profile_authoring_wheel_check.py` script rebuilds this exact loop from an installed
+wheel in a clean project, requiring no credentials, blocking network access and refusing a
+source checkout.
 
 ## Evolution
 
@@ -162,3 +239,14 @@ Profile authoring APIs and Reference Profile layout are Preview. Breaking change
 `0.1.x` require a changelog entry and migration notes, with deprecation first where feasible.
 Version your Profile authority and projection deliberately; never relabel bytes created under
 an earlier meaning.
+
+### Observation ownership before `MetricPlan`
+
+Until a shared Metric SDK exists, a Profile owns its deterministic observations directly: it
+emits `ScoreObservation` values and, optionally, typed `ResultRecord` values from the same
+frozen Evidence material. The deep evaluator validates identity, evidence binding,
+required-observation order and Gate consistency, then persists and strictly reloads the
+result. A later `MetricPlan` must reuse this proven ownership shape rather than reinterpreting
+it: each Profile-owned observation maps to one versioned metric with an explicit validity
+state, a unit and direction where numeric, and the same evidence references. Authority and
+decisions must not be silently reinterpreted across that migration.

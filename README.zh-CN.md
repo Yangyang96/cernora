@@ -22,6 +22,9 @@ Cernora 是一个独立评测内核，根据记录下来的工具调用、返回
 
 > **当前版本：** `0.1.1`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
 > [平台矩阵](docs/public/compatibility-matrix.zh-CN.md)。
+>
+> **开发状态：** `main` 正在准备已通过验收的 `0.1.2` Release Candidate，其中 Priority 2
+> Profile Authoring Loop 已完成，但尚未正式发布；精确里程碑状态见[产品路线图](ROADMAP.zh-CN.md)。
 
 ## 五分钟运行 `0.1.1`
 
@@ -97,7 +100,7 @@ Cernora 把评测设计成独立的裁决权威：
 
 基础设施故障不会被伪装成 Agent 失败，无法验证的证据也永远不能变成 pass。CLI
 退出码保持相同语义：`0` 为 pass，`1` 为行为失败，`2` 为用法/权威不兼容，
-`3` 为无效或不可判定的评测。
+`3` 为无效或不可判定的评测，`4` 为 `profile test` 行为不匹配或结果不确定。
 
 ## 工程设计亮点
 
@@ -166,6 +169,7 @@ from cernora import check_adapter_conformance, check_profile_conformance
 ```bash
 cernora profile init my-profile
 cernora profile validate --profile-path .cernora/profiles/my-profile
+cernora profile test --profile-path .cernora/profiles/my-profile
 ```
 
 本地 Profile 是显式加载的受信任 Python 代码。Cernora 不扫描插件、不修改 Git 状态，

@@ -42,8 +42,9 @@ uv run python -m build
 git diff --check
 ```
 
-For a release candidate, one command runs those gates, builds into a fresh temporary directory
-and verifies the exact wheel and source archive:
+For a release candidate, one command runs those gates, builds into a fresh temporary directory,
+verifies the exact wheel and source archive, installs the wheel offline, and exercises the
+complete Profile authoring loop:
 
 ```sh
 uv run python scripts/release.py preflight

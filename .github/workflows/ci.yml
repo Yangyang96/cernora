@@ -112,3 +112,9 @@ jobs:
           /tmp/cernora-wheel-venv/bin/python
           ${{ github.workspace }}/scripts/rebuild_acceptance.py
           --output cernora-public-acceptance-${{ matrix.python-version }}
+      - working-directory: ${{ runner.temp }}
+        run: >-
+          env -u PYTHONPATH PYTHONNOUSERSITE=1
+          /tmp/cernora-wheel-venv/bin/python
+          ${{ github.workspace }}/scripts/profile_authoring_wheel_check.py
+          --output cernora-profile-authoring-${{ matrix.python-version }}

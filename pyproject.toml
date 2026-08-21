@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "cernora"
-version = "0.1.1"
+version = "0.1.2"
 description = "Deterministic, offline evaluation and CI gating for completed AI agent runs"
 readme = "README.md"
 requires-python = ">=3.12,<3.14"
@@ -82,6 +82,7 @@ include = [
   "/examples/offline_workflow",
   "/pyproject.toml",
   "/scripts/check_release.py",
+  "/scripts/profile_authoring_wheel_check.py",
   "/scripts/release.py",
   "/scripts/rebuild_acceptance.py",
   "/src/cernora",

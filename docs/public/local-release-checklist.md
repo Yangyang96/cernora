@@ -28,9 +28,10 @@ uv run python scripts/release.py preflight
 ```
 
 The unified command runs the source gates, builds into a fresh temporary directory, inspects
-the closed tree and artifacts, and prints their SHA-256 values. Run the tests under both
-supported Python minors in CI. A release candidate is not accepted from partial or unread
-test output.
+the closed tree and artifacts, installs the fresh wheel offline, and runs the complete Profile
+authoring acceptance before printing artifact SHA-256 values. CI repeats wheel acceptance
+under both supported Python minors. A release candidate is not accepted from partial or
+unread test output.
 
 ## 3. Inspect the public tree
 
@@ -89,6 +90,10 @@ or evaluation exits fail closed rather than passing.
 This wheel-only check starts from a packaged synthetic completed export. Record it as
 evaluation-core acceptance only; it does not validate Agent launch, sandbox policy, runtime
 receipt capture or Experiment Harness behavior.
+
+The unified preflight also runs `scripts/profile_authoring_wheel_check.py` from an isolated
+wheel installation. It creates a private Profile, implements the guided assessment, and
+requires deterministic `pass`, `fail`, `inconclusive` and import-rejection outcomes.
 
 ## 6. Verify publication history
 

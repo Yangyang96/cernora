@@ -4,67 +4,21 @@ from __future__ import annotations
 
 import ctypes
 import errno
-import json
 import os
 import re
 import stat
 import sys
 import tempfile
+from collections.abc import Mapping
 from contextlib import suppress
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Literal
 
 from cernora.core.case import StrictModel
+from cernora.profile_scaffold import build_scaffold_files
 
 _PROFILE_NAME = re.compile(r"^[a-z0-9][a-z0-9._-]{0,63}$")
 _IGNORE_BYTES = b"*\n"
-_PROFILE_SOURCE = '''"""Cernora Profile scaffold. Local Profile code is trusted, not sandboxed."""
-
-from pathlib import Path
-
-from cernora import (
-    AuthorityBoundImportPackageV2,
-    CaseProfile,
-    Profile,
-    ProfileAssessment,
-    ProfileEvaluationContext,
-)
-
-
-class ScaffoldProfile:
-    """Fail-closed scaffold; implement assess before evaluating completed evidence."""
-
-    projection_version = "scaffold-projection/v1"
-
-    def __init__(self) -> None:
-        self._authority = CaseProfile.model_validate_json(
-            Path(__file__).with_name("profile.json").read_bytes()
-        )
-
-    @property
-    def authority(self) -> CaseProfile:
-        return self._authority
-
-    def validate_import(self, package: AuthorityBoundImportPackageV2) -> None:
-        if package.profile != self._authority:
-            raise ValueError("import package is not bound to this Profile authority")
-        if package.case not in self._authority.cases:
-            raise ValueError("import package Case is not in this Profile")
-
-    def assess(
-        self,
-        package: AuthorityBoundImportPackageV2,
-        context: ProfileEvaluationContext,
-    ) -> ProfileAssessment:
-        del package, context
-        raise NotImplementedError("implement Profile.assess before evaluation")
-
-
-def create_profile() -> Profile:
-    """Fixed Cernora local Profile factory."""
-
-    return ScaffoldProfile()
-'''
 
 
 class ProfileWorkspaceError(ValueError):
@@ -138,39 +92,6 @@ def _ensure_private_workspace(project_root: Path) -> Path:
     return profiles
 
 
-def _authority_payload(name: str) -> bytes:
-    value = {
-        "cases": [
-            {
-                "case_id": "example-v1",
-                "case_set": "local-authoring",
-                "case_version": "1.0.0",
-                "declared_capabilities": ["completed-evidence"],
-                "fixture_references": [],
-                "input": {
-                    "parameters": {},
-                    "prompt": "Replace this prompt with the completed-evidence task.",
-                },
-                "tags": ["local"],
-            }
-        ],
-        "description": "Local Cernora Profile scaffold.",
-        "gate_policy": {
-            "invalid_result": "inconclusive",
-            "policy_version": "1.0.0",
-            "required_score_ids": ["scaffold-score"],
-        },
-        "profile_id": name,
-        "profile_version": "1.0.0",
-        "schema_version": "agent.evaluator.case-profile/v1",
-        "scorer_policy": {
-            "policy_version": "1.0.0",
-            "required_observations": ["implemented"],
-        },
-    }
-    return (json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n").encode()
-
-
 def _publish_directory_no_replace(staging: Path, destination: Path) -> None:
     """Atomically publish a directory only when the destination is absent."""
 
@@ -222,6 +143,62 @@ def _publish_directory_no_replace(staging: Path, destination: Path) -> None:
     raise OSError(error_number, os.strerror(error_number), destination)
 
 
+def _write_scaffold_files(root_descriptor: int, files: Mapping[str, bytes]) -> None:
+    """Write every scaffold file below a private staging directory descriptor."""
+
+    for relative, payload in sorted(files.items()):
+        parts = PurePosixPath(relative).parts
+        current = os.dup(root_descriptor)
+        file_descriptor = -1
+        try:
+            for part in parts[:-1]:
+                with suppress(FileExistsError):
+                    os.mkdir(part, mode=0o700, dir_fd=current)
+                next_descriptor = os.open(
+                    part,
+                    os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
+                    dir_fd=current,
+                )
+                os.close(current)
+                current = next_descriptor
+            file_descriptor = os.open(
+                parts[-1],
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
+                0o644,
+                dir_fd=current,
+            )
+            with os.fdopen(file_descriptor, "wb", closefd=True) as stream:
+                file_descriptor = -1
+                stream.write(payload)
+        finally:
+            if file_descriptor >= 0:
+                os.close(file_descriptor)
+            os.close(current)
+
+
+def _remove_scaffold_tree(root_descriptor: int) -> None:
+    """Recursively remove entries reachable only through a private descriptor."""
+
+    with os.scandir(root_descriptor) as entries:
+        for entry in entries:
+            info = entry.stat(follow_symlinks=False)
+            if stat.S_ISDIR(info.st_mode):
+                child = os.open(
+                    entry.name,
+                    os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0),
+                    dir_fd=root_descriptor,
+                )
+                try:
+                    _remove_scaffold_tree(child)
+                finally:
+                    os.close(child)
+                with suppress(OSError):
+                    os.rmdir(entry.name, dir_fd=root_descriptor)
+            else:
+                with suppress(OSError):
+                    os.unlink(entry.name, dir_fd=root_descriptor)
+
+
 def _create_scaffold(destination: Path, name: str) -> None:
     if _existing_kind(destination) is not None:
         raise ProfileWorkspaceError("Profile destination already exists")
@@ -233,7 +210,6 @@ def _create_scaffold(destination: Path, name: str) -> None:
     except OSError as exc:
         raise ProfileWorkspaceError("cannot create Profile scaffold staging directory") from exc
     directory_descriptor = -1
-    created_files: list[str] = []
     published = False
     reserved: os.stat_result | None = None
     try:
@@ -248,19 +224,7 @@ def _create_scaffold(destination: Path, name: str) -> None:
             opened.st_ino,
         ):
             raise ProfileWorkspaceError("Profile destination changed during creation")
-        for filename, payload in (
-            ("profile.py", _PROFILE_SOURCE.encode("utf-8")),
-            ("profile.json", _authority_payload(name)),
-        ):
-            file_descriptor = os.open(
-                filename,
-                os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0),
-                0o644,
-                dir_fd=directory_descriptor,
-            )
-            created_files.append(filename)
-            with os.fdopen(file_descriptor, "wb", closefd=True) as stream:
-                stream.write(payload)
+        _write_scaffold_files(directory_descriptor, build_scaffold_files(name))
         _publish_directory_no_replace(staging, destination)
         published = True
     except FileExistsError as exc:
@@ -269,11 +233,10 @@ def _create_scaffold(destination: Path, name: str) -> None:
         raise ProfileWorkspaceError("cannot create Profile scaffold") from exc
     finally:
         if not published and directory_descriptor >= 0:
-            # Remove only files reached through our private staging directory descriptor.
+            # Remove only entries reached through our private staging descriptor.
             # Never traverse or mutate a destination that appeared concurrently.
-            for filename in reversed(created_files):
-                with suppress(OSError):
-                    os.unlink(filename, dir_fd=directory_descriptor)
+            with suppress(OSError):
+                _remove_scaffold_tree(directory_descriptor)
         if directory_descriptor >= 0:
             os.close(directory_descriptor)
         if not published:

@@ -28,9 +28,9 @@ uv sync --all-groups
 uv run python scripts/release.py preflight
 ```
 
-统一命令会运行源码检查，在全新临时目录构建，检查封闭目录树和 artifact，并输出 SHA-256。
-CI 需要在两个支持的 Python minor 版本上运行测试。测试输出不完整或不可读时，不能接受
-release candidate。
+统一命令会运行源码检查，在全新临时目录构建，检查封闭目录树和 artifact，离线安装刚构建的
+wheel，并在输出 artifact SHA-256 前运行完整 Profile authoring 验收。CI 会在两个支持的
+Python minor 版本上重复 wheel 验收。测试输出不完整或不可读时，不能接受 release candidate。
 
 ## 3. 检查公开目录树
 
@@ -80,6 +80,10 @@ cd "$cernora_check_dir"
 
 wheel-only 检查从打包的合成 completed export 开始，只能记录为 evaluation-core 验收；
 它不能验证 Agent 启动、sandbox policy、runtime receipt 捕获或 Experiment Harness 行为。
+
+统一 preflight 还会从隔离 wheel 安装运行 `scripts/profile_authoring_wheel_check.py`。它会创建
+私有 Profile、实现引导式 assessment，并要求确定性的 `pass`、`fail`、`inconclusive` 和
+import-rejection 结果。
 
 ## 6. 检查发布历史
 
