@@ -23,8 +23,8 @@ Cernora 是一个独立评测内核，根据记录下来的工具调用、返回
 > **当前版本：** `0.1.2`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
 > [平台矩阵](docs/public/compatibility-matrix.zh-CN.md)。
 >
-> **开发状态：** Priority 2 Profile Authoring Loop 已随 `0.1.2` 发布；Priority 3 公开
-> Reference Evaluation Workflow 是下一项实现里程碑。精确范围见[产品路线图](ROADMAP.zh-CN.md)。
+> **开发状态：** Priority 3 公开 Reference Evaluation Workflow 已完成；Priority 4
+> 批量实验与报告是下一项里程碑。精确范围见[产品路线图](ROADMAP.zh-CN.md)。
 
 ## 五分钟运行 `0.1.2`
 

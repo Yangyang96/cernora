@@ -164,8 +164,8 @@ input three times with byte-identical output, and invalid evidence cannot become
 
 ## Priority 2 — Complete Profile authoring loop
 
-**Status:** implemented and released in `0.1.2`. Priority 3 is the next implementation
-milestone.
+**Status:** implemented and released in `0.1.2`. Priority 3 is complete; Priority 4 is
+the next implementation milestone.
 
 ### Goal
 
@@ -241,6 +241,11 @@ fixtures private by default.
 
 ## Priority 3 — Public Reference Evaluation Workflow
 
+**Status:** completed on 2026-08-25 in the independent companion workflow. The frozen
+Harness, Runtime, formats, tracer, authority boundaries, failure policy, publication gates
+and handoff record are recorded in
+[`docs/design/priority-3-reference-workflow.md`](docs/design/priority-3-reference-workflow.md).
+
 ### Goal
 
 Prove that the released package evaluates evidence produced by a real external Agent
@@ -248,7 +253,7 @@ Runtime while keeping all runtime ownership outside Cernora.
 
 ### Companion project
 
-The workflow will live in a separate companion repository with the working name
+The workflow lives in a separate companion repository with the working name
 `cernora-reference-workflow`. It installs the released `cernora` distribution like a
 third party and does not import a Cernora source checkout. Keeping it separate proves
 the public package boundary and prevents runtime dependencies from entering the core.
@@ -265,42 +270,41 @@ ExperimentSpec
     -> EvidenceBundle v2
     -> Cernora Import + Evaluate + Strict Reload
     -> per-run decisions
-    -> portable batch report
+    -> portable run report
 ```
 
-The first connector should reuse a pinned, established open-source container-agent
-harness for tasks, datasets, Agent lifecycle, local sandboxing, trials, concurrency
-and artifact collection. Cernora should not rebuild those facilities. The chosen
-harness, version and license review belong in the companion repository; the Cernora
-core and this contract remain runtime-vendor neutral.
+The first connector uses one exactly pinned open-source container-agent Harness and one
+exactly pinned external Agent Runtime. The Harness owns task/container lifecycle, trials
+and raw artifact collection; Cernora does not rebuild those facilities. Exact dependency,
+version and license records belong in the companion repository; Cernora Core and this
+contract remain Runtime-vendor neutral.
 
 ### `ExperimentSpec`
 
 Every experiment freezes:
 
-- experiment identity and schema version;
-- task-set identity, split and exact Case identifiers;
-- Runtime Connector and external harness versions;
-- Agent, model and generation parameters;
-- system prompt, tool schema and workflow configuration digests;
-- Cernora, Profile, scorer, metric/report and Adapter versions;
-- repetition count, concurrency and timeout/resource limits;
-- retry policy, output root and optional network policy.
+- schema identity and content-derived experiment identity;
+- task, prompt, path-policy and container-image digests;
+- exact Harness, Runtime, model and reasoning configuration;
+- timeout, resource, provider-egress, web-search and retry policies;
+- Test Runner plan and companion Profile authority;
+- exporter, Adapter, report and Cernora wheel versions and digests.
 
 Changing one of these values creates a different experiment identity rather than
-silently amending an existing run.
+silently amending an existing run. Credentials, account identifiers, host paths,
+timestamps, random identifiers and the physical output root are excluded.
 
 ### Thin Harness responsibilities
 
 The companion Harness owns only:
 
-- expanding the Case/configuration/repetition matrix;
-- invoking the concrete Runtime Connector;
+- validating and resolving the frozen ExperimentSpec;
+- invoking the pinned Harness/Runtime integration;
 - tracking trial lifecycle and preserving every attempt;
 - retrying eligible infrastructure failures according to the frozen policy;
 - invoking the Evidence Adapter and released Cernora CLI/API;
-- aggregating immutable per-run decisions without rewriting them;
-- producing a machine-readable manifest and portable report.
+- preserving immutable per-run decisions without rewriting them;
+- producing a machine-readable manifest and portable run report.
 
 The Runtime Connector invokes one concrete external Runtime, waits for a terminal
 state and returns runtime-owned output. A Completed Exporter then freezes terminal
@@ -324,27 +328,33 @@ that frozen tree to EvidenceBundle v2.
 
 ### Minimum public scope
 
-- two or three neutral tool/coding tasks split into development, regression and
-  hidden validation sets;
-- one concrete Runtime Connector and one completed-export format;
-- one explicit Evidence Adapter;
-- at least three repetitions per Case;
-- end-to-end examples of `pass`, behavioral `fail` and `inconclusive`;
-- failure injection for timeout, interrupted execution, missing artifact, digest
-  mismatch and authority mismatch;
-- candidate, terminal and artifact binding where a task produces code;
-- a portable result manifest and compact batch report.
+- one synthetic Python `tiny-calculator-v1` repair task with two fail-to-pass and two
+  pass-to-pass tests;
+- one pinned container Harness, one pinned external Runtime, model `gpt-5.6-terra` at
+  `medium` reasoning, and one strict `completed-export/v1` format;
+- one explicit offline Evidence Adapter and companion-owned
+  `cernora-reference-coding-v1` Profile;
+- real `pass`, behavioral `fail`, timeout and interruption attempts;
+- deterministic derived fixtures for missing artifact, digest mismatch, authority
+  mismatch and fake-secret rejection;
+- candidate, terminal, Test Runner receipt and artifact binding;
+- three byte-identical evaluations of the same frozen export;
+- a portable result manifest and compact run report.
 
 ### Delivery slices
 
-1. **Vertical tracer:** one task, one external run, one frozen export and one strictly
+1. **Release baseline and formats:** verify the public `0.1.2` wheel, then implement
+   strict `experiment-spec/v1` and `completed-export/v1` contracts.
+2. **Compatibility spike:** verify pinned Harness/Runtime execution, subscription auth,
+   telemetry settings, provider egress, artifact locations and cleanup.
+3. **Vertical tracer:** one task, one external run, one frozen export and one strictly
    reloaded GateDecision.
-2. **Failure matrix:** behavioral failure plus infrastructure, corruption and
-   authority-mismatch cases.
-3. **Repeatable dataset run:** public splits, at least three repetitions and frozen
-   experiment identity.
-4. **Portable report:** per-run decisions, validity/success separation, efficiency
-   measurements and exact rebuild instructions.
+4. **Failure matrix:** real lifecycle failures plus labeled, deterministic corruption
+   and authority-mismatch fixtures.
+5. **Determinism and report:** evaluate the same frozen export three times with
+   byte-identical results and exact offline rebuild instructions.
+6. **Private publication gate:** publish the companion only after conformance, secret,
+   license and native-platform gates all pass.
 
 The first integration is concrete on purpose. It should reveal the real seam between
 runtime production and offline evaluation before any generic Runtime Connector

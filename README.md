@@ -25,8 +25,8 @@ Use Cernora when you need to:
 > **Current release:** `0.1.2`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
 >
-> **Development status:** Priority 2 Profile authoring is released in `0.1.2`; Priority 3,
-> the public Reference Evaluation Workflow, is the next implementation milestone. See the
+> **Development status:** Priority 3, the public Reference Evaluation Workflow, is complete.
+> Priority 4 batch experiments and reporting are the next milestone. See the
 > [product roadmap](ROADMAP.md) for the exact scope.
 
 ## Try `0.1.2` in five minutes

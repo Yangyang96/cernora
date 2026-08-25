@@ -148,7 +148,7 @@ byte-identical 输出，且无效 Evidence 不能变成 pass。
 
 ## 优先级 2——完整 Profile Authoring Loop
 
-**状态：** 已在 `0.1.2` 中实现并发布。优先级 3 是下一项实现里程碑。
+**状态：** 已在 `0.1.2` 中实现并发布。优先级 3 已完成；优先级 4 是下一项实现里程碑。
 
 ### 目标
 
@@ -216,6 +216,10 @@ Profile Source 和 Fixture 默认保持私有。
 
 ## 优先级 3——公开 Reference Evaluation Workflow
 
+**状态：** 已于 2026-08-25 在独立 Companion Workflow 中完成。已经冻结的 Harness、
+Runtime、格式、Vertical Tracer、Authority 边界、失败策略、发布 Gate 与交接记录位于
+[`docs/design/priority-3-reference-workflow.md`](docs/design/priority-3-reference-workflow.md)。
+
 ### 目标
 
 证明已发布 Package 可以评测真实外部 Agent Runtime 产生的证据，同时继续把
@@ -240,40 +244,40 @@ ExperimentSpec
     -> EvidenceBundle v2
     -> Cernora Import + Evaluate + Strict Reload
     -> 单 Run Decision
-    -> 可移植 Batch Report
+    -> 可移植 Run Report
 ```
 
-第一个 Connector 应复用固定版本、成熟的开源 Container-agent Harness，由它
-负责任务、Dataset、Agent Lifecycle、本地 Sandbox、Trial、并发和 Artifact
-收集；Cernora 不重建这些能力。具体 Harness、版本和许可证审查记录在 Companion
+第一个 Connector 使用一个精确固定版本的开源 Container-agent Harness 与一个精确
+固定版本的外部 Agent Runtime。Harness 负责任务与 Container Lifecycle、Trial 和原始
+Artifact 收集；Cernora 不重建这些能力。精确依赖、版本与许可证记录放在 Companion
 Repository 中；Cernora Core 和本 Contract 继续保持 Runtime-vendor Neutral。
 
 ### `ExperimentSpec`
 
 每个实验冻结：
 
-- Experiment Identity 与 Schema Version；
-- Task-set Identity、Split 与确切 Case Identifier；
-- Runtime Connector 与外部 Harness Version；
-- Agent、模型和 Generation Parameter；
-- System Prompt、Tool Schema 与 Workflow Configuration Digest；
-- Cernora、Profile、Scorer、Metric/Report 与 Adapter Version；
-- Repetition、Concurrency、Timeout 与 Resource Limit；
-- Retry Policy、Output Root 和可选 Network Policy。
+- Schema Identity 与基于内容生成的 Experiment Identity；
+- Task、Prompt、Path Policy 与 Container Image Digest；
+- Harness、Runtime、模型与 Reasoning Configuration 的精确版本；
+- Timeout、Resource、Provider Egress、Web Search 与 Retry Policy；
+- Test Runner Plan 与 Companion Profile Authority；
+- Exporter、Adapter、Report 和 Cernora Wheel 的版本与 Digest。
 
 其中任何数值发生变化，都产生新的 Experiment Identity，不能静默修改已有 Run。
+Credential、Account Identifier、Host Path、Timestamp、随机 Identifier 和物理 Output
+Root 不进入身份。
 
 ### 薄 Harness 职责
 
 Companion Harness 只负责：
 
-- 展开 Case、Configuration 与 Repetition Matrix；
-- 调用具体 Runtime Connector；
+- 校验并解析冻结的 ExperimentSpec；
+- 调用固定版本的 Harness/Runtime Integration；
 - 跟踪 Trial Lifecycle 并保留每一次 Attempt；
 - 按冻结 Policy 重试符合条件的 Infrastructure Failure；
 - 调用 Evidence Adapter 与已发布 Cernora CLI/API；
-- 聚合不可变的单 Run Decision，但不重写它们；
-- 生成机器可读 Manifest 与可移植 Report。
+- 保留不可变的单 Run Decision，但不重写它们；
+- 生成机器可读 Manifest 与可移植 Run Report。
 
 Runtime Connector 调用一个具体外部 Runtime、等待终态并返回 Runtime-owned
 Output。Completed Exporter 随后冻结终态、Tool Call、日志、Candidate Artifact、
@@ -295,26 +299,33 @@ Adapter 只把这个冻结目录转换为 EvidenceBundle v2。
 
 ### 最小公共范围
 
-- 两到三个中立的 Tool/Coding Task，分为开发、回归和隐藏验证集；
-- 一个具体 Runtime Connector 和一种 Completed-export Format；
-- 一个明确的 Evidence Adapter；
-- 每个 Case 至少重复三次；
-- `pass`、行为 `fail` 与 `inconclusive` 的端到端示例；
-- Timeout、Interrupted Execution、Missing Artifact、Digest Mismatch 和 Authority
-  Mismatch Failure Injection；
-- 对生成代码的任务绑定 Candidate、Terminal 与 Artifact；
-- 可移植 Result Manifest 与紧凑 Batch Report。
+- 一个合成 Python 修复任务 `tiny-calculator-v1`，包含两个 Fail-to-pass 与两个
+  Pass-to-pass Test；
+- 一个固定版本的 Container Harness、一个固定版本的外部 Runtime、模型
+  `gpt-5.6-terra`、`medium` Reasoning，以及一种严格的 `completed-export/v1` 格式；
+- 一个显式离线 Evidence Adapter 与 Companion-owned
+  `cernora-reference-coding-v1` Profile；
+- 真实 `pass`、行为 `fail`、Timeout 和 Interruption Attempt；
+- Missing Artifact、Digest Mismatch、Authority Mismatch 与 Fake-secret Rejection 的
+  确定性派生 Fixture；
+- Candidate、Terminal、Test Runner Receipt 与 Artifact 绑定；
+- 对同一冻结 Export 做三次 Byte-identical Evaluation；
+- 可移植 Result Manifest 与紧凑 Run Report。
 
 ### 交付切片
 
-1. **Vertical Tracer：** 一个任务、一个外部 Run、一个冻结 Export 和一个 Strict
+1. **Release Baseline 与格式：** 验证公共 `0.1.2` Wheel，再实现严格的
+   `experiment-spec/v1` 与 `completed-export/v1` Contract。
+2. **Compatibility Spike：** 验证固定版本 Harness/Runtime、Subscription Auth、
+   Telemetry Setting、Provider Egress、Artifact Location 与 Cleanup。
+3. **Vertical Tracer：** 一个任务、一个外部 Run、一个冻结 Export 和一个 Strict
    Reload GateDecision。
-2. **Failure Matrix：** 行为失败，以及 Infrastructure、Corruption 和 Authority
-   Mismatch Case。
-3. **Repeatable Dataset Run：** 公开 Split、每题至少三次重复和冻结 Experiment
-   Identity。
-4. **Portable Report：** 单 Run Decision、Validity/Success 分离、Efficiency
-   Measurement 和精确重建说明。
+4. **Failure Matrix：** 真实 Lifecycle Failure，加上明确标注、确定性生成的
+   Corruption 与 Authority-mismatch Fixture。
+5. **Determinism 与 Report：** 同一冻结 Export 评测三次并得到 Byte-identical
+   Result，同时提供精确的离线重建说明。
+6. **Private Publication Gate：** Conformance、Secret、License 与 Native-platform
+   Gate 全部通过后才发布 Companion。
 
 第一个集成会有意保持具体。应先用它发现 Runtime Producer 与离线评测之间的
 真实接口，再考虑通用 Runtime Connector。
