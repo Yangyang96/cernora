@@ -124,3 +124,9 @@ jobs:
           /tmp/cernora-wheel-venv/bin/python
           ${{ github.workspace }}/scripts/batch_wheel_check.py
           --output cernora-batch-${{ matrix.python-version }}
+      - working-directory: ${{ runner.temp }}
+        run: >-
+          env -u PYTHONPATH PYTHONNOUSERSITE=1
+          /tmp/cernora-wheel-venv/bin/python
+          ${{ github.workspace }}/scripts/comparison_wheel_check.py
+          --output cernora-comparison-${{ matrix.python-version }}

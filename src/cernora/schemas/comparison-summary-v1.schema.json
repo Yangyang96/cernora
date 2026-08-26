@@ -1,0 +1,485 @@
+{
+  "$defs": {
+    "BatchRate": {
+      "additionalProperties": false,
+      "properties": {
+        "denominator": {
+          "minimum": 0,
+          "title": "Denominator",
+          "type": "integer"
+        },
+        "numerator": {
+          "minimum": 0,
+          "title": "Numerator",
+          "type": "integer"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator",
+        "value"
+      ],
+      "title": "BatchRate",
+      "type": "object"
+    },
+    "ComparisonEstimate": {
+      "additionalProperties": false,
+      "properties": {
+        "denominator": {
+          "exclusiveMinimum": 0,
+          "title": "Denominator",
+          "type": "integer"
+        },
+        "numerator": {
+          "title": "Numerator",
+          "type": "integer"
+        },
+        "value": {
+          "title": "Value",
+          "type": "number"
+        }
+      },
+      "required": [
+        "numerator",
+        "denominator",
+        "value"
+      ],
+      "title": "ComparisonEstimate",
+      "type": "object"
+    },
+    "ComparisonInterval": {
+      "additionalProperties": false,
+      "properties": {
+        "lower": {
+          "$ref": "#/$defs/ComparisonEstimate"
+        },
+        "upper": {
+          "$ref": "#/$defs/ComparisonEstimate"
+        }
+      },
+      "required": [
+        "lower",
+        "upper"
+      ],
+      "title": "ComparisonInterval",
+      "type": "object"
+    },
+    "FailureMigration": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "introduced": {
+          "minimum": 0,
+          "title": "Introduced",
+          "type": "integer"
+        },
+        "persisted": {
+          "minimum": 0,
+          "title": "Persisted",
+          "type": "integer"
+        },
+        "profile_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "profile_version": {
+          "minLength": 1,
+          "title": "Profile Version",
+          "type": "string"
+        },
+        "resolved": {
+          "minimum": 0,
+          "title": "Resolved",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "profile_id",
+        "profile_version",
+        "code",
+        "persisted",
+        "resolved",
+        "introduced"
+      ],
+      "title": "FailureMigration",
+      "type": "object"
+    },
+    "GuardrailResult": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BatchRate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BatchRate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "guardrail_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Guardrail Id",
+          "type": "string"
+        },
+        "interval": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonInterval"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "oriented_delta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "satisfied",
+            "violated",
+            "uncertain",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "unavailable_cases": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unavailable Cases",
+          "type": "array"
+        }
+      },
+      "required": [
+        "guardrail_id",
+        "status",
+        "baseline",
+        "candidate",
+        "oriented_delta",
+        "interval"
+      ],
+      "title": "GuardrailResult",
+      "type": "object"
+    },
+    "OutcomeTransition": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "enum": [
+            "pass",
+            "behavioral_fail",
+            "evaluation_invalid",
+            "infrastructure_unavailable"
+          ],
+          "title": "Baseline",
+          "type": "string"
+        },
+        "candidate": {
+          "enum": [
+            "pass",
+            "behavioral_fail",
+            "evaluation_invalid",
+            "infrastructure_unavailable"
+          ],
+          "title": "Candidate",
+          "type": "string"
+        },
+        "count": {
+          "minimum": 0,
+          "title": "Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "baseline",
+        "candidate",
+        "count"
+      ],
+      "title": "OutcomeTransition",
+      "type": "object"
+    },
+    "PassMetric": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_pass_at_k": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "baseline_pass_power_k": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_pass_at_k": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidate_pass_power_k": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "k": {
+          "exclusiveMinimum": 0,
+          "title": "K",
+          "type": "integer"
+        },
+        "pass_at_k_delta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "pass_power_k_delta": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ComparisonEstimate"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "enum": [
+            "qualified",
+            "not_applicable",
+            "insufficient_trials"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "k",
+        "baseline_pass_at_k",
+        "candidate_pass_at_k",
+        "pass_at_k_delta",
+        "baseline_pass_power_k",
+        "candidate_pass_power_k",
+        "pass_power_k_delta"
+      ],
+      "title": "PassMetric",
+      "type": "object"
+    },
+    "PrimaryResult": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/BatchRate"
+        },
+        "candidate": {
+          "$ref": "#/$defs/BatchRate"
+        },
+        "delta": {
+          "$ref": "#/$defs/ComparisonEstimate"
+        },
+        "interval": {
+          "$ref": "#/$defs/ComparisonInterval"
+        },
+        "metric": {
+          "const": "reliable_success_rate",
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "baseline",
+        "candidate",
+        "delta",
+        "interval"
+      ],
+      "title": "PrimaryResult",
+      "type": "object"
+    }
+  },
+  "$id": "https://cernora.dev/schemas/comparison-summary-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Derived, non-ranking result of one strict controlled comparison.",
+  "properties": {
+    "batch_input_id": {
+      "minLength": 1,
+      "title": "Batch Input Id",
+      "type": "string"
+    },
+    "comparability_reasons": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Comparability Reasons",
+      "type": "array"
+    },
+    "comparable": {
+      "title": "Comparable",
+      "type": "boolean"
+    },
+    "comparison_id": {
+      "minLength": 1,
+      "title": "Comparison Id",
+      "type": "string"
+    },
+    "comparison_input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Comparison Input Sha256",
+      "type": "string"
+    },
+    "conclusion": {
+      "enum": [
+        "improved",
+        "no_change",
+        "uncertain",
+        "mixed",
+        "regressed",
+        "not_comparable"
+      ],
+      "title": "Conclusion",
+      "type": "string"
+    },
+    "failure_migration": {
+      "items": {
+        "$ref": "#/$defs/FailureMigration"
+      },
+      "title": "Failure Migration",
+      "type": "array"
+    },
+    "failure_migration_unavailable_pairs": {
+      "minimum": 0,
+      "title": "Failure Migration Unavailable Pairs",
+      "type": "integer"
+    },
+    "guardrails": {
+      "items": {
+        "$ref": "#/$defs/GuardrailResult"
+      },
+      "title": "Guardrails",
+      "type": "array"
+    },
+    "outcome_transitions": {
+      "items": {
+        "$ref": "#/$defs/OutcomeTransition"
+      },
+      "title": "Outcome Transitions",
+      "type": "array"
+    },
+    "pass_metrics": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PassMetric"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "primary": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PrimaryResult"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "schema_version": {
+      "const": "agent.evaluator.comparison-summary/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "summary_id": {
+      "minLength": 1,
+      "title": "Summary Id",
+      "type": "string"
+    },
+    "summary_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Summary Sha256",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "summary_id",
+    "summary_sha256",
+    "comparison_id",
+    "comparison_input_sha256",
+    "batch_input_id",
+    "comparable",
+    "comparability_reasons",
+    "primary",
+    "guardrails",
+    "outcome_transitions",
+    "failure_migration",
+    "failure_migration_unavailable_pairs",
+    "pass_metrics",
+    "conclusion"
+  ],
+  "title": "ComparisonSummary",
+  "type": "object"
+}

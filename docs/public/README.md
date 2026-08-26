@@ -8,6 +8,8 @@
   Profile.
 - [Validity-first batch summaries](batch-summary.md): strict completed-matrix input,
   aggregation, publication and reload.
+- [Controlled comparisons](controlled-comparison.md): strict paired invariants, declared
+  Treatments, deterministic intervals, Guardrails and non-ranking conclusions.
 - [Adapter conformance](adapter-conformance.md): normalize a completed export into a
   closed EvidenceBundle v2 tree.
 - [Evidence publication and rebuild](evidence-publication-and-rebuild.md): what may be

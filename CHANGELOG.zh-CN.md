@@ -7,6 +7,23 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ## Unreleased
 
+## 0.1.4 - 2026-08-27
+
+### Added
+
+- 新增 Preview `Treatment` v1、`ComparisonInput` v1 与 `ComparisonSummary` v1 契约，用于
+  一个完整 Batch Input 中恰好两个 Configuration，并严格检查全部受控不变量。
+- 新增固定 case-clustered paired bootstrap/v1、Reliable Success Rate、合格 pass@k/pass^k、
+  hard Guardrail、配对 outcome transition 和证据绑定的 failure-code migration。
+- 新增 canonical Comparison 发布/严格 reload、公开 schema、包根 API、
+  `cernora comparison validate`/`summarize` 和离线 wheel-only 验收。
+
+### Compatibility
+
+- Comparison surface 是本地 `0.1.4` release candidate 的增量 Preview API。现有 evidence、
+  Profile、evaluation 和 M2 Batch 契约不变；M2 调用方无需迁移。Comparison producer 必须使用
+  版本化 schema，不能提交自行编写的统计量或结论。
+
 ## 0.1.3 - 2026-08-27
 
 ### Added

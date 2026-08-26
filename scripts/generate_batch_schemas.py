@@ -1,4 +1,4 @@
-"""Generate the public Priority 4 Milestone 2 JSON Schemas."""
+"""Generate the public Priority 4 batch and comparison JSON Schemas."""
 
 from __future__ import annotations
 
@@ -9,6 +9,7 @@ from typing import Any
 from pydantic import BaseModel
 
 from cernora.batch import BatchInput, BatchSummary
+from cernora.comparison import ComparisonInput, ComparisonSummary
 
 ROOT = Path(__file__).parents[1]
 SCHEMA_ROOT = ROOT / "src" / "cernora" / "schemas"
@@ -30,6 +31,14 @@ def main() -> None:
         "batch-summary-v1.schema.json": _schema(
             BatchSummary,
             identifier="https://cernora.dev/schemas/batch-summary-v1.schema.json",
+        ),
+        "comparison-input-v1.schema.json": _schema(
+            ComparisonInput,
+            identifier="https://cernora.dev/schemas/comparison-input-v1.schema.json",
+        ),
+        "comparison-summary-v1.schema.json": _schema(
+            ComparisonSummary,
+            identifier="https://cernora.dev/schemas/comparison-summary-v1.schema.json",
         ),
     }
     for name, schema in schemas.items():

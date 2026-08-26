@@ -25,14 +25,16 @@ Use Cernora when you need to:
 > **Current release:** `0.1.2`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
 >
-> **Development status:** Priority 3, the public Reference Evaluation Workflow, is complete.
-> Priority 4 batch experiments and reporting are the next milestone. See the
+> **Development status:** Priority 4 Milestone 3 is implemented as a local release candidate.
+> The published package remains at Priority 3. See the
 > [product roadmap](ROADMAP.md) for the exact scope.
 
-The local `0.1.3` release candidate adds strict Runtime-neutral batch validation and validity-first
-summaries. It has not been publicly released. See
-[Validity-first batch summaries](docs/public/batch-summary.md). It does not run an Agent or compare
-Configurations.
+The local `0.1.4` release candidate retains strict Runtime-neutral batch summaries and adds
+content-identified controlled comparisons with fixed paired bootstrap statistics and hard
+Guardrails. It has not been publicly released. See
+[Validity-first batch summaries](docs/public/batch-summary.md) and
+[Controlled comparisons](docs/public/controlled-comparison.md). It does not run an Agent, rank
+Configurations, or authorize promotion.
 
 ## Try `0.1.2` in five minutes
 

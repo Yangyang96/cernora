@@ -7,8 +7,8 @@ ordinary local files and produces evaluator-owned Evidence, Score and GateDecisi
 It does not own agent execution.
 
 This document describes the architecture shipped in the `0.1.x` line, including the opt-in
-Preview result report and validity-first Batch Summary. Generic Metric SDKs, controlled
-comparisons, Runtime Connectors and Gate consumers remain roadmap work rather than current
+Preview result report, validity-first Batch Summary and controlled Comparison Summary. Generic
+Metric SDKs, Runtime Connectors and Gate consumers remain roadmap work rather than current
 contracts.
 
 ## Complete-system composition
@@ -22,6 +22,7 @@ Experiment Harness
   -> Cernora
        -> Evidence + Score + GateDecision
        -> validity-first BatchSummary
+       -> controlled ComparisonSummary
 ```
 
 The external Agent Runtime owns Agent workflow execution, credentials, sandbox creation,
@@ -32,7 +33,8 @@ The Experiment Harness owns task matrices, scheduling, repetitions, infrastructu
 and completed-execution normalization. It must preserve each Cernora Evaluation Package and
 lifecycle record exactly and must not translate Runtime success, reward or task completion into
 evaluation pass. Core validates the normalized complete BatchInput and derives the Preview
-validity-first aggregate; it does not parse Harness-native Execution Packs.
+validity-first aggregate and strict controlled comparison; it does not parse Harness-native
+Execution Packs.
 
 This separation keeps execution and adjudication independent. A complete end-to-end system
 combines all three roles; installing Cernora alone intentionally provides only the evaluation
@@ -102,6 +104,15 @@ cannot rewrite it.
 
 Behavioral failure remains distinguishable from missing or invalid evidence. Infrastructure,
 integrity or authority uncertainty cannot become a passing decision.
+
+### Batch and comparison composition
+
+The Batch module consumes a complete, Runtime-normalized Trial matrix and rederives validity-first
+facts from embedded Evaluation Packages or lifecycle receipts. The Comparison module selects two
+configurations from the same Batch Input, verifies predeclared controlled projections and derives
+paired statistics, hard Guardrails and a closed conclusion. Neither module executes an Agent,
+chooses a Treatment, assigns a winner or authorizes promotion. Retry Attempts remain part of Trial
+lineage and never become independent statistical samples.
 
 ## Public contracts
 

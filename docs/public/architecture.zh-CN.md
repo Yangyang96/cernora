@@ -6,9 +6,9 @@
 Cernora 是一个确定性 Python Evaluator，用于评测已经完成的 Agent Run。它读取普通本地
 文件，输出由 Evaluator 拥有的 Evidence、Score 和 GateDecision，但不负责 Agent 执行。
 
-本文描述 `0.1.x` 已交付的架构，包括显式选择的 Preview result report 与 validity-first
-Batch Summary。通用 Metric SDK、受控比较、Runtime Connector 和 Gate Consumer 仍属于
-产品路线图，不是当前契约。
+本文描述 `0.1.x` 已交付的架构，包括显式选择的 Preview result report、validity-first
+Batch Summary 与受控 Comparison Summary。通用 Metric SDK、Runtime Connector 和 Gate
+Consumer 仍属于产品路线图，不是当前契约。
 
 ## 完整系统构成
 
@@ -21,6 +21,7 @@ Experiment Harness
   -> Cernora
        -> Evidence + Score + GateDecision
        -> validity-first BatchSummary
+       -> controlled ComparisonSummary
 ```
 
 外部 Agent Runtime 负责 Agent workflow 执行、凭证、sandbox、workspace、网络和挂载
@@ -29,7 +30,8 @@ Experiment Harness
 Experiment Harness 负责任务矩阵、调度、重复运行、基础设施重试策略和完成态 Execution
 规范化。它必须原样保留每个 Cernora Evaluation Package 与 lifecycle record，不能把
 Runtime 成功、reward 或任务完成直接转换成评测 `pass`。Core 验证规范化的完整
-BatchInput 并派生 Preview validity-first 聚合；它不解析 Harness 原生 Execution Pack。
+BatchInput 并派生 Preview validity-first 聚合与严格受控比较；它不解析 Harness 原生
+Execution Pack。
 
 这种分工让执行权和裁决权相互独立。完整端到端系统需要组合三个角色；单独安装 Cernora
 只会得到评测内核和 completed-export 接口。
@@ -90,6 +92,14 @@ reload。Report 可以解释 GateDecision，但不能改写它。
 
 行为失败与证据缺失或无效始终分开。基础设施、完整性或权威存在不确定性时，不能得到
 `pass`。
+
+### Batch 与 Comparison 组合
+
+Batch 模块消费完整、经 Runtime 规范化的 Trial 矩阵，并从内嵌 Evaluation Package 或 lifecycle
+receipt 重新派生 validity-first 事实。Comparison 模块从同一 Batch Input 选择两个
+Configuration，校验预声明的受控 projection，再派生配对统计、hard Guardrail 与封闭结论。
+两个模块都不执行 Agent、不选择 Treatment、不指定 winner，也不授权晋级。Retry Attempt 只
+保留在 Trial lineage 中，不能成为独立统计样本。
 
 ## 公开契约
 

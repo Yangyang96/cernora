@@ -5,6 +5,23 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ## Unreleased
 
+## 0.1.4 - 2026-08-27
+
+### Added
+
+- Preview `Treatment` v1, `ComparisonInput` v1 and `ComparisonSummary` v1 contracts for exactly
+  two configurations in one complete Batch Input, with exhaustive controlled-invariant checks.
+- Fixed case-clustered paired bootstrap/v1, Reliable Success Rate, qualified pass@k/pass^k,
+  hard Guardrails, paired outcome transitions and evidence-bound failure-code migration.
+- Canonical comparison publication and strict reload, public schemas, package-root APIs,
+  `cernora comparison validate`/`summarize`, and offline wheel-only acceptance.
+
+### Compatibility
+
+- Comparison surfaces are additive Preview APIs in the local `0.1.4` release candidate. Existing
+  evidence, Profile, evaluation and M2 Batch contracts are unchanged; M2 callers need no migration.
+  Comparison producers must use versioned schemas and may not submit authored statistics or claims.
+
 ## 0.1.3 - 2026-08-27
 
 ### Added

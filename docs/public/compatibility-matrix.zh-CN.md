@@ -14,6 +14,7 @@ Cernora `0.1.x` 尚未达到 1.0。兼容性按层级定义，不把所有可导
 |Evidence v1、Score v1、GateDecision v1|Supported Preview|保留既有 wire ID 和 canonical 语义。|
 |ResultRecord v1 和 EvaluationReport v1|Preview|显式选择的增量 structured result/report wire；字段或验证变化需要 changelog 和迁移说明。|
 |BatchInput v1、BatchSummary v1、包根 batch API 与 `cernora batch`|Preview|`0.1.3` 引入的增量 validity-first batch surface；schema 或语义变化需要 changelog 和迁移说明。|
+|Treatment v1、ComparisonInput v1、ComparisonSummary v1、包根 comparison API 与 `cernora comparison`|Preview|本地候选 `0.1.4` 引入的增量受控比较 surface；schema 或语义变化需要 changelog 和迁移说明。|
 |文档化的 package-root model 与 import/evaluate 函数|Supported Preview|`0.1.x` 内兼容；可以在不改变既有行为的前提下新增接口。|
 |Canonicalization、权威绑定、摘要检查、冲突安全发布、严格 reload 和 fail-closed|Supported Preview|保留安全语义，不会为了兼容而放宽。|
 |`Profile`、`Adapter`、编写 dataclass 和 conformance helper|Preview|可以在 `0.1.x` 内随 changelog 和迁移说明演进；可行时先弃用。|
@@ -77,6 +78,9 @@ GateDecision 输出契约保留 v1。Wire ID 是协议身份，不跟随 Python 
 Batch 命令在 Summary 结构有效时返回 `0`，即使行为质量很差；CLI 使用或 authority 选择
 不兼容返回 `2`；batch 输入损坏、不完整或不可验证返回 `3`。Batch 命令不使用行为类
 退出码 `1`。
+
+Comparison 命令对有效派生产物返回 `0`，包括 `not_comparable` 或没有改进的结论；CLI/配置
+不兼容返回 `2`；损坏或不可验证输入返回 `3`。它不使用行为类退出码 `1`，也不选择或晋级 arm。
 
 ## 明确排除
 

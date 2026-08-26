@@ -29,7 +29,7 @@ uv run python scripts/release.py preflight
 ```
 
 统一命令会运行源码检查，在全新临时目录构建，检查封闭目录树和 artifact，离线安装刚构建的
-wheel，并在输出 artifact SHA-256 前运行完整 Profile authoring 验收。CI 会在两个支持的
+wheel，并在输出 artifact SHA-256 前运行完整 Profile、Batch 与受控比较验收。CI 会在两个支持的
 Python minor 版本上重复 wheel 验收。测试输出不完整或不可读时，不能接受 release candidate。
 
 ## 3. 检查公开目录树
@@ -84,6 +84,10 @@ wheel-only 检查从打包的合成 completed export 开始，只能记录为 ev
 统一 preflight 还会从隔离 wheel 安装运行 `scripts/profile_authoring_wheel_check.py`。它会创建
 私有 Profile、实现引导式 assessment，并要求确定性的 `pass`、`fail`、`inconclusive` 和
 import-rejection 结果。
+
+它还会运行 `scripts/batch_wheel_check.py` 与 `scripts/comparison_wheel_check.py`。后者要求三份
+字节一致的严格 Comparison package、固定统计、无网络访问，并且权威 JSON 不含 p-value、
+winner、ranking 或 promotion 声明。
 
 ## 6. 检查发布历史
 

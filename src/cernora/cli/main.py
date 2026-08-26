@@ -12,6 +12,7 @@ from typing import Any, NoReturn
 from cernora import __version__
 from cernora.batch import summarize_batch, validate_batch_input
 from cernora.cli.profiles import BUILTIN_PROFILE_SELECTORS, load_builtin_profile
+from cernora.comparison import summarize_comparison, validate_comparison_input
 from cernora.conformance import ConformanceError, check_profile_conformance
 from cernora.core.canonical import canonical_json
 from cernora.core.errors import ContractError
@@ -70,6 +71,14 @@ def parser() -> argparse.ArgumentParser:
     batch_summarize = batch_commands.add_parser("summarize")
     batch_summarize.add_argument("input", type=Path)
     batch_summarize.add_argument("--output", type=Path, required=True)
+
+    comparison = commands.add_parser("comparison")
+    comparison_commands = comparison.add_subparsers(dest="comparison_command", required=True)
+    comparison_validate = comparison_commands.add_parser("validate")
+    comparison_validate.add_argument("input", type=Path)
+    comparison_summarize = comparison_commands.add_parser("summarize")
+    comparison_summarize.add_argument("input", type=Path)
+    comparison_summarize.add_argument("--output", type=Path, required=True)
     return root
 
 
@@ -101,6 +110,13 @@ def main(argv: list[str] | None = None) -> int:
             else:
                 result = summarize_batch(batch_input, args.output)
             code = 0
+        elif args.command == "comparison":
+            comparison_input = validate_comparison_input(args.input)
+            if args.comparison_command == "validate":
+                result = comparison_input
+            else:
+                result = summarize_comparison(comparison_input, args.output)
+            code = 0
         elif args.command == "profile" and args.profile_command == "init":
             result = init_profile(args.name, output=args.output)
             code = 0
@@ -118,7 +134,7 @@ def main(argv: list[str] | None = None) -> int:
             )
             result = summary
             code = profile_test_exit_code(summary)
-        elif args.command != "batch":
+        elif args.command not in {"batch", "comparison"}:
             profile = _load_selected_profile(args)
             if args.command == "profile" and args.profile_command == "validate":
                 check_profile_conformance(profile)

@@ -28,8 +28,8 @@ uv run python scripts/release.py preflight
 ```
 
 The unified command runs the source gates, builds into a fresh temporary directory, inspects
-the closed tree and artifacts, installs the fresh wheel offline, and runs the complete Profile
-authoring acceptance before printing artifact SHA-256 values. CI repeats wheel acceptance
+the closed tree and artifacts, installs the fresh wheel offline, and runs the complete Profile,
+Batch and controlled-comparison acceptance before printing artifact SHA-256 values. CI repeats wheel acceptance
 under both supported Python minors. A release candidate is not accepted from partial or
 unread test output.
 
@@ -94,6 +94,10 @@ receipt capture or Experiment Harness behavior.
 The unified preflight also runs `scripts/profile_authoring_wheel_check.py` from an isolated
 wheel installation. It creates a private Profile, implements the guided assessment, and
 requires deterministic `pass`, `fail`, `inconclusive` and import-rejection outcomes.
+
+It also runs `scripts/batch_wheel_check.py` and `scripts/comparison_wheel_check.py`. The latter
+requires three byte-identical strict Comparison packages, fixed statistics, no network access and
+no p-value, winner, ranking or promotion claim in authoritative JSON.
 
 ## 6. Verify publication history
 

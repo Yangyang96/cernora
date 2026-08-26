@@ -9,7 +9,6 @@ import hashlib
 import math
 import os
 import shutil
-import stat
 import sys
 import tempfile
 from collections import Counter
@@ -19,6 +18,7 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, model_validator
 
+from cernora._closed_package import ordinary_tree_files
 from cernora.core.canonical import canonical_json, decode_contract
 from cernora.core.case import StrictModel
 from cernora.core.errors import ContractError
@@ -481,6 +481,19 @@ class BatchSummary(StrictModel):
         return self
 
 
+class BatchSummaryPackage(StrictModel):
+    """Path-free strict contents of one closed Batch Summary package."""
+
+    batch_input: BatchInput
+    summary: BatchSummary
+
+    @model_validator(mode="after")
+    def exact_derivation(self) -> Self:
+        if self.summary != build_batch_summary(self.batch_input):
+            raise ValueError("Batch Summary is not derived from its Batch Input")
+        return self
+
+
 class BatchSummaryReceipt(StrictModel):
     schema_version: Literal["agent.evaluator.batch-summary-receipt/v1"]
     status: Literal["summarized"]
@@ -836,32 +849,7 @@ def _summary_files(summary: BatchSummary, batch_input: BatchInput) -> dict[str, 
 
 
 def _ordinary_tree_files(root: Path, *, label: str) -> dict[str, bytes]:
-    try:
-        root_mode = root.lstat().st_mode
-    except OSError as exc:
-        raise IngestionIntegrityError(f"cannot inspect {label}") from exc
-    if stat.S_ISLNK(root_mode) or not stat.S_ISDIR(root_mode):
-        raise IngestionIntegrityError(f"{label} is not an ordinary directory")
-    files: dict[str, bytes] = {}
-    for current, directory_names, file_names in os.walk(root, followlinks=False):
-        current_path = Path(current)
-        for name in directory_names:
-            candidate = current_path / name
-            if stat.S_ISLNK(candidate.lstat().st_mode) or not candidate.is_dir():
-                raise IngestionIntegrityError(f"{label} contains a non-ordinary directory")
-        for name in file_names:
-            candidate = current_path / name
-            relative = candidate.relative_to(root).as_posix()
-            try:
-                mode = candidate.lstat().st_mode
-                if stat.S_ISLNK(mode) or not stat.S_ISREG(mode):
-                    raise IngestionIntegrityError(f"{label} contains a non-ordinary file")
-                files[relative] = candidate.read_bytes()
-            except IngestionIntegrityError:
-                raise
-            except OSError as exc:
-                raise IngestionIntegrityError(f"cannot read {label} file") from exc
-    return files
+    return ordinary_tree_files(root, label=label)
 
 
 def _publish(output: Path, files: Mapping[str, bytes]) -> None:
@@ -952,8 +940,8 @@ def summarize_batch(batch_input: BatchInput, output: Path) -> BatchSummary:
     return reloaded
 
 
-def reload_batch_summary(root: Path) -> BatchSummary:
-    """Strictly reload one closed deterministic Batch Summary package."""
+def reload_batch_summary_package(root: Path) -> BatchSummaryPackage:
+    """Strictly reload the path-free contents of one closed Batch Summary package."""
 
     files = _ordinary_tree_files(root, label="Batch Summary package")
     try:
@@ -987,7 +975,13 @@ def reload_batch_summary(root: Path) -> BatchSummary:
         raise IngestionIntegrityError("Batch Summary is not derived from its Batch Input")
     if files != _summary_files(summary, batch_input):
         raise IngestionIntegrityError("Batch Summary package is not canonical")
-    return summary
+    return BatchSummaryPackage(batch_input=batch_input, summary=summary)
+
+
+def reload_batch_summary(root: Path) -> BatchSummary:
+    """Strictly reload one closed deterministic Batch Summary package."""
+
+    return reload_batch_summary_package(root).summary
 
 
 __all__ = [
@@ -1006,11 +1000,13 @@ __all__ = [
     "BatchPlannedTrial",
     "BatchRate",
     "BatchSummary",
+    "BatchSummaryPackage",
     "BatchTrial",
     "build_batch_summary",
     "embed_evaluation_package",
     "materialize_batch_input",
     "reload_batch_summary",
+    "reload_batch_summary_package",
     "render_batch_summary_markdown",
     "summarize_batch",
     "validate_batch_input",

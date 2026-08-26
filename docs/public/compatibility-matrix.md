@@ -13,6 +13,7 @@ importable module as stable.
 | Evidence v1, Score v1 and GateDecision v1 | Supported Preview | Existing wire identifiers and canonical semantics are retained. |
 | ResultRecord v1 and EvaluationReport v1 | Preview | Additive opt-in structured result/report wires; field or validation changes require changelog and migration notes. |
 | BatchInput v1, BatchSummary v1, package-root batch API and `cernora batch` | Preview | Additive validity-first batch surface introduced for `0.1.3`; schema or semantic changes require changelog and migration notes. |
+| Treatment v1, ComparisonInput v1, ComparisonSummary v1, package-root comparison API and `cernora comparison` | Preview | Additive controlled-comparison surface introduced for local candidate `0.1.4`; schema or semantic changes require changelog and migration notes. |
 | Documented package-root models and import/evaluate functions | Supported Preview | Compatible within `0.1.x`; additions may be made without changing established behavior. |
 | Canonicalization, authority binding, digest checks, conflict-safe publication, strict reload and fail-closed outcomes | Supported Preview | Safety semantics are preserved; they are not relaxed for compatibility. |
 | `Profile`, `Adapter`, authoring dataclasses and conformance helpers | Preview | May evolve within `0.1.x` with changelog and migration notes; deprecate first where feasible. |
@@ -82,6 +83,10 @@ are protocol identities and do not follow the Python package name.
 Batch commands use `0` for a structurally valid summary even when behavior is poor, `2` for CLI
 usage or authority-selection incompatibility, and `3` for corrupt, incomplete or unverifiable
 batch input. They never use behavioral exit `1`.
+
+Comparison commands use `0` for a valid derived artifact, including `not_comparable` or a
+non-improving conclusion, `2` for CLI/configuration incompatibility, and `3` for corrupt or
+unverifiable input. They never use behavioral exit `1` and never select or promote an arm.
 
 ## Explicit exclusions
 

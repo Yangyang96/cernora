@@ -6,6 +6,8 @@ PUBLIC_SCHEMAS = (
     "batch-input-v1.schema.json",
     "batch-summary-v1.schema.json",
     "case-profile-v1.schema.json",
+    "comparison-input-v1.schema.json",
+    "comparison-summary-v1.schema.json",
     "evidence-bundle-v2.schema.json",
     "evidence-v1.schema.json",
     "evaluation-report-v1.schema.json",

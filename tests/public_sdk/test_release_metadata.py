@@ -26,7 +26,7 @@ def test_release_metadata_and_governance_are_explicit() -> None:
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert project["name"] == "cernora"
-    assert project["version"] == "0.1.3"
+    assert project["version"] == "0.1.4"
     assert project["requires-python"] == ">=3.12,<3.14"
     assert project["license"] == "Apache-2.0"
     assert project["license-files"] == ["LICENSE"]
@@ -227,11 +227,13 @@ def test_release_commands_and_runbook_are_version_generic() -> None:
     assert "sys.version_info[:2]" in automation
     assert "_verify_built_wheel_flows(wheel, temporary_root)" in automation
     assert "scripts/batch_wheel_check.py" in automation
+    assert "scripts/comparison_wheel_check.py" in automation
     assert "scripts/profile_authoring_wheel_check.py" in automation
     sdist_include = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["tool"][
         "hatch"
     ]["build"]["targets"]["sdist"]["include"]
     assert "/scripts/generate_batch_schemas.py" in sdist_include
+    assert "/scripts/comparison_wheel_check.py" in sdist_include
 
 
 def test_release_artifact_names_follow_the_declared_version(tmp_path: Path) -> None:

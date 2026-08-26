@@ -118,6 +118,17 @@ def _verify_built_wheel_flows(wheel: Path, root: Path) -> None:
         cwd=root,
         env=environment,
     )
+    _run(
+        [
+            str(python),
+            "-I",
+            str(ROOT / "scripts/comparison_wheel_check.py"),
+            "--output",
+            str(root / "comparison-acceptance"),
+        ],
+        cwd=root,
+        env=environment,
+    )
 
 
 def preflight() -> int:
@@ -269,6 +280,18 @@ def _verify_installed(version: str, interpreter: str, index_url: str, root: Path
             str(ROOT / "scripts/batch_wheel_check.py"),
             "--output",
             str(batch_output),
+        ],
+        cwd=root,
+        env=environment,
+    )
+    comparison_output = root / f"comparison-{interpreter.replace('/', '_')}"
+    _run(
+        [
+            str(python),
+            "-I",
+            str(ROOT / "scripts/comparison_wheel_check.py"),
+            "--output",
+            str(comparison_output),
         ],
         cwd=root,
         env=environment,

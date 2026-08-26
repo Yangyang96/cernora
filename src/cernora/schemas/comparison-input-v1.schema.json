@@ -1,0 +1,1077 @@
+{
+  "$defs": {
+    "BatchAttempt": {
+      "additionalProperties": false,
+      "description": "One immutable Attempt in a complete Trial chain.",
+      "properties": {
+        "attempt_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Attempt Id",
+          "type": "string"
+        },
+        "evaluation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BatchEvaluationPackage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lifecycle": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BatchLifecycleRecord"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "ordinal": {
+          "exclusiveMinimum": 0,
+          "title": "Ordinal",
+          "type": "integer"
+        },
+        "predecessor_attempt_id": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Predecessor Attempt Id"
+        },
+        "resources": {
+          "$ref": "#/$defs/BatchAttemptResources"
+        },
+        "retry_eligible": {
+          "title": "Retry Eligible",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.batch-attempt/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_attempt_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Source Attempt Id",
+          "type": "string"
+        },
+        "source_manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Manifest Sha256",
+          "type": "string"
+        },
+        "trial_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Trial Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "attempt_id",
+        "source_attempt_id",
+        "trial_id",
+        "ordinal",
+        "source_manifest_sha256",
+        "retry_eligible",
+        "resources"
+      ],
+      "title": "BatchAttempt",
+      "type": "object"
+    },
+    "BatchAttemptResources": {
+      "additionalProperties": false,
+      "description": "Verified resource facts for one Attempt; missing values remain unavailable.",
+      "properties": {
+        "cost_microunits": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cost Microunits"
+        },
+        "duration_milliseconds": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Duration Milliseconds"
+        },
+        "input_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Tokens"
+        },
+        "output_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Output Tokens"
+        },
+        "usage_receipt_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Usage Receipt Sha256"
+        }
+      },
+      "title": "BatchAttemptResources",
+      "type": "object"
+    },
+    "BatchEvaluationFile": {
+      "additionalProperties": false,
+      "description": "One byte-exact file embedded from a closed Evaluation Package.",
+      "properties": {
+        "content_base64": {
+          "title": "Content Base64",
+          "type": "string"
+        },
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "path",
+        "size_bytes",
+        "sha256",
+        "content_base64"
+      ],
+      "title": "BatchEvaluationFile",
+      "type": "object"
+    },
+    "BatchEvaluationPackage": {
+      "additionalProperties": false,
+      "description": "A complete evaluator-owned package, embedded without host paths.",
+      "properties": {
+        "files": {
+          "items": {
+            "$ref": "#/$defs/BatchEvaluationFile"
+          },
+          "minItems": 1,
+          "title": "Files",
+          "type": "array"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.batch-evaluation-package/v1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "package_sha256",
+        "files"
+      ],
+      "title": "BatchEvaluationPackage",
+      "type": "object"
+    },
+    "BatchInput": {
+      "additionalProperties": false,
+      "description": "Strict, canonical, content-identified input for Runtime-neutral aggregation.",
+      "properties": {
+        "attempt_count": {
+          "exclusiveMinimum": 0,
+          "title": "Attempt Count",
+          "type": "integer"
+        },
+        "batch_input_id": {
+          "minLength": 1,
+          "title": "Batch Input Id",
+          "type": "string"
+        },
+        "batch_input_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Batch Input Sha256",
+          "type": "string"
+        },
+        "budget_status": {
+          "const": "within_budget",
+          "title": "Budget Status",
+          "type": "string"
+        },
+        "companion_version": {
+          "minLength": 1,
+          "title": "Companion Version",
+          "type": "string"
+        },
+        "execution_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "execution_status": {
+          "const": "completed",
+          "title": "Execution Status",
+          "type": "string"
+        },
+        "planned_trial_count": {
+          "exclusiveMinimum": 0,
+          "title": "Planned Trial Count",
+          "type": "integer"
+        },
+        "planned_trials": {
+          "items": {
+            "$ref": "#/$defs/BatchPlannedTrial"
+          },
+          "minItems": 1,
+          "title": "Planned Trials",
+          "type": "array"
+        },
+        "run_plan_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Run Plan Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.batch-input/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "trials": {
+          "items": {
+            "$ref": "#/$defs/BatchTrial"
+          },
+          "minItems": 1,
+          "title": "Trials",
+          "type": "array"
+        }
+      },
+      "required": [
+        "schema_version",
+        "batch_input_id",
+        "batch_input_sha256",
+        "run_plan_id",
+        "execution_id",
+        "execution_status",
+        "budget_status",
+        "companion_version",
+        "planned_trial_count",
+        "attempt_count",
+        "planned_trials",
+        "trials"
+      ],
+      "title": "BatchInput",
+      "type": "object"
+    },
+    "BatchLifecycleRecord": {
+      "additionalProperties": false,
+      "description": "Normalized, receipt-bound terminal state when no Evaluation Package exists.",
+      "properties": {
+        "category": {
+          "enum": [
+            "timed_out",
+            "interrupted",
+            "infrastructure_start_failure",
+            "transient_provider_pre_terminal",
+            "runtime_pre_terminal_failure",
+            "other_verified_infrastructure_failure"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "receipt_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Receipt Sha256",
+          "type": "string"
+        },
+        "retry_eligible": {
+          "title": "Retry Eligible",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.batch-lifecycle/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_state": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Source State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "category",
+        "retry_eligible",
+        "source_state",
+        "receipt_sha256"
+      ],
+      "title": "BatchLifecycleRecord",
+      "type": "object"
+    },
+    "BatchPlannedTrial": {
+      "additionalProperties": false,
+      "description": "One RunPlan-declared sample slot in authoritative order.",
+      "properties": {
+        "case_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "configuration_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Configuration Id",
+          "type": "string"
+        },
+        "experiment_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Experiment Id",
+          "type": "string"
+        },
+        "repetition": {
+          "exclusiveMinimum": 0,
+          "title": "Repetition",
+          "type": "integer"
+        },
+        "slot_index": {
+          "exclusiveMinimum": 0,
+          "title": "Slot Index",
+          "type": "integer"
+        },
+        "trial_slot_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Trial Slot Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_index",
+        "trial_slot_id",
+        "case_id",
+        "configuration_id",
+        "experiment_id",
+        "repetition"
+      ],
+      "title": "BatchPlannedTrial",
+      "type": "object"
+    },
+    "BatchTrial": {
+      "additionalProperties": false,
+      "description": "One completed planned Trial and its lossless Attempt chain.",
+      "properties": {
+        "attempts": {
+          "items": {
+            "$ref": "#/$defs/BatchAttempt"
+          },
+          "minItems": 1,
+          "title": "Attempts",
+          "type": "array"
+        },
+        "case_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "configuration_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Configuration Id",
+          "type": "string"
+        },
+        "execution_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Execution Id",
+          "type": "string"
+        },
+        "experiment_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Experiment Id",
+          "type": "string"
+        },
+        "repetition": {
+          "exclusiveMinimum": 0,
+          "title": "Repetition",
+          "type": "integer"
+        },
+        "run_plan_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Run Plan Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.batch-trial/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "selected_attempt_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Selected Attempt Id",
+          "type": "string"
+        },
+        "slot_index": {
+          "exclusiveMinimum": 0,
+          "title": "Slot Index",
+          "type": "integer"
+        },
+        "trial_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Trial Id",
+          "type": "string"
+        },
+        "trial_slot_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Trial Slot Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "run_plan_id",
+        "execution_id",
+        "trial_id",
+        "slot_index",
+        "trial_slot_id",
+        "case_id",
+        "configuration_id",
+        "experiment_id",
+        "repetition",
+        "selected_attempt_id",
+        "attempts"
+      ],
+      "title": "BatchTrial",
+      "type": "object"
+    },
+    "BootstrapPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence_basis_points": {
+          "const": 9500,
+          "title": "Confidence Basis Points",
+          "type": "integer"
+        },
+        "method": {
+          "const": "case-clustered-paired-bootstrap/v1",
+          "title": "Method",
+          "type": "string"
+        },
+        "percentile": {
+          "const": "nearest_rank_closed",
+          "title": "Percentile",
+          "type": "string"
+        },
+        "resamples": {
+          "const": 10000,
+          "title": "Resamples",
+          "type": "integer"
+        },
+        "seed_source": {
+          "const": "comparison_input_sha256",
+          "title": "Seed Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "confidence_basis_points",
+        "resamples",
+        "percentile",
+        "seed_source"
+      ],
+      "title": "BootstrapPlan",
+      "type": "object"
+    },
+    "BundleCaseIdentity": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "minLength": 1,
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "case_set": {
+          "minLength": 1,
+          "title": "Case Set",
+          "type": "string"
+        },
+        "case_version": {
+          "minLength": 1,
+          "title": "Case Version",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_id",
+        "case_version",
+        "case_set",
+        "sha256"
+      ],
+      "title": "BundleCaseIdentity",
+      "type": "object"
+    },
+    "ComparisonArm": {
+      "additionalProperties": false,
+      "description": "One ordered role selecting a configuration from bound Experiment authorities.",
+      "properties": {
+        "configuration_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Configuration Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "configuration_id"
+      ],
+      "title": "ComparisonArm",
+      "type": "object"
+    },
+    "ComparisonCase": {
+      "additionalProperties": false,
+      "description": "One paired Case and its predeclared split and Experiment bindings.",
+      "properties": {
+        "baseline_experiment_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Baseline Experiment Id",
+          "type": "string"
+        },
+        "candidate_experiment_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Candidate Experiment Id",
+          "type": "string"
+        },
+        "case": {
+          "$ref": "#/$defs/BundleCaseIdentity"
+        },
+        "split_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Split Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case",
+        "split_id",
+        "baseline_experiment_id",
+        "candidate_experiment_id"
+      ],
+      "title": "ComparisonCase",
+      "type": "object"
+    },
+    "ComparisonGuardrail": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "enum": [
+            "higher_is_better",
+            "lower_is_better"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "failure_code": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Failure Code"
+        },
+        "guardrail_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Guardrail Id",
+          "type": "string"
+        },
+        "hard": {
+          "const": true,
+          "title": "Hard",
+          "type": "boolean"
+        },
+        "max_adverse_basis_points": {
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Max Adverse Basis Points",
+          "type": "integer"
+        },
+        "metric": {
+          "enum": [
+            "evaluation_validity_rate",
+            "reliable_success_rate",
+            "profile_failure_code_rate"
+          ],
+          "title": "Metric",
+          "type": "string"
+        },
+        "profile_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profile Id"
+        },
+        "profile_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Profile Version"
+        },
+        "scope": {
+          "enum": [
+            "all",
+            "split"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "split_id": {
+          "anyOf": [
+            {
+              "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Split Id"
+        }
+      },
+      "required": [
+        "guardrail_id",
+        "hard",
+        "metric",
+        "scope",
+        "direction",
+        "max_adverse_basis_points"
+      ],
+      "title": "ComparisonGuardrail",
+      "type": "object"
+    },
+    "ExperimentAuthority": {
+      "additionalProperties": false,
+      "description": "Canonical authority whose digest is the selected Batch Experiment identity.",
+      "properties": {
+        "case": {
+          "$ref": "#/$defs/BundleCaseIdentity"
+        },
+        "configuration_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9._-]*$",
+          "title": "Configuration Id",
+          "type": "string"
+        },
+        "experiment_id": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Experiment Id",
+          "type": "string"
+        },
+        "experiment_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Experiment Sha256",
+          "type": "string"
+        },
+        "projection": {
+          "$ref": "#/$defs/ExperimentProjection"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.comparison-experiment-authority/v1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "experiment_id",
+        "experiment_sha256",
+        "configuration_id",
+        "case",
+        "projection"
+      ],
+      "title": "ExperimentAuthority",
+      "type": "object"
+    },
+    "ExperimentProjection": {
+      "additionalProperties": false,
+      "description": "Core-owned neutral projection extracted from one Experiment authority.",
+      "properties": {
+        "dataset_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dataset Sha256",
+          "type": "string"
+        },
+        "evaluation_authority_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Evaluation Authority Sha256",
+          "type": "string"
+        },
+        "evaluation_policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Evaluation Policy Sha256",
+          "type": "string"
+        },
+        "generation_configuration_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Generation Configuration Sha256",
+          "type": "string"
+        },
+        "model_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Model Sha256",
+          "type": "string"
+        },
+        "profile_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Profile Sha256",
+          "type": "string"
+        },
+        "prompt_instruction_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Prompt Instruction Sha256",
+          "type": "string"
+        },
+        "report_contract_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Report Contract Sha256",
+          "type": "string"
+        },
+        "resources_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Resources Sha256",
+          "type": "string"
+        },
+        "retry_policy_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Retry Policy Sha256",
+          "type": "string"
+        },
+        "runtime_version_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Runtime Version Sha256",
+          "type": "string"
+        },
+        "statistical_plan_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Statistical Plan Sha256",
+          "type": "string"
+        },
+        "timeout_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Timeout Sha256",
+          "type": "string"
+        },
+        "tool_schema_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Tool Schema Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "runtime_version_sha256",
+        "model_sha256",
+        "prompt_instruction_sha256",
+        "tool_schema_sha256",
+        "generation_configuration_sha256",
+        "timeout_sha256",
+        "resources_sha256",
+        "retry_policy_sha256",
+        "dataset_sha256",
+        "profile_sha256",
+        "evaluation_authority_sha256",
+        "evaluation_policy_sha256",
+        "report_contract_sha256",
+        "statistical_plan_sha256"
+      ],
+      "title": "ExperimentProjection",
+      "type": "object"
+    },
+    "PassKPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "independent_trials": {
+          "const": true,
+          "title": "Independent Trials",
+          "type": "boolean"
+        },
+        "k": {
+          "exclusiveMinimum": 0,
+          "title": "K",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "k",
+        "independent_trials"
+      ],
+      "title": "PassKPlan",
+      "type": "object"
+    },
+    "PrimaryOutcome": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "const": "higher_is_better",
+          "title": "Direction",
+          "type": "string"
+        },
+        "metric": {
+          "const": "reliable_success_rate",
+          "title": "Metric",
+          "type": "string"
+        },
+        "practical_threshold_basis_points": {
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Practical Threshold Basis Points",
+          "type": "integer"
+        },
+        "scope": {
+          "const": "all",
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "required": [
+        "metric",
+        "scope",
+        "direction",
+        "practical_threshold_basis_points"
+      ],
+      "title": "PrimaryOutcome",
+      "type": "object"
+    },
+    "Treatment": {
+      "additionalProperties": false,
+      "description": "A content-identified, closed declaration of permitted arm differences.",
+      "properties": {
+        "changes": {
+          "items": {
+            "$ref": "#/$defs/TreatmentChange"
+          },
+          "minItems": 1,
+          "title": "Changes",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "agent.evaluator.treatment/v1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "treatment_id": {
+          "minLength": 1,
+          "title": "Treatment Id",
+          "type": "string"
+        },
+        "treatment_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Treatment Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "schema_version",
+        "treatment_id",
+        "treatment_sha256",
+        "changes"
+      ],
+      "title": "Treatment",
+      "type": "object"
+    },
+    "TreatmentChange": {
+      "additionalProperties": false,
+      "description": "One declared semantic difference between controlled arms.",
+      "properties": {
+        "baseline_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Baseline Sha256",
+          "type": "string"
+        },
+        "candidate_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Candidate Sha256",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "prompt_instruction",
+            "model",
+            "tool_schema",
+            "generation_configuration",
+            "runtime_version"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "baseline_sha256",
+        "candidate_sha256"
+      ],
+      "title": "TreatmentChange",
+      "type": "object"
+    }
+  },
+  "$id": "https://cernora.dev/schemas/comparison-input-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Identity-closed declaration and full Trial evidence for one comparison.",
+  "properties": {
+    "baseline": {
+      "$ref": "#/$defs/ComparisonArm"
+    },
+    "batch_input": {
+      "$ref": "#/$defs/BatchInput"
+    },
+    "bootstrap": {
+      "$ref": "#/$defs/BootstrapPlan"
+    },
+    "candidate": {
+      "$ref": "#/$defs/ComparisonArm"
+    },
+    "cases": {
+      "items": {
+        "$ref": "#/$defs/ComparisonCase"
+      },
+      "minItems": 1,
+      "title": "Cases",
+      "type": "array"
+    },
+    "comparison_id": {
+      "minLength": 1,
+      "title": "Comparison Id",
+      "type": "string"
+    },
+    "comparison_input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Comparison Input Sha256",
+      "type": "string"
+    },
+    "experiment_authorities": {
+      "items": {
+        "$ref": "#/$defs/ExperimentAuthority"
+      },
+      "minItems": 2,
+      "title": "Experiment Authorities",
+      "type": "array"
+    },
+    "guardrails": {
+      "items": {
+        "$ref": "#/$defs/ComparisonGuardrail"
+      },
+      "minItems": 1,
+      "title": "Guardrails",
+      "type": "array"
+    },
+    "pass_k": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PassKPlan"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "primary_outcome": {
+      "$ref": "#/$defs/PrimaryOutcome"
+    },
+    "schema_version": {
+      "const": "agent.evaluator.comparison-input/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "treatment": {
+      "$ref": "#/$defs/Treatment"
+    }
+  },
+  "required": [
+    "schema_version",
+    "comparison_id",
+    "comparison_input_sha256",
+    "batch_input",
+    "baseline",
+    "candidate",
+    "experiment_authorities",
+    "cases",
+    "treatment",
+    "primary_outcome",
+    "guardrails",
+    "bootstrap"
+  ],
+  "title": "ComparisonInput",
+  "type": "object"
+}
