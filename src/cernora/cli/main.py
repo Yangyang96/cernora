@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 from cernora import __version__
+from cernora.batch import summarize_batch, validate_batch_input
 from cernora.cli.profiles import BUILTIN_PROFILE_SELECTORS, load_builtin_profile
 from cernora.conformance import ConformanceError, check_profile_conformance
 from cernora.core.canonical import canonical_json
@@ -61,6 +62,14 @@ def parser() -> argparse.ArgumentParser:
     _add_profile_selector(evidence_evaluate)
     evidence_evaluate.add_argument("--import-root", type=Path, required=True)
     evidence_evaluate.add_argument("--output", type=Path, required=True)
+
+    batch = commands.add_parser("batch")
+    batch_commands = batch.add_subparsers(dest="batch_command", required=True)
+    batch_validate = batch_commands.add_parser("validate")
+    batch_validate.add_argument("input", type=Path)
+    batch_summarize = batch_commands.add_parser("summarize")
+    batch_summarize.add_argument("input", type=Path)
+    batch_summarize.add_argument("--output", type=Path, required=True)
     return root
 
 
@@ -85,7 +94,14 @@ def main(argv: list[str] | None = None) -> int:
     result: Any
     temporary_output: Path | None = None
     try:
-        if args.command == "profile" and args.profile_command == "init":
+        if args.command == "batch":
+            batch_input = validate_batch_input(args.input)
+            if args.batch_command == "validate":
+                result = batch_input
+            else:
+                result = summarize_batch(batch_input, args.output)
+            code = 0
+        elif args.command == "profile" and args.profile_command == "init":
             result = init_profile(args.name, output=args.output)
             code = 0
         elif args.command == "profile" and args.profile_command == "test":
@@ -102,26 +118,26 @@ def main(argv: list[str] | None = None) -> int:
             )
             result = summary
             code = profile_test_exit_code(summary)
-        else:
+        elif args.command != "batch":
             profile = _load_selected_profile(args)
-        if args.command == "profile" and args.profile_command == "validate":
-            check_profile_conformance(profile)
-            result = profile.authority
-            code = 0
-        elif args.command == "evidence" and args.evidence_command == "import":
-            result = import_evidence_bundle_v2(
-                profile=profile,
-                bundle_path=args.bundle,
-                output=args.output,
-            )
-            code = 0
-        elif args.command == "evidence":
-            result = evaluate_imported_case(
-                profile=profile,
-                import_root=args.import_root,
-                output=args.output,
-            )
-            code = {"pass": 0, "fail": 1, "inconclusive": 3}[result.case_outcome]
+            if args.command == "profile" and args.profile_command == "validate":
+                check_profile_conformance(profile)
+                result = profile.authority
+                code = 0
+            elif args.command == "evidence" and args.evidence_command == "import":
+                result = import_evidence_bundle_v2(
+                    profile=profile,
+                    bundle_path=args.bundle,
+                    output=args.output,
+                )
+                code = 0
+            elif args.command == "evidence":
+                result = evaluate_imported_case(
+                    profile=profile,
+                    import_root=args.import_root,
+                    output=args.output,
+                )
+                code = {"pass": 0, "fail": 1, "inconclusive": 3}[result.case_outcome]
     except (
         ConformanceError,
         IngestionConfigurationError,

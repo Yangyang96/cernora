@@ -6,8 +6,9 @@
 Cernora 是一个确定性 Python Evaluator，用于评测已经完成的 Agent Run。它读取普通本地
 文件，输出由 Evaluator 拥有的 Evidence、Score 和 GateDecision，但不负责 Agent 执行。
 
-本文描述 `0.1.x` 已交付的架构，包括显式选择的 Preview result report。通用 Metric SDK、
-批量报告、Runtime Connector 和 Gate Consumer 仍属于产品路线图，不是当前契约。
+本文描述 `0.1.x` 已交付的架构，包括显式选择的 Preview result report 与 validity-first
+Batch Summary。通用 Metric SDK、受控比较、Runtime Connector 和 Gate Consumer 仍属于
+产品路线图，不是当前契约。
 
 ## 完整系统构成
 
@@ -19,15 +20,16 @@ Experiment Harness
        -> completed export + runtime-owned receipt
   -> Cernora
        -> Evidence + Score + GateDecision
-  -> aggregate report
+       -> validity-first BatchSummary
 ```
 
 外部 Agent Runtime 负责 Agent workflow 执行、凭证、sandbox、workspace、网络和挂载
 策略、资源限制、超时、终止、证据捕获和清理。Cernora 不实现或代理这些职责。
 
-Experiment Harness 负责任务矩阵、调度、重复运行、基础设施重试策略、聚合和报告。它必须
-原样保留每个 Cernora GateDecision，不能把 Runtime 成功、reward 或任务完成直接转换成
-评测 `pass`。
+Experiment Harness 负责任务矩阵、调度、重复运行、基础设施重试策略和完成态 Execution
+规范化。它必须原样保留每个 Cernora Evaluation Package 与 lifecycle record，不能把
+Runtime 成功、reward 或任务完成直接转换成评测 `pass`。Core 验证规范化的完整
+BatchInput 并派生 Preview validity-first 聚合；它不解析 Harness 原生 Execution Pack。
 
 这种分工让执行权和裁决权相互独立。完整端到端系统需要组合三个角色；单独安装 Cernora
 只会得到评测内核和 completed-export 接口。

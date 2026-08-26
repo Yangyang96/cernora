@@ -568,6 +568,14 @@ def read_import_package_v2_content(root: Path) -> LoadedImportPackageV2:
     return _decode_import_package_v2_content(_read_package_files(root))
 
 
+def validate_import_package_v2_content(
+    files: Mapping[str, bytes],
+) -> LoadedImportPackageV2:
+    """Verify one closed in-memory v2 import package without filesystem or Profile access."""
+
+    return _decode_import_package_v2_content(files)
+
+
 def bind_import_package_v2_authority(
     loaded_package: LoadedImportPackageV2,
     authority: CaseProfile,
@@ -949,4 +957,5 @@ __all__ = [
     "bind_import_package_v2_authority",
     "import_evidence_bundle_v2",
     "read_import_package_v2_content",
+    "validate_import_package_v2_content",
 ]

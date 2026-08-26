@@ -83,8 +83,8 @@ def _validate_release_metadata(version: str, root: Path = ROOT) -> None:
         )
 
 
-def _verify_built_profile_authoring(wheel: Path, root: Path) -> None:
-    """Install one freshly built wheel offline and run the Profile authoring acceptance."""
+def _verify_built_wheel_flows(wheel: Path, root: Path) -> None:
+    """Install one freshly built wheel offline and run public acceptance flows."""
 
     venv = root / "authoring-venv"
     _run(["uv", "venv", str(venv), "--python", sys.executable], cwd=root)
@@ -103,6 +103,17 @@ def _verify_built_profile_authoring(wheel: Path, root: Path) -> None:
             str(ROOT / "scripts/profile_authoring_wheel_check.py"),
             "--output",
             str(root / "authoring-acceptance"),
+        ],
+        cwd=root,
+        env=environment,
+    )
+    _run(
+        [
+            str(python),
+            "-I",
+            str(ROOT / "scripts/batch_wheel_check.py"),
+            "--output",
+            str(root / "batch-acceptance"),
         ],
         cwd=root,
         env=environment,
@@ -130,7 +141,7 @@ def preflight() -> int:
         _run(["uv", "run", "python", "-m", "build", "--outdir", str(dist)])
         wheel, sdist = artifact_paths(dist, version)
         check_release(ROOT, wheel, sdist)
-        _verify_built_profile_authoring(wheel, temporary_root)
+        _verify_built_wheel_flows(wheel, temporary_root)
         summary = {
             "sdist": {"name": sdist.name, "sha256": _sha256(sdist)},
             "version": version,
@@ -246,6 +257,18 @@ def _verify_installed(version: str, interpreter: str, index_url: str, root: Path
             "--index-url",
             index_url,
             f"cernora=={version}",
+        ],
+        cwd=root,
+        env=environment,
+    )
+    batch_output = root / f"batch-{interpreter.replace('/', '_')}"
+    _run(
+        [
+            str(python),
+            "-I",
+            str(ROOT / "scripts/batch_wheel_check.py"),
+            "--output",
+            str(batch_output),
         ],
         cwd=root,
         env=environment,

@@ -10,11 +10,19 @@ import tempfile
 from collections.abc import Mapping
 from pathlib import Path, PurePosixPath
 
+from cernora.composition.gating import compose_gate
 from cernora.core.canonical import canonical_json, decode_contract
+from cernora.core.case import FixtureReference
 from cernora.core.errors import ContractError
-from cernora.core.evidence import Evidence
+from cernora.core.evidence import (
+    Artifact,
+    Evidence,
+    EvidenceReference,
+    ToolAction,
+    evidence_reference_sort_key,
+)
 from cernora.core.gate import GateDecision
-from cernora.core.identity import ExternalProducerIdentity
+from cernora.core.identity import ExternalProducerIdentity, external_producer_identity
 from cernora.core.result import EvaluationReport
 from cernora.core.score import Score
 from cernora.evaluation.contracts import (
@@ -29,7 +37,10 @@ from cernora.ingestion.errors import (
     IngestionConfigurationError,
     IngestionIntegrityError,
 )
-from cernora.ingestion.package_v2 import read_import_package_v2_content
+from cernora.ingestion.package_v2 import (
+    read_import_package_v2_content,
+    validate_import_package_v2_content,
+)
 from cernora.profile import Profile
 
 AUTHORITY_PATH = "evaluation-authority.json"
@@ -193,11 +204,216 @@ def _ordinary_tree_files(root: Path) -> dict[str, bytes]:
     return files
 
 
-def _decode_stored_package(
-    root: Path,
+def _reference_is_bound(
+    source: LoadedImportPackageV2,
+    *,
+    evidence_id: str,
+    source_receipt_sha256: str,
+    reference: EvidenceReference,
+) -> bool:
+    if reference.evidence_id != evidence_id or reference.sha256 is None:
+        return False
+    if (
+        reference.locator == "source-import/import-receipt.json"
+        and reference.sha256 == source_receipt_sha256
+    ):
+        return True
+    for artifact in source.bundle.artifacts:
+        locators = {
+            artifact.path,
+            f"artifact:{artifact.artifact_id}",
+            f"artifacts/{artifact.path}",
+            f"source-import/artifacts/{artifact.path}",
+        }
+        if reference.locator in locators and reference.sha256 == artifact.sha256:
+            return True
+    return False
+
+
+def _require_bound_references(
+    source: LoadedImportPackageV2,
+    *,
+    evidence_id: str,
+    source_receipt_sha256: str,
+    references: tuple[EvidenceReference, ...],
+    label: str,
+) -> None:
+    if all(
+        _reference_is_bound(
+            source,
+            evidence_id=evidence_id,
+            source_receipt_sha256=source_receipt_sha256,
+            reference=reference,
+        )
+        for reference in references
+    ):
+        return
+    raise IngestionIntegrityError(f"{label} has an unbound Evidence reference")
+
+
+def _validate_result_graph(
+    *,
+    source: LoadedImportPackageV2,
+    authority: ImportedEvaluationAuthority,
+    evidence: Evidence,
+    score: Score,
+    decision: GateDecision,
+    receipt: ImportedEvaluationReceipt,
+    report: EvaluationReport | None,
+) -> None:
+    source_receipt_sha256 = _sha256(source.receipt_bytes)
+    expected_input_sha256 = _evaluation_input_sha256(authority, source_receipt_sha256)
+    if receipt.evaluation_input_sha256 != expected_input_sha256:
+        raise IngestionIntegrityError("evaluation input SHA-256 does not bind authority and source")
+
+    expected_producer = external_producer_identity(
+        source.bundle.producer.producer_id,
+        source.bundle.producer.producer_version,
+    )
+    expected_actions = tuple(
+        ToolAction(
+            invocation_id=action.invocation_id,
+            tool=action.tool,
+            argv=action.argv,
+            exit_code=action.result.exit_code,
+            timed_out=action.result.status == "timed_out",
+            response_sha256=action.result.stdout_artifact.sha256,
+            committed=action.result.committed,
+            delivered=action.result.delivered,
+        )
+        for action in source.bundle.tool_actions
+    )
+    expected_artifacts = tuple(
+        Artifact(
+            artifact_id=item.artifact_id,
+            path=item.path,
+            sha256=item.sha256,
+            media_type=item.media_type,
+        )
+        for item in source.bundle.artifacts
+    )
+    if (
+        evidence.evaluation_id != receipt.evaluation_id
+        or evidence.evidence_id != receipt.evidence_id
+        or evidence.profile_id != source.bundle.profile.profile_id
+        or evidence.case_id != source.bundle.case.case_id
+        or evidence.run_id != source.bundle.run.run_id
+        or evidence.producer != expected_producer
+        or evidence.process is not None
+        or evidence.tool_actions != expected_actions
+        or evidence.artifacts != expected_artifacts
+    ):
+        raise IngestionIntegrityError("stored Evidence is not bound to the source import")
+    evidence_reference_groups: list[tuple[EvidenceReference, ...]] = []
+    if evidence.answer is not None:
+        evidence_reference_groups.extend(
+            claim.evidence_references for claim in evidence.answer.claims
+        )
+    evidence_reference_groups.extend(failure.evidence_references for failure in evidence.failures)
+    for references in evidence_reference_groups:
+        _require_bound_references(
+            source,
+            evidence_id=evidence.evidence_id,
+            source_receipt_sha256=source_receipt_sha256,
+            references=references,
+            label="stored Evidence",
+        )
+
+    if (
+        score.score_id != receipt.score_id
+        or score.evidence_id != evidence.evidence_id
+        or score.scorer_version != authority.scorer.version
+    ):
+        raise IngestionIntegrityError("stored Score is not bound to Evidence and authority")
+    for observation in score.observations:
+        _require_bound_references(
+            source,
+            evidence_id=evidence.evidence_id,
+            source_receipt_sha256=source_receipt_sha256,
+            references=observation.evidence_references,
+            label=f"stored Score observation {observation.observation_id!r}",
+        )
+
+    expected_decision = compose_gate(
+        decision_id=receipt.decision_id,
+        policy_version=authority.case_gate.version,
+        required_score_ids=(score.score_id,),
+        required_observations=tuple(item.observation_id for item in score.observations),
+        scores=(score,),
+    )
+    if decision != expected_decision:
+        raise IngestionIntegrityError("stored Gate Decision is not derived from the stored Score")
+
+    if report is None:
+        return
+    indexed = {record.id: record for record in report.records}
+    if len(indexed) != len(report.records):
+        raise IngestionIntegrityError("stored result record IDs must be unique")
+    if any(
+        len(record.evidence_refs)
+        != len({evidence_reference_sort_key(reference) for reference in record.evidence_refs})
+        for record in report.records
+    ):
+        raise IngestionIntegrityError("stored result Evidence references must be unique")
+    required = tuple(item.observation_id for item in score.observations)
+    if any(result_id not in indexed for result_id in required):
+        raise IngestionIntegrityError("stored result records omit a Score observation")
+    if any(
+        record.role in {"outcome", "constraint"} and record.id not in required
+        for record in report.records
+    ):
+        raise IngestionIntegrityError("stored result records add an undeclared Gate input")
+    for record in report.records:
+        _require_bound_references(
+            source,
+            evidence_id=evidence.evidence_id,
+            source_receipt_sha256=source_receipt_sha256,
+            references=record.evidence_refs,
+            label=f"stored result record {record.id!r}",
+        )
+
+    observations = {item.observation_id: item for item in score.observations}
+    for result_id in required:
+        record = indexed[result_id]
+        observation = observations[result_id]
+        if record.role not in {"outcome", "constraint"} or record.value_type != "boolean":
+            raise IngestionIntegrityError("stored Gate result records must be boolean")
+        if observation.applicability == "observed":
+            matches = (
+                record.validity == "valid"
+                and type(record.value) is bool
+                and record.value is observation.value
+                and record.evidence_refs == observation.evidence_references
+            )
+        elif observation.applicability == "not_applicable":
+            matches = (
+                record.validity == "not_applicable"
+                and record.value is None
+                and record.failure_reason == observation.reason
+                and record.evidence_refs == observation.evidence_references
+            )
+        else:
+            matches = (
+                record.validity in {"invalid", "unavailable"}
+                and record.value is None
+                and record.failure_reason == observation.reason
+                and record.evidence_refs == observation.evidence_references
+            )
+        if not matches:
+            raise IngestionIntegrityError("stored result record contradicts the stored Score")
+
+
+def validate_evaluation_package_content(
     files: Mapping[str, bytes],
-    profile: Profile,
 ) -> tuple[ImportedEvaluationReceipt, EvaluationReport | None]:
+    """Strictly validate one closed Evaluation Package file mapping.
+
+    This validates the evaluator-owned manifest, every payload digest, all versioned
+    contracts, and the cross-contract identity bindings. It deliberately does not rerun a
+    Profile. Callers that own the source Profile should continue to use
+    :func:`read_imported_evaluation`, which additionally recomputes the package.
+    """
+
     try:
         manifest = decode_contract(files[MANIFEST_PATH], ImportedEvaluationManifest)
     except (KeyError, ContractError) as exc:
@@ -221,6 +437,18 @@ def _decode_stored_package(
         )
     except (KeyError, ContractError) as exc:
         raise IngestionIntegrityError("invalid imported evaluation contract") from exc
+    canonical_contracts = {
+        MANIFEST_PATH: manifest,
+        AUTHORITY_PATH: authority,
+        EVIDENCE_PATH: evidence,
+        SCORE_PATH: score,
+        DECISION_PATH: decision,
+        RECEIPT_PATH: receipt,
+    }
+    if report is not None:
+        canonical_contracts[REPORT_PATH] = report
+    if any(files[path] != canonical_json(value) for path, value in canonical_contracts.items()):
+        raise IngestionIntegrityError("imported evaluation contracts are not canonical")
     if receipt.authority != authority:
         raise IngestionIntegrityError(
             "evaluation receipt authority does not match stored authority"
@@ -245,6 +473,66 @@ def _decode_stored_package(
         or report.conclusion != receipt.case_outcome
     ):
         raise IngestionIntegrityError("evaluation report does not bind stored results")
+
+    source_prefix = f"{SOURCE_PREFIX}/"
+    source_files = {
+        path.removeprefix(source_prefix): payload
+        for path, payload in files.items()
+        if path.startswith(source_prefix)
+    }
+    try:
+        source = validate_import_package_v2_content(source_files)
+    except IngestionIntegrityError as exc:
+        raise IngestionIntegrityError("invalid source import in Evaluation Package") from exc
+    if (
+        receipt.bundle != source.receipt.bundle
+        or receipt.run != source.receipt.run
+        or receipt.profile != source.receipt.profile
+        or receipt.case != source.receipt.case
+        or receipt.raw_input_sha256 != source.receipt.raw_input_sha256
+        or receipt.canonical_bundle_sha256 != source.receipt.canonical_bundle_sha256
+        or receipt.declared_bundle_sha256 != source.receipt.bundle.declared_sha256
+        or receipt.source_receipt_sha256 != _sha256(source.receipt_bytes)
+        or receipt.source_manifest_sha256 != _sha256(source.manifest_bytes)
+        or receipt.producer
+        != external_producer_identity(
+            source.receipt.producer.producer_id,
+            source.receipt.producer.producer_version,
+        )
+    ):
+        raise IngestionIntegrityError("evaluation receipt does not bind its source import")
+    expected_fixtures = tuple(
+        FixtureReference(
+            fixture_id=item.fixture_id,
+            path=item.path,
+            sha256=item.sha256,
+        )
+        for item in source.bundle.fixtures
+    )
+    if receipt.fixtures != expected_fixtures:
+        raise IngestionIntegrityError("evaluation authority fixtures do not bind the source import")
+    if receipt.case_outcome not in source.bundle.evaluation_boundary:
+        raise IngestionIntegrityError("evaluation outcome contradicts the source evidence boundary")
+
+    _validate_result_graph(
+        source=source,
+        authority=authority,
+        evidence=evidence,
+        score=score,
+        decision=decision,
+        receipt=receipt,
+        report=report,
+    )
+
+    return receipt, report
+
+
+def _decode_stored_package(
+    root: Path,
+    files: Mapping[str, bytes],
+    profile: Profile,
+) -> tuple[ImportedEvaluationReceipt, EvaluationReport | None]:
+    receipt, report = validate_evaluation_package_content(files)
 
     expected_receipt, expected_files = _build_package(root / SOURCE_PREFIX, profile)
     if receipt != expected_receipt or dict(files) != expected_files:
@@ -394,4 +682,9 @@ def evaluate_imported_case(
     return read_imported_evaluation(destination, profile)
 
 
-__all__ = ["evaluate_imported_case", "read_evaluation_report", "read_imported_evaluation"]
+__all__ = [
+    "evaluate_imported_case",
+    "read_evaluation_report",
+    "read_imported_evaluation",
+    "validate_evaluation_package_content",
+]

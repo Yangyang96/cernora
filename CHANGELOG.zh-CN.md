@@ -7,6 +7,24 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ## Unreleased
 
+## 0.1.3 - 2026-08-27
+
+### Added
+
+- 新增 Preview `BatchInput` v1 与 `BatchSummary` v1 契约，用于完整、内容寻址的实验矩阵；
+  每个 Trial 必须包含 manifest 绑定的 Evaluation Package 或规范化生命周期记录。
+- 新增 validity-first 聚合：四种封闭 Trial outcome、整体与分组精确比率、重试与 Attempt
+  诊断、权威 canonical JSON、确定性 Markdown、原子发布和严格重载。
+- 新增包根 batch 模型与函数，以及 `cernora batch validate`、
+  `cernora batch summarize`。只要 Summary 有效，行为质量较差仍返回 `0`；损坏、不完整或
+  不可验证输入返回 `3`。
+
+### Compatibility
+
+- Batch surface 是本地 `0.1.3` release candidate 的增量 Preview API。现有 evidence、
+  Profile、import 与 evaluation 契约不变。调用方必须使用带版本 schema，不能提交自行计算的
+  rate 或裸 pass/fail JSON。
+
 ## 0.1.2 - 2026-08-21
 
 ### Added

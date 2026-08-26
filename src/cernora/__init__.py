@@ -1,6 +1,28 @@
 """Cernora: evidence-bound evaluation for tool-using agents."""
 
 from cernora.adapter import AdaptedBundle, Adapter, CompletedExport
+from cernora.batch import (
+    BatchAttempt,
+    BatchAttemptDiagnostics,
+    BatchAttemptResources,
+    BatchEvaluationFile,
+    BatchEvaluationPackage,
+    BatchFailureCodeCount,
+    BatchGroupSummary,
+    BatchInput,
+    BatchLifecycleRecord,
+    BatchOutcomeCounts,
+    BatchPlannedTrial,
+    BatchRate,
+    BatchSummary,
+    BatchTrial,
+    build_batch_summary,
+    embed_evaluation_package,
+    materialize_batch_input,
+    reload_batch_summary,
+    summarize_batch,
+    validate_batch_input,
+)
 from cernora.conformance import (
     AdapterConformance,
     ConformanceError,
@@ -55,7 +77,7 @@ from cernora.profile_testing import (
 from cernora.profile_workspace import ProfileInitResult, ProfileWorkspaceError, init_profile
 from cernora.resources import PUBLIC_SCHEMAS, read_public_schema
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 
 __all__ = [
     "PUBLIC_SCHEMAS",
@@ -65,6 +87,20 @@ __all__ = [
     "AnswerClaim",
     "Artifact",
     "AuthorityBoundImportPackageV2",
+    "BatchAttempt",
+    "BatchAttemptDiagnostics",
+    "BatchAttemptResources",
+    "BatchEvaluationFile",
+    "BatchEvaluationPackage",
+    "BatchFailureCodeCount",
+    "BatchGroupSummary",
+    "BatchInput",
+    "BatchLifecycleRecord",
+    "BatchOutcomeCounts",
+    "BatchPlannedTrial",
+    "BatchRate",
+    "BatchSummary",
+    "BatchTrial",
     "Case",
     "CaseInput",
     "CaseProfile",
@@ -99,16 +135,22 @@ __all__ = [
     "StructuredAnswer",
     "ToolAction",
     "__version__",
+    "build_batch_summary",
     "check_adapter_conformance",
     "check_profile_conformance",
     "component_identity",
+    "embed_evaluation_package",
     "evaluate_imported_case",
     "external_producer_identity",
     "import_evidence_bundle_v2",
     "init_profile",
     "load_local_profile",
+    "materialize_batch_input",
     "read_evaluation_report",
     "read_imported_evaluation",
     "read_public_schema",
+    "reload_batch_summary",
     "run_profile_tests",
+    "summarize_batch",
+    "validate_batch_input",
 ]

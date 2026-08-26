@@ -6,6 +6,7 @@
 - [产品路线图](../../ROADMAP.zh-CN.md)：按结果排序的演进计划，不接管 Agent Runtime 或
   Experiment Harness。
 - [Profile 编写](profile-authoring.zh-CN.md)：创建、实现和验证本地 Profile。
+- [Validity-first 批次摘要](batch-summary.zh-CN.md)：严格的完成态矩阵输入、聚合、发布与重载。
 - [Adapter conformance](adapter-conformance.zh-CN.md)：把完成态导出规范化为封闭的
   EvidenceBundle v2 目录树。
 - [证据发布与重建](evidence-publication-and-rebuild.zh-CN.md)：哪些证据可以公开，以及如何

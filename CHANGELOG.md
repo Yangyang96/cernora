@@ -5,6 +5,26 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ## Unreleased
 
+## 0.1.3 - 2026-08-27
+
+### Added
+
+- Preview `BatchInput` v1 and `BatchSummary` v1 contracts for complete, content-identified
+  experiment matrices with embedded, manifest-bound Evaluation Packages or normalized lifecycle
+  records.
+- Validity-first aggregation with four closed Trial outcomes, exact overall and grouped rates,
+  retry and Attempt diagnostics, canonical JSON, deterministic Markdown, atomic publication and
+  strict reload.
+- Package-root batch models and functions plus `cernora batch validate` and
+  `cernora batch summarize`. Valid summaries use exit `0` regardless of behavioral quality;
+  malformed or unverifiable inputs use exit `3`.
+
+### Compatibility
+
+- Batch surfaces are additive Preview APIs in the local `0.1.3` release candidate. Existing
+  evidence, Profile, import and evaluation contracts are unchanged. Batch callers must use the
+  versioned schemas and cannot submit caller-calculated rates or naked pass/fail JSON.
+
 ## 0.1.2 - 2026-08-21
 
 ### Added

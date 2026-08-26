@@ -6,9 +6,10 @@ Cernora is a deterministic Python evaluator for already completed agent runs. It
 ordinary local files and produces evaluator-owned Evidence, Score and GateDecision records.
 It does not own agent execution.
 
-This document describes the architecture shipped in the `0.1.x` line, including the
-opt-in Preview result report. Generic Metric SDKs, batch reporting, Runtime Connectors and
-Gate consumers remain roadmap work rather than current contracts.
+This document describes the architecture shipped in the `0.1.x` line, including the opt-in
+Preview result report and validity-first Batch Summary. Generic Metric SDKs, controlled
+comparisons, Runtime Connectors and Gate consumers remain roadmap work rather than current
+contracts.
 
 ## Complete-system composition
 
@@ -20,16 +21,18 @@ Experiment Harness
        -> completed export + runtime-owned receipt
   -> Cernora
        -> Evidence + Score + GateDecision
-  -> aggregate report
+       -> validity-first BatchSummary
 ```
 
 The external Agent Runtime owns Agent workflow execution, credentials, sandbox creation,
 workspace, network and mount policy, resource limits, timeout, termination, evidence capture
 and cleanup. Cernora does not implement or proxy those responsibilities.
 
-The Experiment Harness owns task matrices, scheduling, repetitions, infrastructure retry
-policy, aggregation and reporting. It must preserve each Cernora GateDecision exactly and
-must not translate runtime success, reward or task completion directly into evaluation pass.
+The Experiment Harness owns task matrices, scheduling, repetitions, infrastructure retry policy
+and completed-execution normalization. It must preserve each Cernora Evaluation Package and
+lifecycle record exactly and must not translate Runtime success, reward or task completion into
+evaluation pass. Core validates the normalized complete BatchInput and derives the Preview
+validity-first aggregate; it does not parse Harness-native Execution Packs.
 
 This separation keeps execution and adjudication independent. A complete end-to-end system
 combines all three roles; installing Cernora alone intentionally provides only the evaluation

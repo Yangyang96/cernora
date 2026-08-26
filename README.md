@@ -29,6 +29,11 @@ Use Cernora when you need to:
 > Priority 4 batch experiments and reporting are the next milestone. See the
 > [product roadmap](ROADMAP.md) for the exact scope.
 
+The local `0.1.3` release candidate adds strict Runtime-neutral batch validation and validity-first
+summaries. It has not been publicly released. See
+[Validity-first batch summaries](docs/public/batch-summary.md). It does not run an Agent or compare
+Configurations.
+
 ## Try `0.1.2` in five minutes
 
 Cernora supports CPython 3.12 and 3.13.

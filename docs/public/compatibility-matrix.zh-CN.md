@@ -13,6 +13,7 @@ Cernora `0.1.x` 尚未达到 1.0。兼容性按层级定义，不把所有可导
 |EvidenceBundle v2 和 import receipt/manifest v2|Supported Preview|`0.1.x` 内不重新解释 wire 字段和严格验证语义。|
 |Evidence v1、Score v1、GateDecision v1|Supported Preview|保留既有 wire ID 和 canonical 语义。|
 |ResultRecord v1 和 EvaluationReport v1|Preview|显式选择的增量 structured result/report wire；字段或验证变化需要 changelog 和迁移说明。|
+|BatchInput v1、BatchSummary v1、包根 batch API 与 `cernora batch`|Preview|`0.1.3` 引入的增量 validity-first batch surface；schema 或语义变化需要 changelog 和迁移说明。|
 |文档化的 package-root model 与 import/evaluate 函数|Supported Preview|`0.1.x` 内兼容；可以在不改变既有行为的前提下新增接口。|
 |Canonicalization、权威绑定、摘要检查、冲突安全发布、严格 reload 和 fail-closed|Supported Preview|保留安全语义，不会为了兼容而放宽。|
 |`Profile`、`Adapter`、编写 dataclass 和 conformance helper|Preview|可以在 `0.1.x` 内随 changelog 和迁移说明演进；可行时先弃用。|
@@ -72,6 +73,10 @@ GateDecision 输出契约保留 v1。Wire ID 是协议身份，不跟随 Python 
 |`2`|用法、选择或权威配置不兼容。|
 |`3`|证据损坏、不完整、不可判定，或其他 fail-closed 错误。|
 |`4`|`profile test` 的某个 Case 与预期结果不符，或结果不确定。|
+
+Batch 命令在 Summary 结构有效时返回 `0`，即使行为质量很差；CLI 使用或 authority 选择
+不兼容返回 `2`；batch 输入损坏、不完整或不可验证返回 `3`。Batch 命令不使用行为类
+退出码 `1`。
 
 ## 明确排除
 
