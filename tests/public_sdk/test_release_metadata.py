@@ -228,6 +228,10 @@ def test_release_commands_and_runbook_are_version_generic() -> None:
     assert "_verify_built_wheel_flows(wheel, temporary_root)" in automation
     assert "scripts/batch_wheel_check.py" in automation
     assert "scripts/profile_authoring_wheel_check.py" in automation
+    sdist_include = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))["tool"][
+        "hatch"
+    ]["build"]["targets"]["sdist"]["include"]
+    assert "/scripts/generate_batch_schemas.py" in sdist_include
 
 
 def test_release_artifact_names_follow_the_declared_version(tmp_path: Path) -> None:

@@ -83,6 +83,7 @@ include = [
   "/pyproject.toml",
   "/scripts/check_release.py",
   "/scripts/batch_wheel_check.py",
+  "/scripts/generate_batch_schemas.py",
   "/scripts/profile_authoring_wheel_check.py",
   "/scripts/release.py",
   "/scripts/rebuild_acceptance.py",
