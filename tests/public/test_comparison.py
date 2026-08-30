@@ -314,6 +314,77 @@ def test_comparison_is_identity_closed_deterministic_and_attempts_are_not_sample
         assert forbidden not in authoritative
 
 
+def test_primary_outcome_can_be_scoped_to_one_split(tmp_path: Path) -> None:
+    comparison = _comparison_input(tmp_path)
+    payload = comparison.model_dump(
+        mode="json", exclude={"comparison_id", "comparison_input_sha256"}
+    )
+    payload["primary_outcome"] = {
+        "metric": "reliable_success_rate",
+        "scope": "split",
+        "split_id": "regression",
+        "direction": "higher_is_better",
+        "practical_threshold_basis_points": 1_000,
+    }
+
+    split_scoped = materialize_comparison_input(payload)
+    summary = build_comparison_summary(split_scoped)
+
+    assert summary.primary is not None
+    assert summary.primary.baseline.denominator == 3
+    assert summary.primary.candidate.denominator == 3
+
+
+def test_all_scoped_primary_outcome_preserves_its_original_canonical_bytes() -> None:
+    primary = PrimaryOutcome(
+        metric="reliable_success_rate",
+        scope="all",
+        direction="higher_is_better",
+        practical_threshold_basis_points=1_000,
+    )
+
+    assert canonical_json(primary) == (
+        b'{"direction":"higher_is_better","metric":"reliable_success_rate",'
+        b'"practical_threshold_basis_points":1000,"scope":"all"}'
+    )
+
+
+def test_primary_outcome_rejects_an_unknown_split(tmp_path: Path) -> None:
+    comparison = _comparison_input(tmp_path)
+    payload = comparison.model_dump(
+        mode="json", exclude={"comparison_id", "comparison_input_sha256"}
+    )
+    payload["primary_outcome"] = {
+        "metric": "reliable_success_rate",
+        "scope": "split",
+        "split_id": "held-out",
+        "direction": "higher_is_better",
+        "practical_threshold_basis_points": 1_000,
+    }
+
+    with pytest.raises(ValueError, match="Primary Outcome references an unknown split"):
+        materialize_comparison_input(payload)
+
+
+def test_public_schema_accepts_a_split_scoped_primary_outcome(tmp_path: Path) -> None:
+    comparison = _comparison_input(tmp_path)
+    payload = comparison.model_dump(
+        mode="json", exclude={"comparison_id", "comparison_input_sha256"}
+    )
+    payload["primary_outcome"] = {
+        "metric": "reliable_success_rate",
+        "scope": "split",
+        "split_id": "regression",
+        "direction": "higher_is_better",
+        "practical_threshold_basis_points": 1_000,
+    }
+    split_scoped = materialize_comparison_input(payload)
+
+    Draft202012Validator(
+        json.loads(read_public_schema("comparison-input-v1.schema.json"))
+    ).validate(split_scoped.model_dump(mode="json"))
+
+
 def test_undeclared_invariant_difference_is_not_comparable(tmp_path: Path) -> None:
     comparison = _comparison_input(tmp_path, candidate_timeout=_digest("different-timeout"))
     summary = build_comparison_summary(comparison)

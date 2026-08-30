@@ -5,6 +5,18 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ## Unreleased
 
+### Added
+
+- `ComparisonInput v1` Primary Outcomes may now select one declared split. The derived Primary
+  rates, delta and case-clustered interval use only Cases in that split, allowing held-out-only
+  confirmatory conclusions without excluding development or regression evidence from the Batch.
+
+### Compatibility
+
+- Existing `scope: "all"` Primary Outcomes retain their semantics and exact canonical wire shape;
+  they do not gain a serialized `split_id`. Split-scoped producers must provide a known
+  `split_id`. Guardrails and diagnostic outputs retain their independently declared scopes.
+
 ## 0.1.4 - 2026-08-27
 
 ### Added

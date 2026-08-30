@@ -10,7 +10,7 @@ from fractions import Fraction
 from pathlib import Path
 from typing import Annotated, Literal, Self
 
-from pydantic import Field, model_validator
+from pydantic import Field, SerializerFunctionWrapHandler, model_serializer, model_validator
 
 from cernora._closed_package import ordinary_tree_files, publish_closed_package
 from cernora.batch import BatchInput, BatchOutcome, BatchRate, BatchTrial
@@ -180,9 +180,25 @@ class ComparisonCase(StrictModel):
 
 class PrimaryOutcome(StrictModel):
     metric: Literal["reliable_success_rate"]
-    scope: Literal["all"]
+    scope: Literal["all", "split"]
+    split_id: str | None = Field(default=None, pattern=IDENTIFIER_PATTERN)
     direction: Literal["higher_is_better"]
     practical_threshold_basis_points: int = Field(ge=0, le=10_000)
+
+    @model_validator(mode="after")
+    def coherent_scope(self) -> Self:
+        if (self.scope == "split") != (self.split_id is not None):
+            raise ValueError("split-scoped Primary Outcome requires exactly one split ID")
+        return self
+
+    @model_serializer(mode="wrap")
+    def omit_inapplicable_split_id(
+        self, handler: SerializerFunctionWrapHandler
+    ) -> dict[str, object]:
+        payload: dict[str, object] = handler(self)
+        if self.split_id is None:
+            payload.pop("split_id", None)
+        return payload
 
 
 class ComparisonGuardrail(StrictModel):
@@ -278,6 +294,11 @@ class ComparisonInput(StrictModel):
         ):
             raise ValueError("Guardrails must be sorted and unique")
         known_splits = {item.split_id for item in self.cases}
+        if (
+            self.primary_outcome.scope == "split"
+            and self.primary_outcome.split_id not in known_splits
+        ):
+            raise ValueError("Primary Outcome references an unknown split")
         if any(
             item.scope == "split" and item.split_id not in known_splits for item in self.guardrails
         ):
@@ -750,7 +771,9 @@ def _metric_observations(
 
 def _primary(value: ComparisonInput) -> PrimaryResult:
     baseline, candidate, deltas, trials_per_case = _metric_observations(
-        value, metric="reliable_success_rate"
+        value,
+        metric="reliable_success_rate",
+        split_id=value.primary_outcome.split_id,
     )
     denominator = len(deltas) * trials_per_case
     return PrimaryResult(

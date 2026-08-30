@@ -23,7 +23,9 @@ Configuration-level projection 还必须跨 Case 一致；存在 Evaluation rece
 ## 统计
 
 首个 Primary Outcome 是 Reliable Success Rate：仅 `pass` 计一；行为失败、评测无效和基础设施
-不可用均计零。Trial 按 Case 与预声明 repetition 配对；重试 Attempt 只作诊断，不能成为独立样本。
+不可用均计零。它的预声明 scope 可以是全部 Case，也可以是一个精确、已声明的 `split_id`；rate、
+delta 与 clustered interval 只使用该 scope 中的 Case。Trial 按 Case 与预声明 repetition 配对；
+重试 Attempt 只作诊断，不能成为独立样本。
 
 `case-clustered-paired-bootstrap/v1` 使用版本化 SHA-256 counter sampler 对完整配对 Case 抽样，
 保留所抽 Case 的全部 Trial，固定 10,000 次 resample，并报告封闭 95% nearest-rank percentile
@@ -64,3 +66,9 @@ cernora comparison summarize comparison-input.json --output comparison-summary
 M3 surface 是本地 `0.1.4` release candidate 的增量 Preview，尚未公开发布。现有 evidence、
 Profile、evaluation 和 M2 Batch 契约不变；M2 调用方无需迁移。新的 Comparison producer 必须固定
 版本化 schema，并在所有声明与 Trial 证据冻结后才生成内容身份。
+
+现有 Comparison producer 可以继续把 `primary_outcome.scope` 写为 `all`；其 canonical object
+仍只有原来的字段与字节，不能包含 `split_id`。选择 `scope: "split"` 时，producer 必须同时提供
+一个已经由 Comparison Case 使用的 `split_id`。未知 split、没有 ID 的 `split`，以及携带 ID 的
+`all` 都无效。该选择只改变 Primary 统计与由此得到的结论；Guardrail 保留各自 scope，pass@k、
+outcome transition 与 failure migration 仍是整个 Comparison 的诊断。

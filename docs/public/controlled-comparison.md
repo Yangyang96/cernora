@@ -26,8 +26,10 @@ Callers cannot supply rates, deltas, intervals or conclusions.
 ## Statistics
 
 The initial Primary Outcome is Reliable Success Rate: `pass` counts as one; behavioral failure,
-evaluation invalidity and infrastructure unavailability count as zero. Trials pair by Case and
-predeclared repetition. Retry Attempts remain diagnostics and never become independent samples.
+evaluation invalidity and infrastructure unavailability count as zero. Its predeclared scope is
+either `all` Cases or one exact declared `split_id`. Rates, delta and the clustered interval use
+only Cases in that scope. Trials pair by Case and predeclared repetition. Retry Attempts remain
+diagnostics and never become independent samples.
 
 `case-clustered-paired-bootstrap/v1` samples whole paired Cases with a versioned SHA-256 counter
 sampler, retains every Trial in each sampled Case, uses exactly 10,000 resamples, and reports a
@@ -72,3 +74,10 @@ The M3 surface is additive Preview in the local `0.1.4` release candidate and ha
 released. Existing evidence, Profile, evaluation and M2 Batch contracts are unchanged. M2 callers
 need no migration. New comparison producers must pin the versioned schemas and materialize
 identities only after all declarations and Trial evidence are frozen.
+
+Existing comparison producers may continue to author `primary_outcome.scope` as `all`; its
+canonical object has exactly the original fields and bytes and must not include `split_id`. A
+producer selecting `scope: "split"` must also provide one `split_id` already used by a Comparison
+Case. Unknown splits, `split` without an ID, and `all` with an ID are invalid. The selection changes
+only Primary statistics and the resulting conclusion. Guardrails keep their own scopes; pass@k,
+outcome transitions and failure migration remain whole-comparison diagnostics.

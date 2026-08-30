@@ -7,6 +7,18 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ## Unreleased
 
+### Added
+
+- `ComparisonInput v1` 的 Primary Outcome 现在可以选择一个已声明 split。派生的 Primary
+  rate、delta 与 case-clustered interval 只使用该 split 中的 Case，因此可以得到仅基于
+  held-out 的确认性结论，同时仍在 Batch 中保留 development 与 regression 证据。
+
+### Compatibility
+
+- 现有 `scope: "all"` Primary Outcome 保持原有语义与完全相同的 canonical wire shape，序列化
+  时不会新增 `split_id`。split-scoped producer 必须提供已知 `split_id`；Guardrail 与诊断输出
+  继续使用各自独立声明的 scope。
+
 ## 0.1.4 - 2026-08-27
 
 ### Added
