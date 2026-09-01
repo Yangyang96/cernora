@@ -148,7 +148,8 @@ byte-identical 输出，且无效 Evidence 不能变成 pass。
 
 ## 优先级 2——完整 Profile Authoring Loop
 
-**状态：** 已在 `0.1.2` 中实现并发布。优先级 3 已完成；优先级 4 是下一项实现里程碑。
+**状态：** 已在 `0.1.2` 中实现并发布。优先级 3 已完成；优先级 4 Milestone 1 已在
+Companion 中实现，加强后的原生退出门禁尚未执行。
 
 ### 目标
 
@@ -345,6 +346,12 @@ Scheduler、多 Runtime Framework、托管服务或 Dashboard。
 
 ## 优先级 4——批量实验、报告与改进闭环
 
+**状态：** Milestone 1 已在 Companion 中完成实现。加强后的两个 Case × 两个
+Configuration × 三次重复的原生退出门禁尚未执行，并阻断 Milestone 2 Contract 实现；
+Milestone 2 Validity-first 决策基线已经批准。Ownership、Identity、Aggregation、
+Comparison、统计、发布和 Milestone 决策记录在
+[`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md)。
+
 ### 目标
 
 将单次决策扩展为跨任务集、Runtime 版本和 Workflow 变更的可复现比较，并用
@@ -373,35 +380,49 @@ Grounding、Recovery、Behavioral Mismatch、Safety Violation，以及 Infrastru
 
 ### Batch Artifact
 
-每次批量实验至少产生四类可移植文件：
+每次批量实验至少产生以下可移植文件：
 
-- `experiment-spec`：冻结所有自变量、Dataset Split、Repetition 与 Retry Policy；
+- `run-plan`：包装不可变的 P3 单 Run ExperimentSpec，并冻结精确的
+  Case × Configuration × Repetition 槽位、执行策略和 Budget；
+- `execution-manifest` 与 `trial-manifest`：将一次真实 Execution 及每个计划 Trial
+  绑定到其 Append-only Attempt Chain；
 - `attempt-manifest`：保留每次 Attempt、终态、重试资格和关联的单 Run Artifact；
 - `run-results`：逐 Run 保存 Strict-reloaded Decision、Validity 与 Measurement；
 - `batch-summary`：只从前述不可变结果派生 Aggregate、区间、Failure Distribution
   与重建信息。
 
-两个实验只有在 Dataset/Case、Profile、Metric/Report Contract 和 Gate Policy
-相同，或比较声明明确解释差异时才可标记为可比较。模型、Prompt、Tool Schema、
-Runtime、资源限制或重试策略的变化都必须显示在 Comparison Manifest 中。行为失败
-不重试；Infrastructure Retry 保留原 Attempt；任何 Invalid Run 都同时进入总数与
-Validity 统计，禁止挑选最好一次作为结果。
+两个实验只有在 Dataset/Case、Profile、Metric/Report Contract、Gate Policy、资源限制
+和 Retry Policy 相同时才能生成 Controlled Comparison。每项允许的模型、Prompt、Tool
+Schema 或 Runtime Treatment 都必须显示在 Comparison Manifest 中；其他组合只能生成
+描述性的 `not_comparable` Report。行为失败不重试；Infrastructure Retry 保留原
+Attempt；任何 Invalid Run 都同时进入总数与 Validity 统计，禁止挑选最好一次作为结果。
 
-### 交付切片
+### Milestone
 
-1. **Repeat Runner：** 固定 Case × Configuration × Repetition Matrix，并生成
-   不可变 Attempt Manifest。
-2. **Validity-first Summary：** 先交付 Validity/Behavioral/Reliable Success 三个
-   分离的顶层结果，再加入更复杂的统计量。
-3. **Comparison Report：** 展示 Baseline 与 Candidate 的绝对值、差值、样本数、
-   区间、Failure Migration 和 Cost/Latency Trade-off。
-4. **Improvement Proof：** 针对一个主要失败类别完成一次干预，并用相同回归集和
-   未参与调优的隐藏集复测；同时公开未改善项与新回归。
+1. **Companion Repeat Runner：** 实现已经完成；围绕冻结的
+   Case × Configuration × Repetition Matrix、Append-only Attempt、Budget 与严格完整性
+   实现 Run、Resume 和离线 Rebuild。已确认的 M1 基线保留 P3 `ExperimentSpec v1`，
+   新增内容寻址的 `RunPlan v1`，在执行前冻结全部 Trial 槽位，顺序运行 Reference
+   Acceptance，且不发布 Aggregate Quality 结论；Runtime Scheduling 继续位于 Core
+   之外。已批准的原生退出门禁有意强于最初最低要求：12 个顺序 Trial、真实 Evaluated
+   与 Unavailable Lifecycle Evidence、Graceful Stop/Resume、Closed Pack，以及无凭据的
+   Byte-identical Rebuild。详见
+   [`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md#milestone-1-approved-baseline)。
+2. **Core Validity-first Batch Summary Preview：** 决策基线已批准，实现由 M1 原生退出
+   Evidence 门禁阻断；消费 Strict-reloaded Evaluation Package，报告 Trial-level
+   Validity、Behavioral Success、Reliable Success，以及强制 Attempt Diagnostic。
+3. **Core Controlled Comparison Preview：** 强制 Comparison Invariant、预声明
+   Treatment、Primary Outcome 与 Guardrail；报告原始 Case Delta、确定性配对区间、
+   符合条件的 Pass-at-k、Failure Migration 与 Efficiency Trade-off。
+4. **Improvement Loop Proof 与 Evidence Release：** 完成 9 个 Case、54 个 Trial 的
+   Baseline/Candidate 实验与 Held-out Commit-reveal，然后发布所有结果和可离线重建的
+   Evidence Pack。
 
 ### 完成信号
 
-两个冻结配置能够通过有文档、可重复的流程比较，展示质量、可靠性、安全性、
-效率、不确定性和回归；一个改进措施能够同时通过回归集与隐藏 Case 验证。
+两个冻结配置能够通过有文档、可重复的流程比较，展示质量、可靠性、安全性、效率、
+不确定性和回归。公开 Companion 针对 Regression/Held-out Case 完成一次诚实的干预
+闭环，第三方无需 Runtime Credential 即可重建已发布证据。
 
 ## 优先级 5——Metric SDK 与 `MetricPlan` Preview
 

@@ -164,8 +164,8 @@ input three times with byte-identical output, and invalid evidence cannot become
 
 ## Priority 2 — Complete Profile authoring loop
 
-**Status:** implemented and released in `0.1.2`. Priority 3 is complete; Priority 4 is
-the next implementation milestone.
+**Status:** implemented and released in `0.1.2`. Priority 3 is complete; Priority 4 Milestone 1
+is implemented in the companion and its strengthened native exit gate is pending.
 
 ### Goal
 
@@ -377,6 +377,13 @@ service or dashboard.
 
 ## Priority 4 — Batch experiments, reporting and improvement loop
 
+**Status:** Milestone 1 implementation is complete in the companion. Its strengthened native
+two-Case × two-Configuration × three-repetition exit gate is pending and blocks Milestone 2
+contract implementation. The Milestone 2 validity-first decision baseline is approved. The
+ownership, identity, aggregation, comparison, statistics, publication and milestone decisions
+are recorded in
+[`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md).
+
 ### Goal
 
 Turn single-run decisions into reproducible comparisons across task sets, runtime
@@ -407,10 +414,12 @@ evaluation failure.
 
 ### Batch artifacts
 
-Every batch experiment produces at least four portable artifacts:
+Every batch experiment produces at least these portable artifacts:
 
-- `experiment-spec`, freezing every independent variable, dataset split, repetition
-  count and retry policy;
+- `run-plan`, wrapping immutable P3 single-run ExperimentSpecs and freezing the exact
+  Case × Configuration × Repetition slots, execution policy and budgets;
+- `execution-manifest` and `trial-manifest`, binding one live execution and every planned
+  Trial to its append-only Attempt chain;
 - `attempt-manifest`, preserving every attempt, terminal state, retry eligibility
   and linked per-run artifacts;
 - `run-results`, retaining each strictly reloaded decision, validity state and
@@ -418,31 +427,42 @@ Every batch experiment produces at least four portable artifacts:
 - `batch-summary`, derived only from those immutable results and carrying aggregates,
   intervals, failure distributions and rebuild metadata.
 
-Two experiments are marked comparable only when their dataset/cases, Profile,
-metric/report contract and Gate policy match, or when the comparison declaration
-explicitly explains the differences. Changes to model, prompt, tool schema, Runtime,
-resource limits or retry policy remain visible in the comparison manifest.
+Two experiments receive a Controlled Comparison only when their dataset/cases, Profile,
+metric/report contract, Gate policy, resource limits and retry policy match. Every permitted
+model, prompt, tool-schema or Runtime Treatment remains visible in the comparison manifest.
+Other pairs may appear only in a descriptive `not_comparable` report.
 Behavioral failure is not retried; infrastructure retry preserves the original
 attempt; every invalid run remains in the total and validity statistics. Selecting
 only the best attempt as the result is prohibited.
 
-### Delivery slices
+### Milestones
 
-1. **Repeat runner:** freeze a Case × configuration × repetition matrix and emit an
-   immutable attempt manifest.
-2. **Validity-first summary:** deliver validity, behavioral success and reliable
-   success as separate top-level results before adding more complex statistics.
-3. **Comparison report:** show baseline and candidate absolute values, deltas, sample
-   counts, intervals, failure migration and cost/latency trade-offs.
-4. **Improvement proof:** intervene on one leading failure class and retest with the
-   same regression set plus an untouched hidden set, publishing non-improvements and
-   new regressions as well as gains.
+1. **Companion Repeat Runner:** implementation complete; Run, Resume and offline Rebuild operate
+   around a frozen Case × configuration × repetition matrix, append-only Attempts, budgets and
+   strict completeness. The approved M1 baseline preserves P3 `ExperimentSpec v1`, adds a
+   content-identified `RunPlan v1`, freezes all Trial slots before execution, runs the
+   reference acceptance sequentially and publishes no aggregate quality conclusion. Runtime
+   scheduling remains outside Core. The accepted native exit gate is deliberately stronger than
+   the original minimum: 12 sequential Trials, real evaluated and unavailable lifecycle evidence,
+   graceful stop/resume, a closed Pack and credential-free byte-identical rebuild. See
+   [`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md#milestone-1-approved-baseline).
+2. **Core Validity-first Batch Summary Preview:** decision baseline approved, implementation
+   gated on the native M1 exit evidence; consume strict-reloaded Evaluation Packages and report
+   Trial-level validity, behavioral success and reliable success plus mandatory Attempt
+   diagnostics.
+3. **Core Controlled Comparison Preview:** enforce comparison invariants, predeclared
+   Treatments, Primary Outcome and Guardrails; report raw Case deltas, deterministic paired
+   intervals, qualified pass-at-k, failure migration and efficiency trade-offs.
+4. **Improvement Loop Proof and Evidence Release:** complete a nine-Case, 54-Trial
+   baseline/candidate experiment with held-out commit-reveal, then publish every outcome and
+   an offline-rebuildable Evidence Pack.
 
 ### Completion signal
 
-Two frozen configurations can be compared through a documented repeatable process
-that exposes quality, reliability, safety, efficiency, uncertainty and regression,
-and an intervention can be validated against both regression and hidden cases.
+Two frozen configurations can be compared through a documented repeatable process that
+exposes quality, reliability, safety, efficiency, uncertainty and regression. The public
+companion completes an honest intervention loop against regression and held-out Cases, and a
+third party can rebuild the released evidence without Runtime credentials.
 
 ## Priority 5 — Metric SDK and `MetricPlan` Preview
 
