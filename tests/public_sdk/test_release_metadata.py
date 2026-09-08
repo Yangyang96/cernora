@@ -13,6 +13,7 @@ import pytest
 from scripts.check_release import (
     _ALLOWED_ROOT_FILES,
     ReleaseCheckError,
+    _scan_payload,
     _tree_files,
     artifact_paths,
     check_artifacts,
@@ -341,3 +342,38 @@ def test_public_markdown_relative_links_resolve() -> None:
             )
 
     assert len(relative_links) >= 30
+
+
+@pytest.mark.parametrize("prefix", ("", "sdist:"))
+@pytest.mark.parametrize("document", ("ROADMAP.md", "ROADMAP.zh-CN.md", "docs/p4-closeout.md"))
+def test_release_scan_accepts_documented_product_references(prefix: str, document: str) -> None:
+    references = " ".join(("".join(("ob", "serv")), "".join(("Ch", "ora"))))
+    _scan_payload(prefix + document, references.encode())
+
+
+@pytest.mark.parametrize("label", ("README.md", "src/product.py", "wheel:ROADMAP.md"))
+def test_release_scan_keeps_product_references_scoped(label: str) -> None:
+    reference = "".join(("ob", "serv")).encode()
+    with pytest.raises(ReleaseCheckError, match="forbidden private vocabulary"):
+        _scan_payload(label, reference)
+
+
+@pytest.mark.parametrize(
+    "payload",
+    (
+        ("/" + "Users" + "/operator/export").encode(),
+        ("api_key=" + "x" * 32).encode(),
+        "".join(("ali", "pay")).encode(),
+    ),
+)
+def test_documented_references_do_not_allow_private_content(payload: bytes) -> None:
+    with pytest.raises(ReleaseCheckError):
+        _scan_payload("ROADMAP.md", payload)
+
+
+def test_closeout_branch_reference_is_document_specific() -> None:
+    reference = "".join(("co", "dex", "/p4-controlled-study")).encode()
+    _scan_payload("docs/p4-closeout.md", reference)
+    _scan_payload("sdist:docs/p4-closeout.md", reference)
+    with pytest.raises(ReleaseCheckError, match="forbidden private vocabulary"):
+        _scan_payload("ROADMAP.md", reference)

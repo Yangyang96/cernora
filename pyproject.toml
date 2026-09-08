@@ -76,6 +76,7 @@ include = [
   "/SECURITY.zh-CN.md",
   "/docs/assets",
   "/docs/design",
+  "/docs/p4-closeout.md",
   "/docs/public",
   "/docs/research",
   "/examples/coding_task",
