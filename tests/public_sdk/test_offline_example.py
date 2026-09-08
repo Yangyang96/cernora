@@ -240,3 +240,12 @@ def test_publication_race_never_replaces_foreign_directory(
     expected = {"foreign.txt": b"foreign"} if foreign_kind == "nonempty" else {}
     assert _tree_bytes(output) == expected
     assert not tuple(output.parent.glob(f".{output.name}.staging-*"))
+
+
+def test_adapter_rejects_oversized_export_before_publication(tmp_path: Path) -> None:
+    completed = materialize_completed_export(tmp_path / "completed")
+    (completed.root / "stderr.txt").write_bytes(b"x" * 1_000_001)
+    output = tmp_path / "adapted"
+    with pytest.raises(CompletedExportError, match="completed export file exceeds size limit"):
+        OfflineWorkflowAdapter().adapt(completed, output)
+    assert not output.exists()
