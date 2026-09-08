@@ -28,18 +28,27 @@ universal Agent runner or takes ownership of credentials, sandboxes or processes
 
 ## Priority order
 
-| Order | Milestone | Why it comes here |
+The active sequence is **P4 closeout → P4.5 real-world positive improvement → thin Chora
+integration**. The project serves hands-on Agent evaluation engineering, practical external-tool CLI
+improvement and evaluation of completed Chora tasks. Generality follows these uses; matching
+established platforms feature-for-feature is not a completion requirement.
+
+| Order | Milestone | Current disposition |
 | --- | --- | --- |
-| 1 | Deterministic metric coverage | Add useful evidence-derived measurements without first freezing a new SDK. |
-| 2 | Complete Profile authoring loop | Take third parties from private scaffold to a tested first GateDecision. |
-| 3 | Public Reference Evaluation Workflow | Prove the released evaluator against a real external Agent run. |
-| 4 | Batch experiments, reporting and improvement loop | Turn repeated runs into reliable comparisons and actionable diagnosis. |
-| 5 | Metric SDK and `MetricPlan` Preview | Extract reusable built-in/custom metric composition from proven usage. |
-| 6 | Second producer and Runtime Connector maturity | Generalize the connector only after two independent producers expose common needs. |
-| 7 | Optional LLM-as-a-Judge Preview | Add qualitative judgment only where deterministic metrics leave a proven gap. |
-| 8 | LLM-as-a-Judge stabilization | Graduate the interface only after calibration, drift and failure gates pass. |
-| 9 | Staged Gate consumers and provenance | Let external systems consume decisions without transferring deployment authority. |
-| `1.0` | Stable public platform boundary | Commit only to contracts proven across independent producers and Profiles. |
+| P1–P3 | Metrics, Profile authoring, Reference Workflow | Retain delivered capabilities and compatibility boundaries. |
+| P4 | Batch experiments, comparisons and evidence closure | 72 Trials completed; negative result and offline reconstruction preserved; publication tracked separately. |
+| P4.5 | Real-world external-tool CLI positive improvement | Next; use a minimal human-calibrated helper Judge where needed. |
+| Following | Thin Chora integration | Evaluate one completed task family and persist/display traceable outcomes. |
+| Original P5 | Metric SDK / `MetricPlan` | Conditional backlog: start when multiple real Profiles expose repeated needs. |
+| Original P6 | Second producer / Runtime Connector | Conditional backlog: generalize only after two concrete integrations prove common needs. |
+| Original P7 / P8 | General LLM Judge / stabilization | Conditional backlog driven by real scoring needs; does not block a P4.5 helper Judge. |
+| Original P9 | Gate consumers / provenance | Conditional backlog triggered by a real consumer needing staged gates. |
+| `1.0` | Stable public boundary | Long-term maturity goal, not a prerequisite for the two application milestones. |
+
+Original P5–P9 numbers and designs remain for traceability, not as a mandatory sequence.
+Add interfaces only for a current consumer. At milestone boundaries, remove superseded
+implementations and one-off tools while preserving historical source and reproducible evidence;
+do not start another open-ended cleanup or framework expansion.
 
 ## `0.1.x` baseline
 
@@ -164,8 +173,7 @@ input three times with byte-identical output, and invalid evidence cannot become
 
 ## Priority 2 — Complete Profile authoring loop
 
-**Status:** implemented and released in `0.1.2`. Priority 3 is complete; Priority 4 Milestone 1
-is implemented in the companion and its strengthened native exit gate is pending.
+**Status:** implemented and released in `0.1.2`. See Priority 4 for subsequent experiment status.
 
 ### Goal
 
@@ -377,12 +385,16 @@ service or dashboard.
 
 ## Priority 4 — Batch experiments, reporting and improvement loop
 
-**Status:** Milestone 1 implementation is complete in the companion. Its strengthened native
-two-Case × two-Configuration × three-repetition exit gate is pending and blocks Milestone 2
-contract implementation. The Milestone 2 validity-first decision baseline is approved. The
-ownership, identity, aggregation, comparison, statistics, publication and milestone decisions
-are recorded in
-[`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md).
+**Status (2026-09-09):** batch summaries and controlled comparisons are implemented.
+72 Trials / 72 Attempts completed with no retries: 18 pass, 33 behavioral_fail,
+0 evaluation_invalid and 21 infrastructure_unavailable. Held-out RSR was baseline 8/9,
+candidate 1/9; the conclusion is `regressed`. Guardrails do not support promotion.
+Historical tooling and evidence are preserved locally; two historical-wheel offline rebuilds
+each reproduced 702 files byte-for-byte. This establishes engineering and evidence closure,
+not positive improvement or public release.
+
+See [P4 closeout](docs/p4-closeout.md) for preservation, cleanup verification and remaining
+limits, and the [original design](docs/design/priority-4-batch-experiments.md) for history.
 
 ### Goal
 
@@ -435,7 +447,7 @@ Behavioral failure is not retried; infrastructure retry preserves the original
 attempt; every invalid run remains in the total and validity statistics. Selecting
 only the best attempt as the result is prohibited.
 
-### Milestones
+### Milestones (original design and current status)
 
 1. **Companion Repeat Runner:** implementation complete; Run, Resume and offline Rebuild operate
    around a frozen Case × configuration × repetition matrix, append-only Attempts, budgets and
@@ -446,16 +458,17 @@ only the best attempt as the result is prohibited.
    the original minimum: 12 sequential Trials, real evaluated and unavailable lifecycle evidence,
    graceful stop/resume, a closed Pack and credential-free byte-identical rebuild. See
    [`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md#milestone-1-approved-baseline).
-2. **Core Validity-first Batch Summary Preview:** decision baseline approved, implementation
-   gated on the native M1 exit evidence; consume strict-reloaded Evaluation Packages and report
-   Trial-level validity, behavioral success and reliable success plus mandatory Attempt
+2. **Core Validity-first Batch Summary Preview:** implemented and locally verified; consume
+   strict-reloaded Evaluation Packages and report Trial-level validity, behavioral success and
+   reliable success plus mandatory Attempt
    diagnostics.
 3. **Core Controlled Comparison Preview:** enforce comparison invariants, predeclared
    Treatments, Primary Outcome and Guardrails; report raw Case deltas, deterministic paired
    intervals, qualified pass-at-k, failure migration and efficiency trade-offs.
-4. **Improvement Loop Proof and Evidence Release:** complete a nine-Case, 54-Trial
-   baseline/candidate experiment with held-out commit-reveal, then publish every outcome and
-   an offline-rebuildable Evidence Pack.
+4. **Improvement Loop Proof and Evidence Release:** the original plan specified nine Cases
+   and 54 Trials; the actual study completed 72 Trials and preserved its negative result and
+   offline-rebuildable Evidence Pack. Public evidence release remains a separate open item;
+   local preservation does not automatically satisfy the original publication criteria.
 
 ### Completion signal
 
@@ -463,6 +476,59 @@ Two frozen configurations can be compared through a documented repeatable proces
 exposes quality, reliability, safety, efficiency, uncertainty and regression. The public
 companion completes an honest intervention loop against regression and held-out Cases, and a
 third party can rebuild the released evidence without Runtime credentials.
+
+## Priority 4.5 — Real-world external-tool CLI positive improvement
+
+**Status:** next; positive improvement has not yet been demonstrated.
+
+### Goal and sequence
+
+1. Select one change-context command. Preserve real cases, tool responses, required context
+   and human reference judgments before monitoring retention expires. Make inputs replayable
+   and split development and independent validation cases by incident.
+2. Fix the probe Agent, model, prompt, tool access and budget. Measure root-cause analysis,
+   risk assessment and action quality, including grounding, missing information and unsupported
+   claims. Field completeness alone is not task utility.
+3. Establish rules and human references; add a minimal helper LLM Judge only for a qualitative
+   scoring gap, then run the baseline.
+4. Choose one intervention from development failures: context organization, tool output,
+   prompt or tool-use strategy. Compare on unused validation cases under the same scoring
+   policy, checking regressions, validity and cost.
+5. Preserve failure analysis, changes, comparison evidence and scope. Do not change scoring
+   policy to obtain a favorable result.
+
+### Minimal helper Judge boundary
+
+The Judge is a measurement tool; the task-performing Agent is the subject. Define a rubric,
+calibrate against human-labeled examples, record model/prompt versions, reasons and cited
+evidence, and review consequential disagreements. Judge calls remain in the external workflow;
+Core consumes completed, traceable scoring evidence without model credentials or online
+execution. Freeze scoring before independent validation. Missing evidence or an unavailable
+Judge leaves the qualitative assessment inconclusive. A higher Judge score needs human spot checks or objective task outcomes
+to support an improvement claim. A general Judge SDK is not required here.
+
+### Completion and stopping rule
+
+At least one intervention must produce evidence-supported practical improvement on independent
+validation cases. Predeclare the primary outcome, regression and cost constraints, and report
+sample scope, repeated-run variability and uncertainty. A regressed or inconclusive result is
+useful evidence but leaves the positive-improvement milestone incomplete. Model training and
+automatic optimization are not required. Reuse existing Profiles, Evidence Adapters and reports;
+fill only gaps needed for this real evaluation.
+
+## Following — Thin evaluation of completed Chora tasks
+
+Start with one real task family. Chora supplies completed results and evidence; Cernora produces
+traceable evaluations; Chora persists and displays pass, failure or inconclusive reasons.
+Demonstrate success, behavioral failure and missing-evidence paths before adding another family.
+Reuse P4.5 scoring where needed. Runtime lifecycle, credentials, retries and task scheduling stay
+with Chora or the external workflow. Original P5–P9 are not prerequisites for this integration.
+
+## Conditional backlog: original P5–P9
+
+The original designs below are options to select when needs arise, not a commitment to implement
+every item or follow their numerical order. P7 is the general Judge interface and P8 its
+stabilization; P4.5 may use a narrowly scoped helper Judge first.
 
 ## Priority 5 — Metric SDK and `MetricPlan` Preview
 
@@ -878,7 +944,7 @@ This roadmap does not include:
 A milestone begins only with:
 
 1. a concrete user or integration need;
-2. a narrow public contract;
+2. a narrow input/output and ownership agreement; a public contract only if publication is needed;
 3. machine-checkable positive and negative acceptance;
 4. an explicit compatibility classification; and
 5. a stopping rule that prevents speculative platform expansion.

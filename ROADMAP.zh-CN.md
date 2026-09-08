@@ -27,18 +27,25 @@ Runner，也不表示它会接管凭证、Sandbox 或进程所有权。
 
 ## 优先级顺序
 
-|顺序|里程碑|为什么排在这里|
-|---|---|---|
-|1|确定性指标覆盖|先增加有用、可由证据推导的指标，不立即冻结新 SDK。|
-|2|完整 Profile Authoring Loop|让第三方从私有 Scaffold 走到经过测试的首个 GateDecision。|
-|3|公开 Reference Evaluation Workflow|用真实外部 Agent Run 验证已发布的评测器。|
-|4|批量实验、报告与改进闭环|把重复 Run 变成可靠比较和可行动诊断。|
-|5|Metric SDK 与 `MetricPlan` Preview|从已经证明的用法中提炼内置/自定义 Metric 组合能力。|
-|6|第二个 Producer 与 Runtime Connector 成熟|只有两个独立 Producer 暴露出共同需求后才抽象 Connector。|
-|7|可选 LLM-as-a-Judge Preview|只在确定性指标留下明确缺口时引入定性判断。|
-|8|LLM-as-a-Judge 稳定化|通过校准、漂移和失败 Gate 后才升级成熟度。|
-|9|分阶段 Gate Consumer 与 Provenance|让外部系统消费决策，但不转移部署权威。|
-|`1.0`|稳定的公共平台边界|只承诺经过独立 Producer 和 Profile 验证的契约。|
+当前主线是 **P4 收尾 → P4.5 真实场景正向提升 → Chora 最小接入**。
+项目首先服务于 Agent 评测研发实践、external-tool CLI 的实际改进和 Chora 完成态任务评测。
+通用性从这些用法中提炼；不以追平成熟评测平台的功能覆盖作为完成条件。
+
+| 顺序 | 里程碑 | 当前安排 |
+| --- | --- | --- |
+| P1–P3 | 指标、Profile Authoring、Reference Workflow | 保留已交付能力与兼容边界。 |
+| P4 | 批量实验、比较与证据闭环 | 72 Trials 已完成，负向结果与离线重建已封存；公开发布单独跟踪。 |
+| P4.5 | external-tool CLI 真实场景正向提升 | 下一项工作；必要时引入经人工校准的最小辅助 Judge。 |
+| 随后 | Chora 最小接入 | 先接一类完成态任务，保存并展示可追溯的评测结论。 |
+| 原 P5 | Metric SDK / `MetricPlan` | 条件储备：多个真实 Profile 暴露重复需求后再启动。 |
+| 原 P6 | 第二个 Producer / Runtime Connector | 条件储备：两个具体集成证明共同需求后再抽象。 |
+| 原 P7 / P8 | 通用 LLM Judge / 稳定化 | 条件储备：真实评分需求驱动，不阻塞 P4.5 的辅助 Judge。 |
+| 原 P9 | Gate Consumer / Provenance | 条件储备：真实消费方需要分阶段 Gate 时启动。 |
+| `1.0` | 稳定公共边界 | 长期成熟度目标，不作为当前两个应用里程碑的前置条件。 |
+
+保留原 P5–P9 编号与设计供追溯，它们不再表示必须依次执行的排期。
+只有当前消费者确有需求时才增加接口；每个阶段结束时删除被替代的实现和一次性工具，
+保留复现所需的历史源码及证据，不再单独开启无边界的清理或框架扩建。
 
 ## `0.1.x` 基线
 
@@ -148,8 +155,7 @@ byte-identical 输出，且无效 Evidence 不能变成 pass。
 
 ## 优先级 2——完整 Profile Authoring Loop
 
-**状态：** 已在 `0.1.2` 中实现并发布。优先级 3 已完成；优先级 4 Milestone 1 已在
-Companion 中实现，加强后的原生退出门禁尚未执行。
+**状态：** 已在 `0.1.2` 中实现并发布。后续实验状态见优先级 4。
 
 ### 目标
 
@@ -346,11 +352,14 @@ Scheduler、多 Runtime Framework、托管服务或 Dashboard。
 
 ## 优先级 4——批量实验、报告与改进闭环
 
-**状态：** Milestone 1 已在 Companion 中完成实现。加强后的两个 Case × 两个
-Configuration × 三次重复的原生退出门禁尚未执行，并阻断 Milestone 2 Contract 实现；
-Milestone 2 Validity-first 决策基线已经批准。Ownership、Identity、Aggregation、
-Comparison、统计、发布和 Milestone 决策记录在
-[`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md)。
+**状态（2026-09-09）：** 批次摘要与受控比较已实现，72 Trials / 72 Attempts 已完成，
+无重试。18 pass、33 behavioral_fail、0 evaluation_invalid、21 infrastructure_unavailable。
+Held-out RSR：baseline 8/9、candidate 1/9，结论为 `regressed`；Guardrail 尚不能支持晋级。
+历史工具链和证据已本地封存，两次历史 wheel 离线重建各有 702 个文件逐字节一致。
+这证明工程与证据链路可用，未证明正向提升，也不代表已经公开发布。
+
+收尾事实、清理验证与剩余限制见 [P4 收尾记录](docs/p4-closeout.md)。原始设计见
+[批量实验设计](docs/design/priority-4-batch-experiments.md)。
 
 ### 目标
 
@@ -397,7 +406,7 @@ Schema 或 Runtime Treatment 都必须显示在 Comparison Manifest 中；其他
 描述性的 `not_comparable` Report。行为失败不重试；Infrastructure Retry 保留原
 Attempt；任何 Invalid Run 都同时进入总数与 Validity 统计，禁止挑选最好一次作为结果。
 
-### Milestone
+### Milestone（原始设计与当前状态）
 
 1. **Companion Repeat Runner：** 实现已经完成；围绕冻结的
    Case × Configuration × Repetition Matrix、Append-only Attempt、Budget 与严格完整性
@@ -408,21 +417,62 @@ Attempt；任何 Invalid Run 都同时进入总数与 Validity 统计，禁止�
    与 Unavailable Lifecycle Evidence、Graceful Stop/Resume、Closed Pack，以及无凭据的
    Byte-identical Rebuild。详见
    [`docs/design/priority-4-batch-experiments.md`](docs/design/priority-4-batch-experiments.md#milestone-1-approved-baseline)。
-2. **Core Validity-first Batch Summary Preview：** 决策基线已批准，实现由 M1 原生退出
-   Evidence 门禁阻断；消费 Strict-reloaded Evaluation Package，报告 Trial-level
+2. **Core Validity-first Batch Summary Preview：** 已在本地实现并验证；消费 Strict-reloaded Evaluation Package，报告 Trial-level
    Validity、Behavioral Success、Reliable Success，以及强制 Attempt Diagnostic。
 3. **Core Controlled Comparison Preview：** 强制 Comparison Invariant、预声明
    Treatment、Primary Outcome 与 Guardrail；报告原始 Case Delta、确定性配对区间、
    符合条件的 Pass-at-k、Failure Migration 与 Efficiency Trade-off。
-4. **Improvement Loop Proof 与 Evidence Release：** 完成 9 个 Case、54 个 Trial 的
-   Baseline/Candidate 实验与 Held-out Commit-reveal，然后发布所有结果和可离线重建的
-   Evidence Pack。
+4. **Improvement Loop Proof 与 Evidence Release：** 原设计为 9 个 Case、54 个 Trial；
+   实际完成 72 Trials，并封存负向结果与可离线重建的 Evidence Pack。公开 Evidence
+   Release 单独待办；原始验收条款不因本地封存而自动满足。
 
 ### 完成信号
 
 两个冻结配置能够通过有文档、可重复的流程比较，展示质量、可靠性、安全性、效率、
 不确定性和回归。公开 Companion 针对 Regression/Held-out Case 完成一次诚实的干预
 闭环，第三方无需 Runtime Credential 即可重建已发布证据。
+
+## 优先级 4.5——external-tool CLI 真实场景正向提升
+
+**状态：** 下一项工作，尚未证明正向提升。
+
+### 目标与执行顺序
+
+1. 锁定一个变更上下文命令，优先保存会随监控保留周期失效的真实案例、工具响应、
+   必要上下文及人工参考判断，形成可重放输入。按事件划分开发集和独立验证集。
+2. 固定探针 Agent、模型、Prompt、工具访问与预算。评估根因判断、风险判断和行动建议，
+   同时检查事实依据、缺失信息与无依据结论；字段完整率不能代替任务效用。
+3. 建立规则与人工参考基线；有定性评分缺口时，引入最小辅助 LLM Judge，再跑基线。
+4. 根据开发集失败选择单一干预，例如上下文组织、工具输出、Prompt 或工具使用策略。
+   用未参与调优的验证集比较，保持评分政策一致，同时检查回归、有效性与成本。
+5. 保存失败分析、改动、比较证据和适用范围；不能因为结果不理想而更换评分口径。
+
+### 最小辅助 Judge 的边界
+
+Judge 是测量工具，执行任务的 Agent 是被测对象。先制定评分标准并用人工标注样本
+校准，记录模型、Prompt、评分理由及引用证据，抽查关键分歧。Judge 调用位于外部
+工作流，Core 消费已完成且可追溯的评分证据，不获得模型凭据或在线执行职责。
+独立验证前冻结评分方式；缺证或 Judge 不可用保持无法判断。Judge 分数上涨必须有
+人工抽查或客观任务结果支持，不能单独视为能力提升。此处不要求实现通用 Judge SDK。
+
+### 完成信号与停止条件
+
+至少一次干预在独立验证案例上产生有证据支持的实际改善；提前定义主要指标、回归和
+成本约束，报告样本范围、重复运行差异与不确定性。若结果退步或不足以支持改善，
+记录有效结论，但正向提升里程碑保持未完成。不要求训练模型或自动优化系统。
+复用现有 Profile、Evidence Adapter 与报告；只补这次真实评测必需的缺口。
+
+## 随后——Chora 完成态任务评测最小接入
+
+先选择一类真实任务。Chora 提供完成态结果和证据，Cernora 生成可追溯的评测结论，
+Chora 保存并展示通过、失败或无法判断的原因。先证明成功、行为失败、缺证三条路径，
+再考虑第二类任务；P4.5 的评分方法按需要复用。运行生命周期、凭据、重试与任务
+调度仍归 Chora / 外部工作流。该集成不以完成原 P5–P9 为前提。
+
+## 条件储备：原 P5–P9
+
+以下保留原设计供需求出现时选取，不承诺全部实现，也不要求顺序推进。
+P7 是通用 Judge 接口，P8 是其稳定化；P4.5 可先使用范围受限的辅助 Judge。
 
 ## 优先级 5——Metric SDK 与 `MetricPlan` Preview
 
@@ -784,7 +834,7 @@ Cernora 只有满足以下条件后才应宣布 `1.0`：
 一个里程碑只有同时具备以下条件才会开始：
 
 1. 一个具体用户或集成需求；
-2. 一个边界收窄的公共 Contract；
+2. 一个边界收窄的输入、输出与职责约定；只有确需发布时才定义公共 Contract；
 3. 可机器检查的正向和负向验收；
 4. 明确的兼容性分类；
 5. 防止投机性平台扩张的停止条件。

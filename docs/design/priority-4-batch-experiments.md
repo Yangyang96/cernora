@@ -1,7 +1,12 @@
 # Priority 4 Batch Experiments and Improvement Loop Design
 
-Status: Milestone 1 implementation complete in the companion; strengthened native exit gate and
-Milestone 2 decision baseline approved; native exit gate not yet executed
+Status (2026-09-09): batch/comparison implementation and the actual 72-Trial study are locally
+verified; evidence is preserved and offline-rebuildable. The candidate regressed. Public
+evidence/package release remains separate; see [P4 closeout](../p4-closeout.md).
+
+Historical design note: the 9-Case / 54-Trial requirements below retain the original plan.
+They are not the actual run count and do not imply that its publication criteria are satisfied.
+Positive improvement is now an explicit P4.5 milestone in the roadmap.
 
 Decision dates: architecture and M1 baseline 2026-08-25; M1 exit and M2 entry baseline 2026-08-26
 

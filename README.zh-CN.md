@@ -23,8 +23,9 @@ Cernora 是一个独立评测内核，根据记录下来的工具调用、返回
 > **当前版本：** `0.1.2`，已在 Python 3.12 和 3.13 上测试。操作系统状态见
 > [平台矩阵](docs/public/compatibility-matrix.zh-CN.md)。
 >
-> **开发状态：** Priority 4 Milestone 3 已实现为本地 release candidate；公开包仍停留在
-> Priority 3。精确范围见[产品路线图](ROADMAP.zh-CN.md)。
+> **开发状态：** P4 已完成 72 Trials 与离线证据重建验证，候选方案效果退步。
+> 正向提升由下一项 P4.5 验证；本地封存已完成，P4 公开发布单独跟踪。
+> 详见[收尾记录](docs/p4-closeout.md)与[产品路线图](ROADMAP.zh-CN.md)。
 
 本地 `0.1.4` release candidate 保留严格、Runtime-neutral 的批次摘要，并新增内容寻址的受控
 比较、固定配对 bootstrap 统计和 hard Guardrail，但尚未公开发布。详见

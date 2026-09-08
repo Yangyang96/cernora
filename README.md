@@ -25,9 +25,10 @@ Use Cernora when you need to:
 > **Current release:** `0.1.2`, tested on Python 3.12 and 3.13. See the
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
 >
-> **Development status:** Priority 4 Milestone 3 is implemented as a local release candidate.
-> The published package remains at Priority 3. See the
-> [product roadmap](ROADMAP.md) for the exact scope.
+> **Development status:** P4 completed 72 Trials and verified offline evidence reconstruction.
+> The candidate regressed; positive improvement remains the next P4.5 milestone.
+> Local preservation is complete; public P4 release remains separate. See the
+> [closeout record](docs/p4-closeout.md) and [product roadmap](ROADMAP.md).
 
 The local `0.1.4` release candidate retains strict Runtime-neutral batch summaries and adds
 content-identified controlled comparisons with fixed paired bootstrap statistics and hard
