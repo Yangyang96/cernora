@@ -444,3 +444,30 @@ def test_batch_schemas_are_packaged_and_accept_authoritative_models(tmp_path: Pa
     unknown = batch_input.model_dump(mode="json")
     unknown["caller_success_rate"] = 1.0
     assert not input_validator.is_valid(unknown)
+
+
+@pytest.mark.parametrize("foreign_kind", ("empty", "nonempty"))
+def test_batch_publication_race_preserves_foreign_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, foreign_kind: str
+) -> None:
+    from cernora import _closed_package
+
+    batch_input = _batch_input(tmp_path)
+    output = tmp_path / "summary"
+    publish = _closed_package._publish_directory_no_replace
+    foreign_inode: list[int] = []
+
+    def race(staging: Path, destination: Path, *, label: str) -> None:
+        destination.mkdir()
+        if foreign_kind == "nonempty":
+            (destination / "foreign.txt").write_bytes(b"keep")
+        foreign_inode.append(destination.stat().st_ino)
+        publish(staging, destination, label=label)
+
+    monkeypatch.setattr(_closed_package, "_publish_directory_no_replace", race)
+    with pytest.raises(IngestionConfigurationError, match="^Batch Summary output already exists$"):
+        summarize_batch(batch_input, output)
+    assert output.stat().st_ino == foreign_inode[0]
+    expected = {"foreign.txt": b"keep"} if foreign_kind == "nonempty" else {}
+    assert {p.name: p.read_bytes() for p in output.iterdir()} == expected
+    assert not tuple(output.parent.glob(f".{output.name}.staging-*"))

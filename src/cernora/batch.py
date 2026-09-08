@@ -3,14 +3,8 @@
 from __future__ import annotations
 
 import base64
-import ctypes
-import errno
 import hashlib
 import math
-import os
-import shutil
-import sys
-import tempfile
 from collections import Counter
 from collections.abc import Iterable, Mapping
 from pathlib import Path, PurePosixPath
@@ -18,13 +12,13 @@ from typing import Annotated, Literal, Self
 
 from pydantic import Field, model_validator
 
-from cernora._closed_package import ordinary_tree_files
+from cernora._closed_package import ordinary_tree_files, publish_closed_package
 from cernora.core.canonical import canonical_json, decode_contract
 from cernora.core.case import StrictModel
 from cernora.core.errors import ContractError
 from cernora.core.identity import SHA256_PATTERN
 from cernora.evaluation.package import validate_evaluation_package_content
-from cernora.ingestion.errors import IngestionConfigurationError, IngestionIntegrityError
+from cernora.ingestion.errors import IngestionIntegrityError
 
 BATCH_INPUT_SCHEMA_VERSION = "agent.evaluator.batch-input/v1"
 BATCH_SUMMARY_SCHEMA_VERSION = "agent.evaluator.batch-summary/v1"
@@ -852,88 +846,11 @@ def _ordinary_tree_files(root: Path, *, label: str) -> dict[str, bytes]:
     return ordinary_tree_files(root, label=label)
 
 
-def _publish(output: Path, files: Mapping[str, bytes]) -> None:
-    if output.exists() or output.is_symlink():
-        raise IngestionConfigurationError("Batch Summary output must not already exist")
-    try:
-        output.parent.mkdir(parents=True, exist_ok=True)
-        staging = Path(tempfile.mkdtemp(prefix=f".{output.name}.staging-", dir=output.parent))
-    except OSError as exc:
-        raise IngestionConfigurationError("cannot create Batch Summary staging directory") from exc
-    published = False
-    try:
-        for relative, payload in sorted(files.items()):
-            destination = staging.joinpath(*PurePosixPath(relative).parts)
-            destination.parent.mkdir(parents=True, exist_ok=True)
-            destination.write_bytes(payload)
-        _publish_directory_no_replace(staging, output)
-        published = True
-    except IngestionConfigurationError:
-        raise
-    except OSError as exc:
-        raise IngestionConfigurationError("cannot atomically publish Batch Summary") from exc
-    finally:
-        if not published:
-            shutil.rmtree(staging, ignore_errors=True)
-
-
-def _publish_directory_no_replace(staging: Path, output: Path) -> None:
-    """Atomically publish one directory only when the destination is absent."""
-
-    source = os.fsencode(staging)
-    target = os.fsencode(output)
-    ctypes.set_errno(0)
-    if sys.platform.startswith("linux"):
-        libc = ctypes.CDLL(None, use_errno=True)
-        try:
-            rename = libc.renameat2
-        except AttributeError as exc:
-            raise IngestionConfigurationError(
-                "atomic no-replace Batch Summary publication is unavailable"
-            ) from exc
-        rename.argtypes = [
-            ctypes.c_int,
-            ctypes.c_char_p,
-            ctypes.c_int,
-            ctypes.c_char_p,
-            ctypes.c_uint,
-        ]
-        rename.restype = ctypes.c_int
-        result = rename(-100, source, -100, target, 1)
-    elif sys.platform == "darwin":
-        libc = ctypes.CDLL(None, use_errno=True)
-        try:
-            rename = libc.renamex_np
-        except AttributeError as exc:
-            raise IngestionConfigurationError(
-                "atomic no-replace Batch Summary publication is unavailable"
-            ) from exc
-        rename.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_uint]
-        rename.restype = ctypes.c_int
-        result = rename(source, target, 0x00000004)
-    elif os.name == "nt":
-        try:
-            os.rename(staging, output)
-        except FileExistsError as exc:
-            raise IngestionConfigurationError("Batch Summary output already exists") from exc
-        return
-    else:
-        raise IngestionConfigurationError(
-            "atomic no-replace Batch Summary publication is unavailable"
-        )
-    if result == 0:
-        return
-    error_number = ctypes.get_errno()
-    if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
-        raise IngestionConfigurationError("Batch Summary output already exists")
-    raise OSError(error_number, os.strerror(error_number), output)
-
-
 def summarize_batch(batch_input: BatchInput, output: Path) -> BatchSummary:
     """Build, atomically publish, and strictly reload one Batch Summary package."""
 
     summary = build_batch_summary(batch_input)
-    _publish(output, _summary_files(summary, batch_input))
+    publish_closed_package(output, _summary_files(summary, batch_input), label="Batch Summary")
     reloaded = reload_batch_summary(output)
     if reloaded != summary:
         raise IngestionIntegrityError("published Batch Summary changed during strict reload")
