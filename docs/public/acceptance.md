@@ -1,5 +1,12 @@
 # Public evaluation-core and Priority 1 acceptance
 
+> Historical release record: the `0.1.2` summary below remains unchanged. The current
+> checkout verifies its installed wheel against the version-specific
+> [0.1.4 candidate summary](acceptance-summary-0.1.4.json). The reconstructed task hashes,
+> outcomes and adversarial results match the historical summary; only the package version
+> differs. This candidate verification does not declare a public release. Reproduce the
+> original release with its matching source revision and wheel.
+
 Cernora `0.1.2` was exercised with the original sanitized V1/V2
 representatives plus the Priority 1 `tool-workflow` and `coding-evaluation` matrices. These
 task labels do not mean EvidenceBundle v1: every run uses EvidenceBundle v2/import v2. The

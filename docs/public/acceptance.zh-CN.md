@@ -1,5 +1,10 @@
 # 公开评测内核与 Priority 1 验收
 
+> 历史发布记录：本文的 `0.1.2` 摘要保持不变。当前 checkout 将已安装的 wheel 与
+> [0.1.4 候选验收摘要](acceptance-summary-0.1.4.json)逐字节比较。实际重建的任务哈希、
+> 结果和对抗检查均与旧摘要一致，仅包版本不同；这不代表公开发布。复现旧版本时，
+> 使用对应的历史源码和 wheel。
+
 [English](acceptance.md) | **简体中文**
 
 Cernora `0.1.2` 使用原项目 V1/V2 脱敏公开代表，以及 Priority 1

@@ -8,6 +8,7 @@ import hashlib
 import json
 import shutil
 import socket
+import tomllib
 from collections.abc import Callable
 from importlib import metadata
 from pathlib import Path
@@ -407,7 +408,9 @@ def rebuild(output: Path) -> dict[str, object]:
         json.dumps(summary, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
     (output / "summary.json").write_bytes(summary_bytes)
-    expected_summary = repository / "docs/public/acceptance-summary.json"
+    project = tomllib.loads((repository / "pyproject.toml").read_text(encoding="utf-8"))
+    expected_version = project["project"]["version"]
+    expected_summary = repository / f"docs/public/acceptance-summary-{expected_version}.json"
     if not expected_summary.is_file() or expected_summary.read_bytes() != summary_bytes:
         raise AcceptanceError("rebuilt public acceptance summary differs from the reviewed summary")
     return summary

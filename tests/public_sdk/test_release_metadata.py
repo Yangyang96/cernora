@@ -377,3 +377,12 @@ def test_closeout_branch_reference_is_document_specific() -> None:
     _scan_payload("sdist:docs/p4-closeout.md", reference)
     with pytest.raises(ReleaseCheckError, match="forbidden private vocabulary"):
         _scan_payload("ROADMAP.md", reference)
+
+
+def test_candidate_acceptance_preserves_reviewed_behavior() -> None:
+    root = Path(__file__).resolve().parents[2]
+    historical = json.loads((root / "docs/public/acceptance-summary.json").read_text())
+    candidate = json.loads((root / "docs/public/acceptance-summary-0.1.4.json").read_text())
+    assert historical.pop("cernora_version") == "0.1.2"
+    assert candidate.pop("cernora_version") == "0.1.4"
+    assert candidate == historical
