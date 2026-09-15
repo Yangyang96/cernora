@@ -73,7 +73,7 @@ cernora evidence evaluate --profile builtin:offline-workflow \
   --import-root imported --output evaluated
 ```
 
-查看 `evaluated/gate-decision.json`、`evaluated/score.json` 和 `evaluated/evidence.json`。
+查看 `evaluated/case-decision.json`、`evaluated/score.json` 和 `evaluated/evidence.json`。
 需要经过校验的结果时，用匹配的 Profile 严格读取：
 
 ```sh

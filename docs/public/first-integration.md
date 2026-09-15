@@ -79,7 +79,7 @@ cernora evidence evaluate --profile builtin:offline-workflow \
   --import-root imported --output evaluated
 ```
 
-Read `evaluated/gate-decision.json`, `evaluated/score.json` and `evaluated/evidence.json`.
+Read `evaluated/case-decision.json`, `evaluated/score.json` and `evaluated/evidence.json`.
 For a verified read, use the matching Profile:
 
 ```sh
