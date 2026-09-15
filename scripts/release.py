@@ -100,6 +100,17 @@ def _verify_built_wheel_flows(wheel: Path, root: Path) -> None:
         [
             str(python),
             "-I",
+            str(ROOT / "scripts/onboarding_wheel_check.py"),
+            "--output",
+            str(root / "onboarding-acceptance"),
+        ],
+        cwd=root,
+        env=environment,
+    )
+    _run(
+        [
+            str(python),
+            "-I",
             str(ROOT / "scripts/profile_authoring_wheel_check.py"),
             "--output",
             str(root / "authoring-acceptance"),

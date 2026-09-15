@@ -1,0 +1,30 @@
+{
+  "schema_version": "synthetic-completed-record/v1",
+  "run_id": "synthetic-1",
+  "task_id": "status-task",
+  "case_id": "status-case",
+  "conditions": {
+    "agent": "synthetic-runner-v1",
+    "model": "synthetic-model-v1",
+    "prompt_version": "prompt-v1",
+    "budget": null,
+    "toolset_version": "service-v1"
+  },
+  "user_task": "Read the service status.",
+  "started_ms": 0,
+  "finished_ms": 30,
+  "final_answer": "The service status could not be verified.",
+  "calls": [
+    {
+      "invocation_id": "call-1",
+      "timestamp_ms": 10,
+      "tool": "service",
+      "argv": [
+        "service",
+        "status"
+      ],
+      "result": null
+    }
+  ],
+  "claims": []
+}

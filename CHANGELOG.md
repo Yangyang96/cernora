@@ -7,6 +7,11 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ### Added
 
+- Add a wheel-packaged neutral completed-record adapter example with success, mismatch,
+  missing-evidence and invalid-field paths, plus an installed-wheel first-integration tutorial.
+  Existing export/bundle contracts and Profile semantics are unchanged; see
+  [example scope and migration](docs/public/first-integration.md#acceptance-and-migration).
+
 - Preview Agent Run budgets accept explicit null for unrecorded total token budgets; missing budget fields remain invalid.
 
 - Preview Agent Run inspection CLI/API with paired tool events, verified inline output

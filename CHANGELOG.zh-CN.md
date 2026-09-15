@@ -9,6 +9,10 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ### Added
 
+- 新增随 wheel 分发的中立完成态记录适配示例，覆盖成功、不匹配、缺证和字段错误，
+  并提供独立安装的首次接入教程。已有导出/bundle 契约及 Profile 语义不变；见
+  [示例边界与迁移](docs/public/first-integration.zh-CN.md#验收与迁移)。
+
 - Preview Agent Run 的预算允许显式 null 表示未记录；缺失预算字段仍不合法。
 
 - 新增 Preview Agent Run 检查 CLI/API：调用与返回配对、内联输出摘要核验、保守运行

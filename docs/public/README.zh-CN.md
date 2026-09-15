@@ -27,3 +27,5 @@
 安装方式和可运行离线示例见项目[中文 README](../../README.zh-CN.md)。
 
 - [Agent Run 检查（Preview）](agent-run-inspection.zh-CN.md)：完成导出、证据完整性与声明字段比较。
+
+- [首次接入：自动导出与完整评测](first-integration.zh-CN.md)

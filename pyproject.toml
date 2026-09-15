@@ -87,6 +87,7 @@ include = [
   "/scripts/comparison_wheel_check.py",
   "/scripts/generate_batch_schemas.py",
   "/scripts/profile_authoring_wheel_check.py",
+  "/scripts/onboarding_wheel_check.py",
   "/scripts/release.py",
   "/scripts/rebuild_acceptance.py",
   "/src/cernora",

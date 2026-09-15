@@ -245,3 +245,6 @@ Cernora 位于 Agent Runtime 完成一次 Run 之后。它是完整 Agent 评测
 Cernora 使用 [Apache License 2.0](LICENSE)。
 
 使用 [Agent Run 检查入口（Preview）](docs/public/agent-run-inspection.zh-CN.md)离线校验已完成的导出。
+
+从[首次接入教程](docs/public/first-integration.zh-CN.md)开始：自动生成检查导出，
+并在独立安装环境中运行完整 Profile 评测。

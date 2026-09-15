@@ -167,3 +167,6 @@ bundle to this schema or submit inspection output to `evidence import`.
 Do not substitute zero or timeout seconds. Existing integer budgets remain valid. `elapsed_ms`
 is the span of exported event timestamps; message creation times do not measure total run
 wall time. Record wall-clock duration and billing separately in the external harness.
+
+For generated records instead of hand-authored export JSON, follow the
+[first integration tutorial](first-integration.md), including all four paths and full Profile evaluation.

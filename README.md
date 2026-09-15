@@ -257,3 +257,6 @@ report suspected vulnerabilities through [SECURITY.md](SECURITY.md).
 Cernora is licensed under the [Apache License 2.0](LICENSE).
 
 See [Agent Run inspection (Preview)](docs/public/agent-run-inspection.md) for offline export checks.
+
+Start with the [first integration tutorial](docs/public/first-integration.md) to generate
+an inspection export automatically and run a complete Profile evaluation from an installed wheel.
