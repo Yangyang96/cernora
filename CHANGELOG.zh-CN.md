@@ -9,6 +9,8 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ### Added
 
+- Preview Agent Run 的预算允许显式 null 表示未记录；缺失预算字段仍不合法。
+
 - 新增 Preview Agent Run 检查 CLI/API：调用与返回配对、内联输出摘要核验、保守运行
   状态和结构化声明精确比较。参见[用法与草案迁移](docs/public/agent-run-inspection.zh-CN.md)。
   现有 EvidenceBundle v2 与 Profile Gate 语义保持不变。

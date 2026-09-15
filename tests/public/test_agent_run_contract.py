@@ -139,3 +139,14 @@ def test_schema_matches_model_and_accepts_fixture() -> None:
     schema.pop("$schema")
     assert schema == AgentRunExport.model_json_schema()
     Draft202012Validator(schema).validate(payload())
+
+
+def test_unrecorded_budget_is_explicitly_unknown() -> None:
+    data = payload()
+    data["conditions"]["budget"] = None
+    run = load(data)
+    assert run.conditions.budget is None
+    assert summarize_run(run)["tool_call_count"] == 1
+    data["conditions"].pop("budget")
+    with pytest.raises(ContractError):
+        load(data)

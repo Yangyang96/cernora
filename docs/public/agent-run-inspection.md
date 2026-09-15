@@ -160,3 +160,10 @@ results require explicit exit code and timeout fields; messages require text; ou
 require corresponding inline bytes; duplicate claims/IDs and dangling references are rejected.
 Existing EvidenceBundle v2 inputs and Profile gates are unchanged. Do not rename an existing
 bundle to this schema or submit inspection output to `evidence import`.
+
+## Unrecorded measurements
+
+`conditions.budget` remains required but accepts null for an unrecorded total token budget.
+Do not substitute zero or timeout seconds. Existing integer budgets remain valid. `elapsed_ms`
+is the span of exported event timestamps; message creation times do not measure total run
+wall time. Record wall-clock duration and billing separately in the external harness.

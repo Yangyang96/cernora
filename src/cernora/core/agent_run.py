@@ -18,7 +18,9 @@ class AgentCondition(StrictModel):
     agent: str = Field(min_length=1)
     model: str = Field(min_length=1)
     prompt_version: str = Field(min_length=1)
-    budget: int = Field(ge=0, description="Maximum model tokens allowed by the external harness")
+    budget: int | None = Field(
+        ge=0, description="Maximum model tokens allowed by the external harness; null if unrecorded"
+    )
     toolset_version: str = Field(min_length=1)
 
 

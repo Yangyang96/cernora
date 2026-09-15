@@ -48,10 +48,17 @@
           "type": "string"
         },
         "budget": {
-          "description": "Maximum model tokens allowed by the external harness",
-          "minimum": 0,
-          "title": "Budget",
-          "type": "integer"
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Maximum model tokens allowed by the external harness; null if unrecorded",
+          "title": "Budget"
         },
         "toolset_version": {
           "minLength": 1,

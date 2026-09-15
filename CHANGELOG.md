@@ -7,6 +7,8 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ### Added
 
+- Preview Agent Run budgets accept explicit null for unrecorded total token budgets; missing budget fields remain invalid.
+
 - Preview Agent Run inspection CLI/API with paired tool events, verified inline output
   digests, conservative execution states and exact structured claim comparison. See
   [usage and draft migration](docs/public/agent-run-inspection.md). Existing EvidenceBundle
