@@ -3,6 +3,7 @@
 from importlib.resources import files
 
 PUBLIC_SCHEMAS = (
+    "agent-run-export-v1.schema.json",
     "batch-input-v1.schema.json",
     "batch-summary-v1.schema.json",
     "case-profile-v1.schema.json",

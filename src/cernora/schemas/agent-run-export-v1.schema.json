@@ -1,0 +1,314 @@
+{
+  "$defs": {
+    "AgentClaim": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value"
+        },
+        "evidence_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "path",
+        "value",
+        "evidence_ids"
+      ],
+      "title": "AgentClaim",
+      "type": "object"
+    },
+    "AgentCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "agent": {
+          "minLength": 1,
+          "title": "Agent",
+          "type": "string"
+        },
+        "model": {
+          "minLength": 1,
+          "title": "Model",
+          "type": "string"
+        },
+        "prompt_version": {
+          "minLength": 1,
+          "title": "Prompt Version",
+          "type": "string"
+        },
+        "budget": {
+          "description": "Maximum model tokens allowed by the external harness",
+          "minimum": 0,
+          "title": "Budget",
+          "type": "integer"
+        },
+        "toolset_version": {
+          "minLength": 1,
+          "title": "Toolset Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "agent",
+        "model",
+        "prompt_version",
+        "budget",
+        "toolset_version"
+      ],
+      "title": "AgentCondition",
+      "type": "object"
+    },
+    "AgentEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "seq": {
+          "minimum": 0,
+          "title": "Seq",
+          "type": "integer"
+        },
+        "kind": {
+          "enum": [
+            "user",
+            "assistant",
+            "tool_call",
+            "tool_result",
+            "error",
+            "final"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "timestamp_ms": {
+          "minimum": 0,
+          "title": "Timestamp Ms",
+          "type": "integer"
+        },
+        "payload": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ToolCallPayload"
+            },
+            {
+              "$ref": "#/$defs/ToolResultPayload"
+            },
+            {
+              "$ref": "#/$defs/MessagePayload"
+            },
+            {
+              "$ref": "#/$defs/ErrorPayload"
+            }
+          ],
+          "title": "Payload"
+        }
+      },
+      "required": [
+        "seq",
+        "kind",
+        "timestamp_ms",
+        "payload"
+      ],
+      "title": "AgentEvent",
+      "type": "object"
+    },
+    "ErrorPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "title": "ErrorPayload",
+      "type": "object"
+    },
+    "MessagePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "MessagePayload",
+      "type": "object"
+    },
+    "ToolCallPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "invocation_id": {
+          "minLength": 1,
+          "title": "Invocation Id",
+          "type": "string"
+        },
+        "tool": {
+          "minLength": 1,
+          "title": "Tool",
+          "type": "string"
+        },
+        "argv": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Argv",
+          "type": "array"
+        }
+      },
+      "required": [
+        "invocation_id",
+        "tool",
+        "argv"
+      ],
+      "title": "ToolCallPayload",
+      "type": "object"
+    },
+    "ToolResultPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "invocation_id": {
+          "minLength": 1,
+          "title": "Invocation Id",
+          "type": "string"
+        },
+        "exit_code": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Exit Code"
+        },
+        "timed_out": {
+          "title": "Timed Out",
+          "type": "boolean"
+        },
+        "evidence_id": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence Id"
+        }
+      },
+      "required": [
+        "invocation_id",
+        "exit_code",
+        "timed_out"
+      ],
+      "title": "ToolResultPayload",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "agent-run-export/v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "run_id": {
+      "minLength": 1,
+      "title": "Run Id",
+      "type": "string"
+    },
+    "task_id": {
+      "minLength": 1,
+      "title": "Task Id",
+      "type": "string"
+    },
+    "case_id": {
+      "minLength": 1,
+      "title": "Case Id",
+      "type": "string"
+    },
+    "conditions": {
+      "$ref": "#/$defs/AgentCondition"
+    },
+    "user_task": {
+      "minLength": 1,
+      "title": "User Task",
+      "type": "string"
+    },
+    "events": {
+      "items": {
+        "$ref": "#/$defs/AgentEvent"
+      },
+      "minItems": 1,
+      "title": "Events",
+      "type": "array"
+    },
+    "final_answer": {
+      "title": "Final Answer",
+      "type": "string"
+    },
+    "claims": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AgentClaim"
+      },
+      "title": "Claims",
+      "type": "array"
+    },
+    "tool_output_digests": {
+      "additionalProperties": {
+        "pattern": "^[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Tool Output Digests",
+      "type": "object"
+    },
+    "tool_outputs": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "propertyNames": {
+        "minLength": 1
+      },
+      "title": "Tool Outputs",
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "run_id",
+    "task_id",
+    "case_id",
+    "conditions",
+    "user_task",
+    "events",
+    "final_answer"
+  ],
+  "title": "AgentRunExport",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

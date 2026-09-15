@@ -255,3 +255,5 @@ Contributions are welcome within the documented Runtime/Evaluator boundary. Star
 report suspected vulnerabilities through [SECURITY.md](SECURITY.md).
 
 Cernora is licensed under the [Apache License 2.0](LICENSE).
+
+See [Agent Run inspection (Preview)](docs/public/agent-run-inspection.md) for offline export checks.

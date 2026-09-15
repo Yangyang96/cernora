@@ -198,6 +198,9 @@ def _wheel_files(path: Path, version: str) -> dict[str, bytes]:
             files[name] = payload
     required = {
         "cernora/__init__.py",
+        "cernora/core/agent_run.py",
+        "cernora/evaluation/agent_export.py",
+        "cernora/schemas/agent-run-export-v1.schema.json",
         "cernora/comparison.py",
         "cernora/conformance.py",
         "cernora/examples/coding_evaluation/__main__.py",

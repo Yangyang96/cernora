@@ -25,3 +25,5 @@
 `uv run python scripts/release.py verify --version <version>`。
 
 安装方式和可运行离线示例见项目[中文 README](../../README.zh-CN.md)。
+
+- [Agent Run 检查（Preview）](agent-run-inspection.zh-CN.md)：完成导出、证据完整性与声明字段比较。

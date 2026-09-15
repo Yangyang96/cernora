@@ -243,3 +243,5 @@ Cernora 位于 Agent Runtime 完成一次 Run 之后。它是完整 Agent 评测
 疑似漏洞请按[中文安全策略](SECURITY.zh-CN.md)中的流程报告。
 
 Cernora 使用 [Apache License 2.0](LICENSE)。
+
+使用 [Agent Run 检查入口（Preview）](docs/public/agent-run-inspection.zh-CN.md)离线校验已完成的导出。

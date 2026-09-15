@@ -87,3 +87,10 @@ Comparison 命令对有效派生产物返回 `0`，包括 `not_comparable` 或�
 兼容承诺不包含 Agent Runtime、执行 sandbox、托管服务、Profile 注册中心、自动发现、
 市场、数据库、Experiment Harness、runtime receipt 捕获或部署权威。`0.1.x` 中不存在这些
 接口。
+
+## Agent Run 检查 Preview
+
+`agent-run-export/v1`、`cernora agent-run inspect`、`cernora.core.agent_run` 和
+`cernora.evaluation.agent_export` 是新增的 Preview 检查接口，不替代 EvidenceBundle v2，
+也不生成 Profile Gate。运行时校验包含 Schema 不能表达的跨事件及摘要关系。
+参见[草案迁移说明](agent-run-inspection.zh-CN.md#兼容性与迁移)。

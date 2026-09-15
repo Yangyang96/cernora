@@ -14,8 +14,9 @@ from cernora.batch import summarize_batch, validate_batch_input
 from cernora.cli.profiles import BUILTIN_PROFILE_SELECTORS, load_builtin_profile
 from cernora.comparison import summarize_comparison, validate_comparison_input
 from cernora.conformance import ConformanceError, check_profile_conformance
-from cernora.core.canonical import canonical_json
+from cernora.core.canonical import canonical_json, strict_json_loads
 from cernora.core.errors import ContractError
+from cernora.evaluation.agent_export import inspect_agent_run
 from cernora.evaluation.package import evaluate_imported_case
 from cernora.ingestion.errors import IngestionConfigurationError, IngestionIntegrityError
 from cernora.ingestion.package_v2 import import_evidence_bundle_v2
@@ -40,6 +41,12 @@ def parser() -> argparse.ArgumentParser:
     root = UsageParser(prog="cernora")
     root.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     commands = root.add_subparsers(dest="command", required=True)
+
+    agent = commands.add_parser("agent-run", help="Inspect completed exports offline (Preview)")
+    agent_commands = agent.add_subparsers(dest="agent_command", required=True)
+    inspect = agent_commands.add_parser("inspect")
+    inspect.add_argument("input", type=Path)
+    inspect.add_argument("--reference", type=Path)
 
     profile = commands.add_parser("profile")
     profile_commands = profile.add_subparsers(dest="profile_command", required=True)
@@ -103,7 +110,17 @@ def main(argv: list[str] | None = None) -> int:
     result: Any
     temporary_output: Path | None = None
     try:
-        if args.command == "batch":
+        if args.command == "agent-run":
+            reference = None
+            if args.reference is not None:
+                reference = strict_json_loads(args.reference.read_bytes())
+                if not isinstance(reference, dict):
+                    raise ContractError("reference must be a JSON object mapping paths to values")
+            result = inspect_agent_run(args.input, reference=reference)
+            code = 3 if result["state"] == "inconclusive" else 0
+            if result["state"] == "tool_failed" or result["claims"].get("accuracy", 1) < 1:
+                code = 1
+        elif args.command == "batch":
             batch_input = validate_batch_input(args.input)
             if args.batch_command == "validate":
                 result = batch_input

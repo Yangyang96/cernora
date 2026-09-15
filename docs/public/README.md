@@ -28,3 +28,5 @@ Release maintainers use `uv run python scripts/release.py preflight` before publ
 
 Start with the project [README](../../README.md) for installation and a runnable offline
 example.
+
+- [Agent Run inspection (Preview)](agent-run-inspection.md): completed exports, integrity and claims.

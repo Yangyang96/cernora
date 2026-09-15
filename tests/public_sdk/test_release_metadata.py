@@ -319,13 +319,20 @@ def test_release_tree_flags_force_tracked_private_state(tmp_path: Path) -> None:
 
 def test_public_markdown_relative_links_resolve() -> None:
     root = Path(__file__).resolve().parents[2]
+    # Use the VCS publication boundary, including new public documents but excluding
+    # ignored local transcripts and private workspaces.
+    listed = subprocess.run(
+        ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.md"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+    )
     markdown_files = sorted(
-        path
-        for path in root.rglob("*.md")
-        if not any(
-            part in {".git", ".pytest_cache", ".ruff_cache", ".venv", "dist"}
-            for part in path.relative_to(root).parts
-        )
+        {
+            root / name.decode("utf-8")
+            for name in listed.stdout.split(b"\0")
+            if name and (root / name.decode("utf-8")).is_file()
+        }
     )
     relative_links: list[tuple[Path, str]] = []
     for document in markdown_files:

@@ -7,6 +7,11 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ### Added
 
+- Preview Agent Run inspection CLI/API with paired tool events, verified inline output
+  digests, conservative execution states and exact structured claim comparison. See
+  [usage and draft migration](docs/public/agent-run-inspection.md). Existing EvidenceBundle
+  v2 and Profile gate semantics remain unchanged.
+
 - `ComparisonInput v1` Primary Outcomes may now select one declared split. The derived Primary
   rates, delta and case-clustered interval use only Cases in that split, allowing held-out-only
   confirmatory conclusions without excluding development or regression evidence from the Batch.

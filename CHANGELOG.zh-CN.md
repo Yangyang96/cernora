@@ -9,6 +9,10 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ### Added
 
+- 新增 Preview Agent Run 检查 CLI/API：调用与返回配对、内联输出摘要核验、保守运行
+  状态和结构化声明精确比较。参见[用法与草案迁移](docs/public/agent-run-inspection.zh-CN.md)。
+  现有 EvidenceBundle v2 与 Profile Gate 语义保持不变。
+
 - `ComparisonInput v1` 的 Primary Outcome 现在可以选择一个已声明 split。派生的 Primary
   rate、delta 与 case-clustered interval 只使用该 split 中的 Case，因此可以得到仅基于
   held-out 的确认性结论，同时仍在 Batch 中保留 development 与 regression 证据。

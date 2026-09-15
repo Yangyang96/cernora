@@ -93,3 +93,10 @@ unverifiable input. They never use behavioral exit `1` and never select or promo
 Compatibility does not imply an agent runtime, execution sandbox, hosted service, Profile
 registry, automatic discovery, marketplace, database, Experiment Harness, runtime-receipt
 capture or deployment authority. No such surface exists in `0.1.x`.
+
+## Agent Run inspection Preview
+
+`agent-run-export/v1`, `cernora agent-run inspect`, `cernora.core.agent_run` and
+`cernora.evaluation.agent_export` are additive Preview inspection surfaces. They do not
+replace EvidenceBundle v2 or emit a Profile Gate. Runtime validation is stricter than
+structural schema validation. See the [migration notes](agent-run-inspection.md#schema-and-migration).

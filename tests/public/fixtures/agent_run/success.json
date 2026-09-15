@@ -1,0 +1,72 @@
+{
+  "schema_version": "agent-run-export/v1",
+  "run_id": "run-1",
+  "task_id": "task-1",
+  "case_id": "case-1",
+  "conditions": {
+    "agent": "sample-runner-v1",
+    "model": "sample-model-v1",
+    "prompt_version": "prompt-v1",
+    "budget": 1000,
+    "toolset_version": "tools-v1"
+  },
+  "user_task": "Read the service status.",
+  "final_answer": "The service status is ready.",
+  "events": [
+    {
+      "seq": 0,
+      "timestamp_ms": 0,
+      "kind": "user",
+      "payload": {
+        "text": "Read the service status."
+      }
+    },
+    {
+      "seq": 1,
+      "timestamp_ms": 10,
+      "kind": "tool_call",
+      "payload": {
+        "invocation_id": "call-1",
+        "tool": "service",
+        "argv": [
+          "service",
+          "status"
+        ]
+      }
+    },
+    {
+      "seq": 2,
+      "timestamp_ms": 20,
+      "kind": "tool_result",
+      "payload": {
+        "invocation_id": "call-1",
+        "exit_code": 0,
+        "timed_out": false,
+        "evidence_id": "output-1"
+      }
+    },
+    {
+      "seq": 3,
+      "timestamp_ms": 30,
+      "kind": "final",
+      "payload": {
+        "text": "The service status is ready."
+      }
+    }
+  ],
+  "claims": [
+    {
+      "path": "/status",
+      "value": "ready",
+      "evidence_ids": [
+        "output-1"
+      ]
+    }
+  ],
+  "tool_outputs": {
+    "output-1": "{\"status\":\"ready\"}"
+  },
+  "tool_output_digests": {
+    "output-1": "31bf75f4c0a97cc1f7b60df824fa390b3be9ba014f29b63c87c698ba63d9a9fd"
+  }
+}
