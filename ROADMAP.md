@@ -37,7 +37,7 @@ established platforms feature-for-feature is not a completion requirement.
 | --- | --- | --- |
 | P1–P3 | Metrics, Profile authoring, Reference Workflow | Retain delivered capabilities and compatibility boundaries. |
 | P4 | Batch experiments, comparisons and evidence closure | 72 Trials completed; negative result and offline reconstruction preserved; publication tracked separately. |
-| P4.5 | Real-world tool-integration evaluation | D1 exploratory runs exist; a valid baseline still requires incident grouping, human reference calibration and fixed execution conditions. D2/D3 consumption scenarios and CLI/skill comparisons follow. |
+| P4.5 | Real-world tool-integration evaluation | D1 exploratory runs exist; a valid baseline still requires related-case grouping, human reference calibration and fixed execution conditions. D2/D3 consumption scenarios and CLI/skill comparisons follow. |
 | Following | Thin Chora integration | Evaluate one completed task family and persist/display traceable outcomes. |
 | Original P5 | Metric SDK / `MetricPlan` | Conditional backlog: start when multiple real Profiles expose repeated needs. |
 | Original P6 | Second producer / Runtime Connector | Conditional backlog: generalize only after two concrete integrations prove common needs. |
@@ -480,7 +480,7 @@ third party can rebuild the released evidence without Runtime credentials.
 ## Priority 4.5 — Real-world tool-integration evaluation
 
 **Status:** D1 exploratory runs exist, but historical runs with invalid tool execution or
-unverified conditions are excluded from confirmatory comparisons. Incident grouping, human
+unverified conditions are excluded from confirmatory comparisons. Related-case grouping, human
 reference calibration and actual execution conditions must be frozen before rebuilding a valid
 baseline. Apply one intervention only after that baseline, then evaluate on an independent,
 untouched validation split. Positive improvement has not yet been demonstrated.
@@ -488,11 +488,11 @@ This is a first capability slice, not the complete external-tool Agent-friendlin
 
 ### Goal and sequence
 
-1. Select one change-context command. Preserve real cases, tool responses, required context
-   and human reference judgments before monitoring retention expires. Make inputs replayable
-   and split development and independent validation cases by incident.
-2. Fix the probe Agent, model, prompt, tool access and budget. Measure root-cause analysis,
-   risk assessment and action quality, including grounding, missing information and unsupported
+1. Select one real tool-use task. Preserve cases, tool responses, required inputs and human
+   reference judgments. Make inputs replayable and group related cases together before
+   splitting development and independent validation sets.
+2. Fix the evaluated Agent, model, prompt, tool access and budget. Measure task completion
+   and output quality, including grounding, missing information and unsupported
    claims. Field completeness alone is not task utility.
 3. Establish rules and human references; add a minimal helper LLM Judge only for a qualitative
    scoring gap, then run the baseline.
@@ -502,10 +502,9 @@ This is a first capability slice, not the complete external-tool Agent-friendlin
 5. Preserve failure analysis, changes, comparison evidence and scope. Do not change scoring
    policy to obtain a favorable result.
 
-The follow-on evaluation expands from D1 single-step lookup to D2 multi-step consumption
-context to impacted entities, metrics, logs or events and D3 multi-turn scenario
-completion. These stages add natural-language task construction, route/skill diagnostics,
-session success, path efficiency, pass^k and friction reporting. Full-Stack versus CLI-Only,
+The follow-on evaluation expands from D1 single-step tool use to D2 multi-step tool use
+and D3 multi-turn task completion. These stages add natural-language task construction,
+route/skill diagnostics, session success, path efficiency, pass^k and friction reporting. Full-Stack versus CLI-Only,
 full CLI versus MCP-only and multi-model comparisons are separate controlled axes after the
 single-intervention loop; each keeps the task splits, model budget and frozen scoring policy
 fixed while changing one factor.
