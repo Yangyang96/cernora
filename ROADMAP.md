@@ -28,20 +28,25 @@ universal Agent runner or takes ownership of credentials, sandboxes or processes
 
 ## Priority order
 
-The active sequence is **P4 closeout → P4.5 real-world positive improvement → thin Chora
-integration**. The project serves hands-on Agent evaluation engineering, controlled external-tool
-evaluation and evaluation of completed Chora tasks. Generality follows these uses; matching
-established platforms feature-for-feature is not a completion requirement.
+The active sequence is **neutral integration and onboarding → P4.5 evidence-backed
+improvement validation → thin Chora integration**. The current evaluation slice checks
+whether an Agent correctly consumes tool evidence and produces the required structured
+answer. It is a starting point for validating useful interventions, not proof of complete
+task quality. Generality follows demonstrated needs; matching established platforms
+feature-for-feature is not a completion requirement.
+
+Status alignment: 2026-09-16. Public delivery readiness, development experiments and
+independent evidence of improvement are tracked separately.
 
 | Order | Milestone | Current disposition |
 | --- | --- | --- |
 | P1–P3 | Metrics, Profile authoring, Reference Workflow | Retain delivered capabilities and compatibility boundaries. |
 | P4 | Batch experiments, comparisons and evidence closure | 72 Trials completed; negative result and offline reconstruction preserved; publication tracked separately. |
-| P4.5 | Real-world tool-integration evaluation | D1 exploratory runs exist; a valid baseline still requires related-case grouping, human reference calibration and fixed execution conditions. D2/D3 consumption scenarios and CLI/skill comparisons follow. |
+| P4.5 | Evidence consumption and improvement validation | Development evaluation is operational. Independent reference calibration, a confirmatory baseline, a single-variable intervention and untouched validation remain incomplete. |
 | Following | Thin Chora integration | Evaluate one completed task family and persist/display traceable outcomes. |
 | Original P5 | Metric SDK / `MetricPlan` | Conditional backlog: start when multiple real Profiles expose repeated needs. |
 | Original P6 | Second producer / Runtime Connector | Conditional backlog: generalize only after two concrete integrations prove common needs. |
-| Original P7 / P8 | General LLM Judge / stabilization | Conditional backlog driven by real scoring needs; does not block a P4.5 helper Judge. |
+| Original P7 / P8 | General LLM Judge / stabilization | Conditional backlog; introduce a Judge only for a demonstrated scoring gap after reference calibration. |
 | Original P9 | Gate consumers / provenance | Conditional backlog triggered by a real consumer needing staged gates. |
 | `1.0` | Stable public boundary | Long-term maturity goal, not a prerequisite for the two application milestones. |
 
@@ -477,56 +482,80 @@ exposes quality, reliability, safety, efficiency, uncertainty and regression. Th
 companion completes an honest intervention loop against regression and held-out Cases, and a
 third party can rebuild the released evidence without Runtime credentials.
 
-## Priority 4.5 — Real-world tool-integration evaluation
+## Priority 4.5 — Evidence consumption and improvement validation
 
-**Status:** D1 exploratory runs exist, but historical runs with invalid tool execution or
-unverified conditions are excluded from confirmatory comparisons. Related-case grouping, human
-reference calibration and actual execution conditions must be frozen before rebuilding a valid
-baseline. Apply one intervention only after that baseline, then evaluate on an independent,
-untouched validation split. Positive improvement has not yet been demonstrated.
-This is a first capability slice, not the complete external-tool Agent-friendliness evaluation.
+**Status:** in progress. A neutral minimal Adapter example and first-integration tutorial
+are implemented and verified in isolated installations. Development evaluation of
+structured answers from frozen tool evidence is operational. Independent human reference
+calibration, a confirmatory baseline and intervention validation remain incomplete.
+Historical invalid runs remain excluded; their evidence is preserved without rescoring.
 
-### Goal and sequence
+### Current evaluation scope
 
-1. Select one real tool-use task. Preserve cases, tool responses, required inputs and human
-   reference judgments. Make inputs replayable and group related cases together before
-   splitting development and independent validation sets.
-2. Fix the evaluated Agent, model, prompt, tool access and budget. Measure task completion
-   and output quality, including grounding, missing information and unsupported
-   claims. Field completeness alone is not task utility.
-3. Establish rules and human references; add a minimal helper LLM Judge only for a qualitative
-   scoring gap, then run the baseline.
-4. Choose one intervention from development failures: context organization, tool output,
-   prompt or tool-use strategy. Compare on unused validation cases under the same scoring
-   policy, checking regressions, validity and cost.
-5. Preserve failure analysis, changes, comparison evidence and scope. Do not change scoring
-   policy to obtain a favorable result.
+The current task checks queried-object identity, its relationship to a parent object,
+state fields, target objects, completeness, missing-information reasons and citations to
+actual tool results. The Profile compares structured claims with source-bound references.
+It distinguishes an incorrect answer with valid evidence from an unavailable or unverifiable answer.
+A successful tool call or well-formed export alone cannot establish task success.
 
-The follow-on evaluation expands from D1 single-step tool use to D2 multi-step tool use
-and D3 multi-turn task completion. These stages add natural-language task construction,
-route/skill diagnostics, session success, path efficiency, pass^k and friction reporting. Full-Stack versus CLI-Only,
-full CLI versus MCP-only and multi-model comparisons are separate controlled axes after the
-single-intervention loop; each keeps the task splits, model budget and frozen scoring policy
-fixed while changing one factor.
+This slice can expose field interpretation, evidence grounding and output-contract errors.
+It does not establish domain judgment, root-cause accuracy, multi-step planning or complete
+user-task utility. A higher format-compliance rate must be reported as such until an
+independent task outcome supports a broader claim.
 
-### Minimal helper Judge boundary
+### Delivery and evidence sequence
 
-The Judge is a measurement tool; the task-performing Agent is the subject. Define a rubric,
-calibrate against human-labeled examples, record model/prompt versions, reasons and cited
-evidence, and review consequential disagreements. Judge calls remain in the external workflow;
-Core consumes completed, traceable scoring evidence without model credentials or online
-execution. Freeze scoring before independent validation. Missing evidence or an unavailable
-Judge leaves the qualitative assessment inconclusive. A higher Judge score needs human spot checks or objective task outcomes
-to support an improvement claim. A general Judge SDK is not required here.
+| Step | Work | Current disposition |
+| --- | --- | --- |
+| 1 | Neutral minimal Adapter: derive exports from synthetic runs; exercise success, mismatch, missing evidence and malformed fields | Implemented and verified. |
+| 2 | First-user onboarding in an isolated installation; distinguish inspection from full Profile evaluation | Tutorial and automated installation acceptance complete. |
+| 3 | Public delivery and status alignment | Generic integration work delivered; documentation is kept aligned without publishing private experiments. |
+| 4 | Rebuild grouped data, calibrate references and freeze actual execution conditions | Development evidence available; independent calibration and a confirmatory baseline remain incomplete. |
+| 5 | Apply one intervention and validate on untouched cases | Pending; report benefit, regression, cost and uncertainty, including negative results. |
+| 6 | Extract proven general gaps and prepare a release | Conditional on evidence; verify synthetic coverage, compatibility, build and preflight. Publishing is separate. |
+
+`inspect` checks an inspection export and produces observations; it does not import an
+EvidenceBundle or run the Profile assessment. Full acceptance requires import, Profile evaluation and strict reload, with
+success, failure and missing-evidence paths. See the
+[first-integration tutorial](docs/public/first-integration.md).
+
+### Experiment requirements
+
+1. Group related cases before splitting development and validation data. A new identifier
+   alone does not establish independence; repeated runs are not independent task samples.
+2. Keep source verification distinct from independent reference calibration. Freeze the
+   task, expected facts, scoring policy, exclusions and missing-evidence behavior before
+   confirmatory evaluation.
+3. Freeze the actual Agent, model, prompts, tool access, input digests, budgets and retry
+   policy. Preserve failures and inconclusive runs. Sanitized derivatives have separate
+   identities and references; results cannot be silently transferred to original inputs.
+4. Select one intervention from development failures. Keep scoring and other conditions
+   fixed, and reserve new cases for independent validation rather than prompt tuning.
+5. Report task outcomes, regressions, repeated-run variability and cost together. Include
+   repeated tool calls and unavailable measurements; tokens alone do not prove savings.
+
+Development observations may motivate an output-format intervention, but do not establish
+its effect. More complex task families, alternative tool interfaces and multi-turn studies
+are conditional extensions, not prerequisites for completing this bounded experiment.
+
+### Judge boundary
+
+The current field checks use deterministic source-bound assessment and do not require an
+LLM Judge. Add a narrowly scoped external Judge only if a concrete qualitative scoring
+need remains after rubric definition and human calibration. Preserve its inputs, versions
+and evidence; unavailable judgments stay inconclusive. Core continues to evaluate completed
+exports offline and does not acquire model credentials or execution responsibilities.
+A general Judge SDK remains conditional backlog.
 
 ### Completion and stopping rule
 
-At least one intervention must produce evidence-supported practical improvement on independent
-validation cases. Predeclare the primary outcome, regression and cost constraints, and report
-sample scope, repeated-run variability and uncertainty. A regressed or inconclusive result is
-useful evidence but leaves the positive-improvement milestone incomplete. Model training and
-automatic optimization are not required. Reuse existing Profiles, Evidence Adapters and reports;
-fill only gaps needed for this real evaluation.
+At least one intervention must produce evidence-supported practical improvement on
+independent validation cases under predeclared outcome, regression and cost constraints.
+Report the scope actually measured; output-contract compliance is not a substitute for
+business utility. Regressed, inconclusive or insufficient results leave the improvement
+milestone incomplete. Preview delivery may proceed within its documented contract without
+claiming validated improvement or stable Agent capability. Reuse existing Profiles,
+Evidence Adapters and reports; add only general capabilities justified by the evidence.
 
 ## Following — Thin evaluation of completed Chora tasks
 
@@ -540,7 +569,8 @@ with Chora or the external workflow. Original P5–P9 are not prerequisites for 
 
 The original designs below are options to select when needs arise, not a commitment to implement
 every item or follow their numerical order. P7 is the general Judge interface and P8 its
-stabilization; P4.5 may use a narrowly scoped helper Judge first.
+stabilization. A narrowly scoped helper Judge is considered only when a calibrated
+qualitative task needs one; the current deterministic task does not require it.
 
 ## Priority 5 — Metric SDK and `MetricPlan` Preview
 

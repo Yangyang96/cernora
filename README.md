@@ -26,8 +26,10 @@ Use Cernora when you need to:
 > [platform matrix](docs/public/compatibility-matrix.md) for operating-system status.
 >
 > **Development status:** P4 completed 72 Trials and verified offline evidence reconstruction.
-> The candidate regressed; positive improvement remains the next P4.5 milestone.
-> Local preservation is complete; public P4 release remains separate. See the
+> The candidate regressed. P4.5 now starts with structured answers grounded in tool evidence;
+> development evaluation is operational, while reference calibration and independent
+> improvement validation remain incomplete. Local preservation is complete; public P4
+> release remains separate. See the
 > [closeout record](docs/p4-closeout.md) and [product roadmap](ROADMAP.md).
 
 The local `0.1.4` release candidate retains strict Runtime-neutral batch summaries and adds
