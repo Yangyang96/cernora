@@ -9,6 +9,10 @@ Cernora 的重要变化记录在这里。项目遵循语义化版本；1.0 之�
 
 ### Added
 
+- 新增可选 Metric 组合 Preview：五项确定性内置指标，参数/角色/上限绑定评分权威，
+  两类中立 Profile 及自定义指标示例。旧 Profile 和 wire 语义保持不变，详见
+  [迁移说明](docs/public/metric-plans.md#compatibility-and-migration)。
+
 - 新增随 wheel 分发的中立完成态记录适配示例，覆盖成功、不匹配、缺证和字段错误，
   并提供独立安装的首次接入教程。已有导出/bundle 契约及 Profile 语义不变；见
   [示例边界与迁移](docs/public/first-integration.zh-CN.md#验收与迁移)。

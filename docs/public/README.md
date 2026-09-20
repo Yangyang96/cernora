@@ -32,3 +32,5 @@ example.
 - [Agent Run inspection (Preview)](agent-run-inspection.md): completed exports, integrity and claims.
 
 - [First integration: generated exports and full evaluation](first-integration.md)
+
+- [Metric composition Preview](metric-plans.md): explicit plans, five built-ins and custom Metrics.

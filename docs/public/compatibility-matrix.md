@@ -16,6 +16,7 @@ importable module as stable.
 | Treatment v1, ComparisonInput v1, ComparisonSummary v1, package-root comparison API and `cernora comparison` | Preview | Additive controlled-comparison surface introduced for local candidate `0.1.4`; schema or semantic changes require changelog and migration notes. |
 | Documented package-root models and import/evaluate functions | Supported Preview | Compatible within `0.1.x`; additions may be made without changing established behavior. |
 | Canonicalization, authority binding, digest checks, conflict-safe publication, strict reload and fail-closed outcomes | Supported Preview | Safety semantics are preserved; they are not relaxed for compatibility. |
+| `Metric`, `MetricBinding`, `MetricPlan`, context/definition and five built-in Metrics | Preview | Additive explicit composition; full Plan digest binds scorer authority. See [Metric migration](metric-plans.md#compatibility-and-migration). |
 | `Profile`, `Adapter`, authoring dataclasses and conformance helpers | Preview | May evolve within `0.1.x` with changelog and migration notes; deprecate first where feasible. |
 | Reference Profile layout and Profile-specific helper shapes | Preview | May evolve with documented migration. Profile authority versions remain explicit. |
 | Modules not re-exported from `cernora`, parser/storage implementation, tests and build/rebuild scripts | Internal | No compatibility promise. |

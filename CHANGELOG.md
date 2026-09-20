@@ -7,6 +7,10 @@ while pre-1.0 compatibility is further defined by the documented compatibility t
 
 ### Added
 
+- Add opt-in Metric composition Preview with five deterministic built-ins, authority-bound
+  parameters/roles/upper bounds, and two synthetic Profile examples including a custom Metric.
+  Existing Profile and wire semantics are unchanged; see [migration](docs/public/metric-plans.md).
+
 - Add a wheel-packaged neutral completed-record adapter example with success, mismatch,
   missing-evidence and invalid-field paths, plus an installed-wheel first-integration tutorial.
   Existing export/bundle contracts and Profile semantics are unchanged; see

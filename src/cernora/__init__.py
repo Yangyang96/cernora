@@ -99,6 +99,18 @@ from cernora.evaluation.package import (
 )
 from cernora.ingestion.contracts_v2 import AuthorityBoundImportPackageV2
 from cernora.ingestion.package_v2 import import_evidence_bundle_v2
+from cernora.metrics import (
+    ArgumentMatch,
+    FactMatch,
+    Latency,
+    Metric,
+    MetricBinding,
+    MetricContext,
+    MetricDefinition,
+    MetricPlan,
+    ToolCalls,
+    ToolSelection,
+)
 from cernora.profile import Profile, ProfileAssessment, ProfileEvaluationContext
 from cernora.profile_loader import ProfileLoadError, load_local_profile
 from cernora.profile_testing import (
@@ -219,4 +231,17 @@ __all__ = [
     "summarize_comparison",
     "validate_batch_input",
     "validate_comparison_input",
+]
+
+__all__ += [
+    "ArgumentMatch",
+    "FactMatch",
+    "Latency",
+    "Metric",
+    "MetricBinding",
+    "MetricContext",
+    "MetricDefinition",
+    "MetricPlan",
+    "ToolCalls",
+    "ToolSelection",
 ]
