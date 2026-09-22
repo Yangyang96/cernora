@@ -15,3 +15,13 @@ dist/
 # MemPalace per-project files (issue #185)
 mempalace.yaml
 entities.json
+
+# Local agent instructions must never be uploaded
+AGENTS.md
+agents.md
+
+# Private transcripts and internal evaluation material.
+/codex-session-*.md
+/.omc/
+/examples/observ_change_context_v2/
+/tests/public_profiles/test_observ_context_v2.py
